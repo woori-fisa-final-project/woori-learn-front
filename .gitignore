@@ -32,13 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-<<<<<<< HEAD
-=======
 .env.local
 .env.development
 .env.production
 .env.test
->>>>>>> 6addcbf ([chore] 프론트 프로젝트 초기 설정)
 
 # vercel
 .vercel
@@ -47,10 +44,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-<<<<<<< HEAD
-### VS Code ###
-.vscode/
-=======
+
+
 ### VS Code / IDE / Editor settings###
 .vscode/
 .idea/
@@ -59,4 +54,4 @@ next-env.d.ts
 # Temporary files
 *.tmp
 *.temp
->>>>>>> 6addcbf ([chore] 프론트 프로젝트 초기 설정)
+
