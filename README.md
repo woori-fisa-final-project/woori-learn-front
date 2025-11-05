@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ✨ 협업 규칙
 
-## Getting Started
+**반드시 develop 브랜치로 PR하기**
 
-First, run the development server:
+## 🚀 워크플로우
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. **이슈 생성** 및 **담당자(Assignee) 지정**
+2. **브랜치 생성** (ex. feat/#1)
+3. **해당 브랜치로 이동**해 **작업 후 커밋** (ex. [feat] 로그인 API 구현)
+4. 작업 완료 후 **PR 생성** (ex. [feat] 로그인 API 구현)
+5. **코드 리뷰** 후 승인 및 merge
+6. **브랜치 삭제** 및 **이슈 닫기(close)**
+
+&nbsp;
+
+## 📝 커밋 규칙
+
+`git commit -m "[type] 커밋 내용 작성"`
+
+### 예시
+
+```
+git commit -m "[feat] 로그인 API 구현"
+git commit -m "[fix] 사용자 정보 불러오기 오류 수정"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 타입 설명
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| **타입**   | **의미**                                      |
+| ---------- | --------------------------------------------- |
+| `feat`     | 새로운 기능 추가 (feature)                    |
+| `fix`      | 버그 수정 (bug fix)                           |
+| `chore`    | 코드 변경이 아닌 잡일, 설정 변경 등           |
+| `build`    | 의존성 추가, gradle 관련 변경 등              |
+| `style`    | 코드 포맷, 세미콜론, 공백 등 스타일 관련 수정 |
+| `refactor` | 기능 변경 없이 코드 구조 개선                 |
+| `docs`     | 문서 수정                                     |
+| `test`     | 테스트 코드 추가/수정                         |
+| `ci`       | CI/CD 관련 설정 변경                          |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+&nbsp;
 
-## Learn More
+## 🌿브랜치 규칙
 
-To learn more about Next.js, take a look at the following resources:
+`git checkout -b {type}/#issue`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 예시
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+git checkout -b feat/#1
+```
