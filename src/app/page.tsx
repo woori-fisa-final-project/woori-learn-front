@@ -15,12 +15,14 @@ export default function Splash() {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center h-screen bg-white">
+    <main className="bg-white min-h-screen flex flex-col items-center overflow-x-hidden">
+      <div className="w-full max-w-[390px] mx-auto px-[20px] pt-[60px] flex items-center justify-center min-h-screen">
       <img
         src={loadingImage}
         alt="로딩 중"
-        className="w-[200px] h-[200px] object-contain"
+          className="w-[200px] h-[200px] object-contain max-w-full"
       />
     </div>
+    </main>
   );
 }

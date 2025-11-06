@@ -23,33 +23,65 @@ export default function Modal({
   confirmText,
   cancelText = "취소",
   onConfirm,
-  confirmButtonColor = "bg-[#648DDB]",
-  cancelButtonColor = "bg-[#f5f5f5]",
+  confirmButtonColor = "bg-primary-400",
+  cancelButtonColor = "bg-gray-100",
   children,
 }: ModalProps) {
   return (
     <Overlay isOpen={isOpen} onClose={onClose}>
-      <div className="bg-white rounded-[20px] w-[350px] mx-auto p-6 animate-slideDown">
+      <div className="bg-white rounded-[20px] w-[350px] max-w-[calc(100vw-40px)] mx-auto p-6 animate-slideDown">
         {children ? (
           children
         ) : (
           <>
-            <h2 className="text-[20px] text-[#414141] font-semibold text-center mb-6">
+            <h2 className="text-[20px] text-gray-700 font-semibold text-center mb-6">
               {title}
             </h2>
-            <p className="text-[16px] text-[#4a4a4a] text-center mb-8 w-full">
+            <p className="text-[16px] text-gray-600 text-center mb-8 w-full">
               {description}
             </p>
-            <div className="flex gap-3">
+            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
               <button
                 onClick={onClose}
-                className={`flex-1 h-[50px] ${cancelButtonColor} rounded-[10px] text-[16px] text-[#4a4a4a] font-regular`}
+                type="button"
+                style={{
+                  flex: 1,
+                  height: '50px',
+                  minHeight: '50px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#4a4a4a',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  border: 'none',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
                 {cancelText}
               </button>
               <button
                 onClick={onConfirm}
-                className={`flex-1 h-[50px] ${confirmButtonColor} rounded-[10px] text-[16px] text-white font-regular`}
+                type="button"
+                style={{
+                  flex: 1,
+                  height: '50px',
+                  minHeight: '50px',
+                  backgroundColor: '#648ddb',
+                  color: '#ffffff',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  border: 'none',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
                 {confirmText}
               </button>

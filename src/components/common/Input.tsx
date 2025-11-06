@@ -42,12 +42,12 @@ export default function Input({
   return (
     <div className={`flex flex-col gap-[8px] ${className}`}>
       {label && (
-        <label className="text-[16px] text-[#4a4a4a] font-medium leading-[25px]">
+        <label className="text-[16px] text-gray-600 font-medium leading-[25px]">
           {label}
         </label>
       )}
       <div
-        className={`border border-[#cbcad7] rounded-[15px] ${heightClass} ${wrapperClassName || 'w-full'} flex items-center ${
+        className={`border border-gray-300 rounded-[15px] ${heightClass} ${wrapperClassName || 'w-full'} flex items-center ${
           showEyeIcon ? "justify-between" : ""
         } px-5`}
       >
@@ -57,7 +57,7 @@ export default function Input({
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className={`flex-1 text-[16px] text-[#4a4a4a] font-medium placeholder:text-[#c3c3c3] outline-none ${inputClassName}`}
+          className={`flex-1 text-[16px] text-gray-600 font-medium placeholder:text-gray-400 outline-none ${inputClassName}`}
         />
         {showEyeIcon && (
           <PasswordToggleIcon

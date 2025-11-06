@@ -29,35 +29,85 @@ export default function Button({
     lg: "h-[60px] text-[16px]",
   };
 
-  // variant에 따른 색상 설정
-  const getVariantClasses = () => {
+  // 너비 설정
+  const widthClass = fullWidth ? "w-full" : "";
+
+  const fontClass = size === "sm" ? "font-normal" : "font-semibold";
+  const trackingClass = size === "sm" ? "tracking-[-0.42px]" : "tracking-[-0.48px]";
+
+  // 인라인 스타일로 모든 색상 적용 (className과 충돌 방지)
+  const getInlineStyles = (): React.CSSProperties => {
+    const heightValue = size === 'sm' ? '50px' : size === 'md' ? '55px' : '60px';
+    
+    const baseStyle: React.CSSProperties = {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      visibility: 'visible',
+      border: 'none',
+      outline: 'none',
+      boxSizing: 'border-box',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      height: heightValue,
+      minHeight: heightValue,
+      position: 'relative',
+      zIndex: 1,
+    };
+
     if (disabled) {
-      return "bg-[rgba(100,141,219,0.4)] cursor-not-allowed";
+      if (variant === "secondary") {
+        return {
+          ...baseStyle,
+          backgroundColor: '#e8e8e8',
+          color: '#666666',
+          opacity: 1,
+        };
+      }
+      return {
+        ...baseStyle,
+        backgroundColor: '#b4c9e8',
+        color: '#ffffff',
+        opacity: 1,
+      };
     }
     
     if (variant === "primary") {
-      return "bg-[#648DDB] cursor-pointer hover:bg-[#5480c9]";
+      return {
+        ...baseStyle,
+        backgroundColor: '#648ddb',
+        color: '#ffffff',
+        opacity: 1,
+      };
     }
     
     if (variant === "secondary") {
-      return "bg-[#f5f5f5] text-[#4a4a4a] cursor-pointer hover:bg-[#e8e8e8]";
+      return {
+        ...baseStyle,
+        backgroundColor: '#f5f5f5',
+        color: '#4a4a4a',
+        opacity: 1,
+      };
     }
     
-    return "bg-[#648DDB] cursor-pointer";
+    return {
+      ...baseStyle,
+      backgroundColor: '#648ddb',
+      color: '#ffffff',
+      opacity: 1,
+    };
   };
 
-  // 너비 설정
-  const widthClass = fullWidth ? "w-full" : "";
+  const inlineStyles = getInlineStyles();
 
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${widthClass} ${sizeClasses[size]} rounded-[10px] text-white ${size === 'sm' ? 'font-normal' : 'font-semibold'} leading-[1.38] ${size === 'sm' ? 'tracking-[-0.42px]' : 'tracking-[-0.48px]'} transition-colors ${getVariantClasses()} ${className}`.trim()}
+      style={inlineStyles}
+      className={`${widthClass} ${sizeClasses[size]} rounded-[10px] ${fontClass} ${trackingClass} leading-[1.38] transition-colors duration-200 ${className}`.trim().replace(/\s+/g, ' ')}
     >
       {children}
     </button>
   );
 }
-
