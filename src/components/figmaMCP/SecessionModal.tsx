@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
-const backIcon = "http://localhost:3845/assets/ebe55dd7c37ad06644920492f53f60e7455bb1db.svg";
+const backIcon = "/images/backicon.svg";
 
 export default function SecessionModal() {
   const router = useRouter();
@@ -45,9 +45,9 @@ export default function SecessionModal() {
         <div className="flex items-center gap-2 w-full">
           <button
             onClick={handleBack}
-            className="w-7 h-7 flex items-center justify-center rotate-90"
+            className="w-[14px] h-[7px] flex items-center justify-center -rotate-90"
           >
-            <img alt="뒤로가기" className="w-3.5 h-3.5" src={backIcon} />
+            <img alt="뒤로가기" className="w-[14px] h-[7px]" src={backIcon} />
           </button>
           <h1 className="text-[20px] text-[#414141] font-medium leading-[1.38] tracking-[-0.6px]">
             회원탈퇴

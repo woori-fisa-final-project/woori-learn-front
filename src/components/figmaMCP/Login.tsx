@@ -1,11 +1,13 @@
-const backIcon = "http://localhost:3845/assets/ebe55dd7c37ad06644920492f53f60e7455bb1db.svg";
-const eyeIcon = "http://localhost:3845/assets/6b39f66697753285f15b18f61b24258db27a1338.svg";
-const checkIcon = "http://localhost:3845/assets/327cbf405e630872b7800ad4a531beb953b99cf8.svg";
-const logoImage = "http://localhost:3845/assets/1fbc1536786db837341623c4a64c2228900366bb.png";
+import Link from "next/link";
+import Button from "@/components/common/Button";
+
+const eyeIcon = "/images/eyeicon.png";
+const checkIcon = "/images/checkicon.svg";
+const logoImage = "/images/logo1.png";
 
 export default function Login() {
   return (
-    <div className="bg-white relative w-full min-h-screen px-5 pt-[60px]">
+    <div className="bg-white relative w-full min-h-screen pt-[60px]">
       {/* Logo */}
       <div className="relative w-[150px] h-[86px] mt-[118px]">
         <img
@@ -23,7 +25,7 @@ export default function Login() {
             <input
               type="text"
               placeholder="ID"
-              className="flex-1 text-[16px] text-[#4a4a4a] placeholder:text-[#c3c3c3] outline-none"
+              className="flex-1 text-[16px] text-[#4a4a4a] font-medium placeholder:text-[#c3c3c3] outline-none"
             />
           </div>
         </div>
@@ -34,10 +36,14 @@ export default function Login() {
             <input
               type="password"
               placeholder="Password"
-              className="flex-1 text-[16px] text-[#4a4a4a] placeholder:text-[#c3c3c3] outline-none"
+              className="flex-1 text-[16px] text-[#4a4a4a] font-medium placeholder:text-[#c3c3c3] outline-none"
             />
             <div className="w-5 h-5 relative shrink-0 ml-2">
-              <img alt="비밀번호 보기" className="w-full h-full" src={eyeIcon} />
+              <img
+                alt="비밀번호 보기"
+                className="w-full h-full"
+                src={eyeIcon}
+              />
             </div>
           </div>
         </div>
@@ -53,24 +59,23 @@ export default function Login() {
 
       {/* Login Button */}
       <div className="mt-[80px]">
-        <button className="w-full h-[60px] bg-[#648ddb] rounded-[10px] text-[16px] text-white font-semibold">
+        <Button>
           로그인
-        </button>
+        </Button>
       </div>
 
       {/* Signup Link */}
-      <div className="mt-[82px] text-center">
+      <div className="mt-[20px] text-center">
         <p className="text-[16px] text-[#c3c3c3]">
           계정이 없으신가요?{" "}
-          <a 
-            href="/signup" 
+          <Link
+            href="/signup"
             className="text-[#648ddb] hover:text-[#2677cc] font-semibold underline decoration-solid underline-offset-2"
           >
             회원가입하기
-          </a>
+          </Link>
         </p>
       </div>
     </div>
   );
 }
-

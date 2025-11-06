@@ -1,13 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 
-const logoImage = "http://localhost:3845/assets/1fbc1536786db837341623c4a64c2228900366bb.png";
-const accountImage = "http://localhost:3845/assets/71064290ab4d93f278c730dd0d7efb1529c88d68.png";
-const utilityImage = "http://localhost:3845/assets/4f1a4994a04d8031ca3b4993b6ed6bca1beae042.png";
-const savingsImage = "http://localhost:3845/assets/67a740316624c307e1b7014409e73280238b7fe5.png";
-const loanImage = "http://localhost:3845/assets/9405b9d695aa6a224eb0a283c2e4d5594d6bab69.png";
-const profileIcon = "http://localhost:3845/assets/950129341b4ff67dfc70338811142cabbd1f5845.svg";
-const checkIcon = "http://localhost:3845/assets/7134465129fde51a495a4ba81c2bcc81bafc3ef0.svg";
+const logoImage = "/images/logo.png";
+const accountImage = "/images/account-image.png";
+const utilityImage = "/images/utility-image.png";
+const savingsImage = "/images/savings-image.png";
+const loanImage = "/images/loan-image.png";
+const profileIcon = "/images/profile-icon.svg";
+const checkIcon = "/images/check-icon.svg";
 
 function ProgressBarType2Complete() {
   return (
@@ -148,6 +148,7 @@ export default function MainHome() {
           <p className="text-[12px] text-black">50%</p>
         </div>
         <div className="bg-[#f5f5f5] rounded-full h-2 flex">
+          {/* TODO: 진행률 바를 동적으로 변경 - style={{ width: `${progress}%` }} 형태로 수정 필요 */}
           <div className="bg-[#648ddb] rounded-full h-full w-[190px]" />
         </div>
 
@@ -157,6 +158,7 @@ export default function MainHome() {
           <p className="text-[12px] text-black">100%</p>
         </div>
         <div className="bg-[#f5f5f5] rounded-full h-2 flex">
+          {/* TODO: 진행률 바를 동적으로 변경 - style={{ width: `${progress}%` }} 형태로 수정 필요 */}
           <div className="bg-[#648ddb] rounded-full h-full w-[169px]" />
         </div>
 
@@ -166,6 +168,7 @@ export default function MainHome() {
           <p className="text-[12px] text-black">100%</p>
         </div>
         <div className="bg-[#f5f5f5] rounded-full h-2 flex">
+          {/* TODO: 진행률 바를 동적으로 변경 - style={{ width: `${progress}%` }} 형태로 수정 필요 */}
           <div className="bg-[#648ddb] rounded-full h-full w-[114px]" />
         </div>
 
@@ -175,6 +178,7 @@ export default function MainHome() {
           <p className="text-[12px] text-black">100%</p>
         </div>
         <div className="bg-[#f5f5f5] rounded-full h-2 flex">
+          {/* TODO: 진행률 바를 동적으로 변경 - style={{ width: `${progress}%` }} 형태로 수정 필요 */}
           <div className="bg-[#648ddb] rounded-full h-full w-full" />
         </div>
       </div>
