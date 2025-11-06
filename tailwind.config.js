@@ -11,10 +11,10 @@ module.exports = {
         primary: {
           50: "#e8efff",
           100: "#d2def7",
-          200: "#bbd2ed",
+          200: "#B4C9E8",
           300: "#729fdc",
-          400: "#648ddb",
-          500: "#2677cc",
+          400: "#648DDB",
+          500: "#5480C9",
           600: "#2482c5",
           700: "#0043ce",
           800: "#1164c9",
@@ -47,9 +47,20 @@ module.exports = {
             opacity: "1",
           },
         },
+        slideUp: {
+          "0%": {
+            transform: "translateY(100%)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "translateY(0)",
+            opacity: "1",
+          },
+        },
       },
       animation: {
         slideDown: "slideDown 0.3s ease-out",
+        slideUp: "slideUp 0.3s ease-out",
       },
       // spacing, borderRadius, boxShadow 등 그대로 유지
     },

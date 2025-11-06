@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
 import Overlay from "./Overlay";
+import Button from "@/components/common/Button";
+
 
 interface ModalProps {
   isOpen: boolean;
@@ -40,51 +42,13 @@ export default function Modal({
             <p className="text-[16px] text-gray-600 text-center mb-8 w-full">
               {description}
             </p>
-            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-              <button
-                onClick={onClose}
-                type="button"
-                style={{
-                  flex: 1,
-                  height: '50px',
-                  minHeight: '50px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#4a4a4a',
-                  borderRadius: '10px',
-                  fontSize: '16px',
-                  fontWeight: 400,
-                  border: 'none',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+            <div className="flex gap-3 w-full">
+              <Button variant="secondary" onClick={onClose} size="sm">
                 {cancelText}
-              </button>
-              <button
-                onClick={onConfirm}
-                type="button"
-                style={{
-                  flex: 1,
-                  height: '50px',
-                  minHeight: '50px',
-                  backgroundColor: '#648ddb',
-                  color: '#ffffff',
-                  borderRadius: '10px',
-                  fontSize: '16px',
-                  fontWeight: 400,
-                  border: 'none',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+              </Button>
+              <Button variant="primary" onClick={onConfirm} size="sm">
                 {confirmText}
-              </button>
+              </Button>
             </div>
           </>
         )}

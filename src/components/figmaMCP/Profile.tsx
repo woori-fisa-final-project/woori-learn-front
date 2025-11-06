@@ -1,9 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "@/components/common/Modal";
-
-const backIcon = "/images/backicon.png";
+import PageHeader from "@/components/common/PageHeader";
+import PageContainer from "@/components/common/PageContainer";
+import { getAvailablePoints } from "@/constants/points";
 
 const profileImage = "/images/profileicon2.png";
 const pointIcon = "/images/pointicon.png";
@@ -11,6 +12,19 @@ const pointIcon = "/images/pointicon.png";
 export default function Profile() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userName, setUserName] = useState("김민영");
+  const [availablePoints, setAvailablePoints] = useState(5000);
+
+  // localStorage에서 이름 및 포인트 불러오기 (컴포넌트 마운트 및 업데이트 시)
+  useEffect(() => {
+    const savedName = localStorage.getItem("userName");
+    if (savedName) {
+      setUserName(savedName);
+    }
+    
+    const points = getAvailablePoints();
+    setAvailablePoints(points);
+  });
 
   const handleBack = () => {
     router.push("/home");
@@ -22,8 +36,12 @@ export default function Profile() {
   };
 
   const handlePointTransfer = () => {
-    // 포인트 전환 페이지로 이동
-    router.push("/mypage/point");
+    // 포인트 관리 페이지로 이동
+    router.push("/points/list");
+  };
+
+  const handleChangeName = () => {
+    router.push("/mypage/changename");
   };
 
   const handleChangePassword = () => {
@@ -50,127 +68,132 @@ export default function Profile() {
   };
 
   return (
-    <main className="bg-white min-h-screen flex flex-col items-center overflow-x-hidden">
-      <div className="w-full max-w-[390px] mx-auto px-[20px] pt-[60px] flex flex-col items-start">
-      {/* Header */}
-      <div className="flex items-center gap-2 w-full">
-        <button
-          onClick={handleBack}
-            className="w-[14px] h-[7px] flex items-center justify-center -rotate-90"
-        >
-            <img alt="뒤로가기" className="w-[14px] h-[7px] object-contain" src={backIcon} />
-        </button>
-          <h1 className="text-[22px] text-gray-700 font-medium leading-[31px] tracking-[-0.88px]">
-          내 정보
-        </h1>
-      </div>
+    <PageContainer>
+      <PageHeader title="내 정보" onBack={handleBack} titleSize="lg" />
 
-        {/* Profile Section */}
-        <div className="mt-[50px] w-full flex items-center gap-5">
-          {/* Profile Image */}
-          <div className="w-[56px] h-[56px] relative shrink-0">
-            <img
-              alt="프로필"
-              className="w-full h-full object-cover rounded-full"
-              src={profileImage}
-            />
-          </div>
-
-          {/* User Name */}
-          <p className="text-[16px] text-gray-800 font-medium leading-[normal] tracking-[-0.64px]">
-            김민영
-          </p>
+      {/* Profile Section */}
+      <div className="mt-12 w-full flex items-center gap-5">
+        {/* Profile Image */}
+        <div className="w-[56px] h-[56px] relative shrink-0">
+          <img
+            alt="프로필"
+            className="w-full h-full object-cover rounded-full"
+            src={profileImage}
+          />
         </div>
 
-        {/* Points Section */}
-        <div className="mt-[30px] w-full">
-          <div className="bg-gray-100 h-[49px] rounded-[12px] w-full flex items-center justify-between px-[20px]">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 relative shrink-0">
-                <img alt="포인트 아이콘" className="w-full h-full object-contain" src={pointIcon} />
-              </div>
-              <p className="text-[14px] text-gray-800 font-medium tracking-[-0.56px]">
-                포인트
-              </p>
+        {/* User Name */}
+        <p className="text-[16px] text-gray-800 font-medium leading-[normal] tracking-[-0.64px]">
+          {userName}
+        </p>
+      </div>
+
+      {/* Points Section */}
+      <div className="mt-8 w-full">
+        <button
+          onClick={() => router.push("/points")}
+          className="bg-gray-100 h-[49px] rounded-[12px] w-full flex items-center justify-between px-5 hover:bg-gray-200 hover:opacity-90 transition-all cursor-pointer"
+          aria-label="포인트 관리 페이지로 이동"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 relative shrink-0">
+              <img
+                alt="포인트 아이콘"
+                className="w-full h-full object-contain"
+                src={pointIcon}
+              />
             </div>
-            <p className="text-[17px] text-[#648ddb]/80 font-semibold leading-[1.38] tracking-[-0.34px]">
-              5,000 p
+            <p className="text-[14px] text-gray-800 font-medium tracking-[-0.56px]">
+              포인트
             </p>
           </div>
-        </div>
-
-        {/* Account Management Section */}
-        <div className="mt-[50px] w-full">
-          <p className="text-[19px] text-gray-700 font-medium leading-[1.38] tracking-[-0.76px] mb-[24px]">
-            계정 관리
+          <p className="text-[17px] text-primary-400/80 font-semibold leading-[1.38] tracking-[-0.34px]">
+            {availablePoints.toLocaleString()} p
           </p>
-
-          {/* Menu Items */}
-          <div className="flex flex-col gap-2 w-full">
-            {/* 계좌 개설하기 */}
-            <button
-              onClick={handleAccountOpen}
-              className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
-            >
-              <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
-                계좌 개설하기
-              </p>
-            </button>
-
-            {/* 포인트 전환하기 */}
-            <button
-              onClick={handlePointTransfer}
-              className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
-            >
-              <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
-                포인트 전환하기
-              </p>
-            </button>
-
-            {/* 비밀번호 변경 */}
-        <button
-          onClick={handleChangePassword}
-              className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
-        >
-              <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
-          비밀번호 변경
-              </p>
-        </button>
-
-            {/* 회원탈퇴 */}
-        <button
-              onClick={handleSecessionClick}
-              className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
-            >
-              <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
-                회원탈퇴
-              </p>
-            </button>
-
-            {/* 로그아웃 */}
-            <button
-              onClick={handleLogout}
-              className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
-            >
-              <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
-                로그아웃
-              </p>
         </button>
       </div>
-    </div>
 
-        {/* Modal */}
-        <Modal
-          isOpen={isModalOpen}
-          onClose={handleModalCancel}
-          title="탈퇴하기"
-          description="잠깐! 회원 탈퇴 시, 현재 보유 중인 포인트는 
+      {/* Account Management Section */}
+      <div className="mt-12 w-full">
+        <p className="text-[19px] text-gray-700 font-medium leading-[1.38] tracking-[-0.76px] mb-6">
+          계정 관리
+        </p>
+
+        {/* Menu Items */}
+        <div className="flex flex-col gap-2 w-full">
+          {/* 계좌 개설하기 */}
+          <button
+            onClick={handleAccountOpen}
+            className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
+          >
+            <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
+              계좌 개설하기
+            </p>
+          </button>
+
+          {/* 포인트 전환하기 */}
+          <button
+            onClick={handlePointTransfer}
+            className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
+          >
+            <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
+              포인트 관리
+            </p>
+          </button>
+
+          {/* 이름 변경하기 */}
+          <button
+            onClick={handleChangeName}
+            className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
+          >
+            <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
+              이름 변경하기
+            </p>
+          </button>
+
+          {/* 비밀번호 변경 */}
+          <button
+            onClick={handleChangePassword}
+            className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
+          >
+            <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
+              비밀번호 변경
+            </p>
+          </button>
+
+          {/* 회원탈퇴 */}
+          <button
+            onClick={handleSecessionClick}
+            className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
+          >
+            <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
+              회원탈퇴
+            </p>
+          </button>
+
+          {/* 로그아웃 */}
+          <button
+            onClick={handleLogout}
+            className="bg-white h-[50px] rounded-[5px] w-full flex items-center pl-0 hover:bg-gray-50 transition-colors"
+          >
+            <p className="text-[16px] text-gray-600 font-normal leading-[1.38] tracking-[-0.64px]">
+              로그아웃
+            </p>
+          </button>
+        </div>
+      </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleModalCancel}
+        title="탈퇴하기"
+        description="잠깐! 회원 탈퇴 시, 현재 보유 중인 포인트는 
         &nbsp;&nbsp;&nbsp;&nbsp;모두 소멸됩니다. 계속 진행하시겠습니까?"
-          confirmText="회원탈퇴"
-          cancelText="취소"
-          onConfirm={handleModalConfirm}
-        />
-      </div>
-    </main>
+        confirmText="회원탈퇴"
+        cancelText="취소"
+        onConfirm={handleModalConfirm}
+      />
+    </PageContainer>
   );
 }

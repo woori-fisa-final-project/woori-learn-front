@@ -35,7 +35,7 @@ export default function Button({
   const fontClass = size === "sm" ? "font-normal" : "font-semibold";
   const trackingClass = size === "sm" ? "tracking-[-0.42px]" : "tracking-[-0.48px]";
 
-  // 인라인 스타일로 모든 색상 적용 (className과 충돌 방지)
+  // 인라인 스타일로 색상 적용
   const getInlineStyles = (): React.CSSProperties => {
     const heightValue = size === 'sm' ? '50px' : size === 'md' ? '55px' : '60px';
     

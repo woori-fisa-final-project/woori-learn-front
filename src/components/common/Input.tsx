@@ -14,6 +14,8 @@ interface InputProps {
   wrapperClassName?: string;
   inputClassName?: string;
   disabled?: boolean;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 }
 
 export default function Input({
@@ -28,6 +30,8 @@ export default function Input({
   wrapperClassName = "",
   inputClassName = "",
   disabled = false,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
 }: InputProps) {
   const [showPassword, setShowPassword] = useState(false);
   const inputType = type === "password" && showPassword ? "text" : type;
@@ -49,7 +53,7 @@ export default function Input({
       <div
         className={`border border-gray-300 rounded-[15px] ${heightClass} ${wrapperClassName || 'w-full'} flex items-center ${
           showEyeIcon ? "justify-between" : ""
-        } px-5`}
+        } px-5 focus-within:border-gray-300`}
       >
         <input
           type={inputType}
@@ -57,7 +61,9 @@ export default function Input({
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className={`flex-1 text-[16px] text-gray-600 font-medium placeholder:text-gray-400 outline-none ${inputClassName}`}
+          aria-invalid={ariaInvalid}
+          aria-describedby={ariaDescribedBy}
+          className={`flex-1 text-[16px] text-gray-600 font-medium placeholder:text-gray-400 outline-none focus:outline-none focus:ring-0 ${inputClassName}`}
         />
         {showEyeIcon && (
           <PasswordToggleIcon

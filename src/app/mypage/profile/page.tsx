@@ -1,5 +1,6 @@
-import Profile from "@/components/figmaMCP/Profile";
+import { redirect } from "next/navigation";
 
 export default function ProfilePage() {
-  return <Profile />;
+  redirect("/mypage");
 }
+

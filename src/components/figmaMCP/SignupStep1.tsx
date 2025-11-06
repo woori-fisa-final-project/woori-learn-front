@@ -45,8 +45,8 @@ export default function SignupStep1({ onBack }: SignupStep1Props) {
   const isIdFilled = id.trim() !== "";
 
   return (
-    <main className="bg-white min-h-screen flex flex-col items-center overflow-x-hidden">
-      <div className="w-full max-w-[390px] mx-auto px-[20px] pt-[60px]">
+    <main className="flex justify-center items-start min-h-screen bg-white overflow-x-hidden">
+      <div className="w-full max-w-[min(100%,_430px)] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px] px-[20px] pt-[60px]">
       {/* Header */}
         <div className="flex items-center gap-2 w-full">
         <button

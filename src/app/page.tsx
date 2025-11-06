@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
+import Image from "next/image";
 const loadingImage = "/images/loading.gif"; // public/images 폴더 안에 이미지 두기
 
 export default function Splash() {
@@ -17,10 +17,13 @@ export default function Splash() {
   return (
     <main className="bg-white min-h-screen flex flex-col items-center overflow-x-hidden">
       <div className="w-full max-w-[390px] mx-auto px-[20px] pt-[60px] flex items-center justify-center min-h-screen">
-      <img
+      <Image
         src={loadingImage}
         alt="로딩 중"
-          className="w-[200px] h-[200px] object-contain max-w-full"
+        width={200}
+        height={200}
+        className="object-contain max-w-full"
+        unoptimized
       />
     </div>
     </main>
