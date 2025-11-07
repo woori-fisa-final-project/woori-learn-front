@@ -12,7 +12,7 @@ const pointIcon = "/images/pointicon.png";
 export default function Profile() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userName, setUserName] = useState("김민영");
+  const [userName, setUserName] = useState("아무개");
   const [availablePoints, setAvailablePoints] = useState(5000);
 
   // localStorage에서 이름 및 포인트 불러오기 (컴포넌트 마운트 및 업데이트 시)
@@ -21,10 +21,10 @@ export default function Profile() {
     if (savedName) {
       setUserName(savedName);
     }
-    
+
     const points = getAvailablePoints();
     setAvailablePoints(points);
-  });
+  }, []); // 👈 의존성 배열 추가
 
   const handleBack = () => {
     router.push("/home");
@@ -189,7 +189,7 @@ export default function Profile() {
         onClose={handleModalCancel}
         title="탈퇴하기"
         description="잠깐! 회원 탈퇴 시, 현재 보유 중인 포인트는 
-        &nbsp;&nbsp;&nbsp;&nbsp;모두 소멸됩니다. 계속 진행하시겠습니까?"
+        모두 소멸됩니다. 계속 진행하시겠습니까?"
         confirmText="회원탈퇴"
         cancelText="취소"
         onConfirm={handleModalConfirm}

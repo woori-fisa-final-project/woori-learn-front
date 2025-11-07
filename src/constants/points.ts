@@ -20,3 +20,4 @@ export const setAvailablePoints = (points: number): void => {
 export const DEFAULT_POINTS = 5000;
 
 
+

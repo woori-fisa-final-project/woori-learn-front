@@ -2,7 +2,7 @@
 
 interface CheckIconProps {
   size?: "sm" | "md" | "lg";
-  color?: "primary" | "green" | "white";
+  // color?: "primary" | "green" | "white";
   active?: boolean;
   className?: string;
   bgColor?: "primary-700" | "green-500" | string;
@@ -25,7 +25,7 @@ const bgColorClasses = {
 
 export default function CheckIcon({
   size = "md",
-  color = "white",
+  // color = "white",
   active = true,
   className = "",
   bgColor = "primary-700",
@@ -52,4 +52,3 @@ export default function CheckIcon({
     </div>
   );
 }
-

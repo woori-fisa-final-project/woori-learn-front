@@ -8,6 +8,8 @@ const checkIcon = "/images/checkicon.svg";
 const logoImage = "/images/logo1.png";
 
 export default function Login() {
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleTogglePassword = () => {
@@ -34,6 +36,8 @@ export default function Login() {
               <input
                 type="text"
                 placeholder="ID"
+                value={id}
+                onChange={(e) => setId(e.target.value)}
                 className="flex-1 text-[16px] text-gray-600 font-medium placeholder:text-gray-400 outline-none"
               />
             </div>
@@ -45,6 +49,8 @@ export default function Login() {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="flex-1 text-[16px] text-gray-600 font-medium placeholder:text-gray-400 outline-none"
               />
               <PasswordToggleIcon

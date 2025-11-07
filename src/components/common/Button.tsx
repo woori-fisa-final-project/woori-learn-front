@@ -33,24 +33,26 @@ export default function Button({
   const widthClass = fullWidth ? "w-full" : "";
 
   const fontClass = size === "sm" ? "font-normal" : "font-semibold";
-  const trackingClass = size === "sm" ? "tracking-[-0.42px]" : "tracking-[-0.48px]";
+  const trackingClass =
+    size === "sm" ? "tracking-[-0.42px]" : "tracking-[-0.48px]";
 
   // 인라인 스타일로 색상 적용
   const getInlineStyles = (): React.CSSProperties => {
-    const heightValue = size === 'sm' ? '50px' : size === 'md' ? '55px' : '60px';
-    
+    const heightValue =
+      size === "sm" ? "50px" : size === "md" ? "55px" : "60px";
+
     const baseStyle: React.CSSProperties = {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      visibility: 'visible',
-      border: 'none',
-      outline: 'none',
-      boxSizing: 'border-box',
-      cursor: disabled ? 'not-allowed' : 'pointer',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      visibility: "visible",
+      border: "none",
+      outline: "none",
+      boxSizing: "border-box",
+      cursor: disabled ? "not-allowed" : "pointer",
       height: heightValue,
       minHeight: heightValue,
-      position: 'relative',
+      position: "relative",
       zIndex: 1,
     };
 
@@ -58,41 +60,41 @@ export default function Button({
       if (variant === "secondary") {
         return {
           ...baseStyle,
-          backgroundColor: '#e8e8e8',
-          color: '#666666',
+          backgroundColor: "#e8e8e8",
+          color: "#666666",
           opacity: 1,
         };
       }
       return {
         ...baseStyle,
-        backgroundColor: '#b4c9e8',
-        color: '#ffffff',
+        backgroundColor: "#b4c9e8",
+        color: "#ffffff",
         opacity: 1,
       };
     }
-    
+
     if (variant === "primary") {
       return {
         ...baseStyle,
-        backgroundColor: '#648ddb',
-        color: '#ffffff',
+        backgroundColor: "#648ddb",
+        color: "#ffffff",
         opacity: 1,
       };
     }
-    
+
     if (variant === "secondary") {
       return {
         ...baseStyle,
-        backgroundColor: '#f5f5f5',
-        color: '#4a4a4a',
+        backgroundColor: "#f5f5f5",
+        color: "#4a4a4a",
         opacity: 1,
       };
     }
-    
+
     return {
       ...baseStyle,
-      backgroundColor: '#648ddb',
-      color: '#ffffff',
+      backgroundColor: "#648ddb",
+      color: "#ffffff",
       opacity: 1,
     };
   };
@@ -105,7 +107,9 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       style={inlineStyles}
-      className={`${widthClass} ${sizeClasses[size]} rounded-[10px] ${fontClass} ${trackingClass} leading-[1.38] transition-colors duration-200 ${className}`.trim().replace(/\s+/g, ' ')}
+      className={`${widthClass} ${sizeClasses[size]} rounded-[10px] ${fontClass} ${trackingClass} leading-[1.38] transition-colors duration-200 ${className}`
+        .trim()
+        .replace(/\s+/g, " ")}
     >
       {children}
     </button>
