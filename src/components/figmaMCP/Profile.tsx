@@ -1,10 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Modal from "@/components/common/Modal";
 import PageHeader from "@/components/common/PageHeader";
 import PageContainer from "@/components/common/PageContainer";
-import { getAvailablePoints } from "@/constants/points";
+import { useUserData } from "@/lib/hooks/useUserData";
 
 const profileImage = "/images/profileicon2.png";
 const pointIcon = "/images/pointicon.png";
@@ -12,19 +12,7 @@ const pointIcon = "/images/pointicon.png";
 export default function Profile() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userName, setUserName] = useState("아무개");
-  const [availablePoints, setAvailablePoints] = useState(5000);
-
-  // localStorage에서 이름 및 포인트 불러오기 (컴포넌트 마운트 및 업데이트 시)
-  useEffect(() => {
-    const savedName = localStorage.getItem("userName");
-    if (savedName) {
-      setUserName(savedName);
-    }
-
-    const points = getAvailablePoints();
-    setAvailablePoints(points);
-  }, []); // 👈 의존성 배열 추가
+  const { userName, availablePoints } = useUserData();
 
   const handleBack = () => {
     router.push("/home");

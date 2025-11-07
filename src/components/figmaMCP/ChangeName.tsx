@@ -5,10 +5,12 @@ import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
 import PageHeader from "@/components/common/PageHeader";
 import PageContainer from "@/components/common/PageContainer";
+import { useUserData } from "@/lib/hooks/useUserData";
 
 export default function ChangeName() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const { updateUserName } = useUserData();
 
   const handleBack = () => {
     router.push("/mypage");
@@ -16,8 +18,8 @@ export default function ChangeName() {
 
   const handleSubmit = () => {
     if (name.trim() !== "") {
-      // localStorage에 이름 저장
-      localStorage.setItem("userName", name.trim());
+      // useUserData 훅의 updateUserName을 사용하여 이름 저장
+      updateUserName(name.trim());
       // Profile 페이지로 이동
       router.push("/mypage");
     }

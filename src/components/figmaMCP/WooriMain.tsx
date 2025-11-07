@@ -1,21 +1,14 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import PageContainer from "@/components/common/PageContainer";
+import { useUserData } from "@/lib/hooks/useUserData";
 
 const backIcon = "/images/backicon.png";
 
 export default function WooriMain() {
   const router = useRouter();
-  const [userName, setUserName] = useState("김민영");
-
-  useEffect(() => {
-    const savedName = localStorage.getItem("userName");
-    if (savedName) {
-      setUserName(savedName);
-    }
-  }, []);
+  const { userName } = useUserData();
 
   const handleBack = () => {
     router.push("/home");

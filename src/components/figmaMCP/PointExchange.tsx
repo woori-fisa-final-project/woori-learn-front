@@ -1,12 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
 import PageHeader from "@/components/common/PageHeader";
 import PageContainer from "@/components/common/PageContainer";
 import AccountInfoBlock from "@/components/common/AccountInfoBlock";
-import { getAvailablePoints } from "@/constants/points";
+import { useUserData } from "@/lib/hooks/useUserData";
 
 const FIXED_BANK = "우리은행";
 const BANK_LOGO = "/images/woori.png";
@@ -15,7 +15,7 @@ export default function PointExchange() {
   const router = useRouter();
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
-  const [availablePoints, setAvailablePoints] = useState(5000);
+  const { availablePoints } = useUserData();
   const [errors, setErrors] = useState<{
     withdrawalAmount?: string;
     accountNumber?: string;
@@ -23,12 +23,6 @@ export default function PointExchange() {
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
-
-  // 보유 포인트 불러오기
-  useEffect(() => {
-    const points = getAvailablePoints();
-    setAvailablePoints(points);
-  }, []);
 
   const handleBack = () => {
     router.push("/mypage");

@@ -6,8 +6,8 @@ interface CheckIconProps {
   active?: boolean;
   className?: string;
   bgColor?: "primary-700" | "green-500" | string;
-  hoverColor?: string;
-  activeColor?: string;
+  // hoverColor?: string;
+  // activeColor?: string;
 }
 
 const checkIconPath = "/images/maincheck.png";
@@ -29,20 +29,23 @@ export default function CheckIcon({
   active = true,
   className = "",
   bgColor = "primary-700",
-  hoverColor,
-  activeColor,
-}: CheckIconProps) {
+}: // hoverColor,
+// activeColor,
+CheckIconProps) {
   const bgClass =
     bgColor in bgColorClasses
       ? bgColorClasses[bgColor as keyof typeof bgColorClasses]
       : bgColor;
 
-  const hoverClass = hoverColor ? `hover:${hoverColor}` : "";
-  const activeClass = activeColor && active ? `active:${activeColor}` : "";
+  // const hoverClass = hoverColor ? `hover:${hoverColor}` : "";
+  // const activeClass = activeColor && active ? `active:${activeColor}` : "";
 
   return (
+    // <div
+    //   className={`${bgClass} rounded-full ${sizeClasses[size]} flex items-center justify-center p-0.5 transition-colors ${hoverClass} ${activeClass} ${className}`}
+    // >
     <div
-      className={`${bgClass} rounded-full ${sizeClasses[size]} flex items-center justify-center p-0.5 transition-colors ${hoverClass} ${activeClass} ${className}`}
+      className={`${bgClass} rounded-full ${sizeClasses[size]} flex items-center justify-center p-0.5 transition-colors ${className}`}
     >
       <img
         alt="체크"
