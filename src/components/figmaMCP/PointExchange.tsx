@@ -159,133 +159,146 @@ export default function PointExchange() {
 
   return (
     <PageContainer>
-      <PageHeader title="포인트 관리" onBack={handleBack} />
+      <div className="flex flex-col h-[calc(100dvh-60px)] w-full max-h-[calc(100dvh-60px)]">
+        {/* 헤더 및 탭 영역 - 고정 */}
+        <div className="flex-shrink-0">
+          <PageHeader title="포인트 관리" onBack={handleBack} />
 
-      {/* Tabs */}
-      <div className="mt-8 w-full flex border-b border-gray-200">
-          <button
-            onClick={handleHistoryTab}
-            className="flex-1 pb-3 text-[16px] font-medium transition-colors text-gray-400 hover:text-primary-400"
-            aria-label="포인트 내역"
-          >
-            포인트 내역
-          </button>
-          <button
-            className="flex-1 pb-3 text-[16px] font-medium transition-colors text-primary-400 border-b-2 border-primary-400"
-            aria-label="포인트 환전"
-            aria-current="page"
-          >
-            포인트 환전
-          </button>
-        </div>
-
-      {/* 보유 포인트 */}
-      <div className="mt-8 w-full">
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex justify-between items-center">
-            <p className="text-[14px] text-gray-600 font-medium">
-              보유 포인트
-            </p>
-            <p className="text-[18px] text-gray-800 font-semibold">
-              {availablePoints.toLocaleString()} p
-            </p>
+          {/* Tabs */}
+          <div className="mt-8 w-full flex border-b border-gray-200">
+            <button
+              onClick={handleHistoryTab}
+              className="flex-1 pb-3 text-[16px] font-medium transition-colors text-gray-400 hover:text-primary-400"
+              aria-label="포인트 내역"
+            >
+              포인트 내역
+            </button>
+            <button
+              className="flex-1 pb-3 text-[16px] font-medium transition-colors text-primary-400 border-b-2 border-primary-400"
+              aria-label="포인트 환전"
+              aria-current="page"
+            >
+              포인트 환전
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* 환전 금액 입력 */}
-      <div className="mt-8 w-full">
-          <Input
-            label="환전 금액"
-            type="text"
-            placeholder="환전할 금액을 입력해주세요"
-            value={
-              withdrawalAmount
-                ? parseInt(withdrawalAmount).toLocaleString()
-                : ""
-            }
-            onChange={handleAmountChange}
-            aria-invalid={!!errors.withdrawalAmount}
-            aria-describedby={
-              errors.withdrawalAmount ? "withdrawal-amount-error" : undefined
-            }
+        {/* 콘텐츠 영역 - 스크롤 가능 */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* 보유 포인트 */}
+          <div className="mt-8 w-full">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <p className="text-[14px] text-gray-600 font-medium">
+                  보유 포인트
+                </p>
+                <p className="text-[18px] font-semibold text-primary-400">
+                  {availablePoints.toLocaleString()} p
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 환전 금액 입력 */}
+          <div className="mt-8 w-full">
+            <Input
+              label="환전 금액"
+              type="text"
+              placeholder="환전할 금액을 입력해주세요"
+              value={
+                withdrawalAmount
+                  ? parseInt(withdrawalAmount).toLocaleString()
+                  : ""
+              }
+              onChange={handleAmountChange}
+              aria-invalid={!!errors.withdrawalAmount}
+              aria-describedby={
+                errors.withdrawalAmount ? "withdrawal-amount-error" : undefined
+              }
+            />
+            {errors.withdrawalAmount && (
+              <p
+                id="withdrawal-amount-error"
+                className="mt-1 text-sm text-red-500"
+                role="alert"
+              >
+                {errors.withdrawalAmount}
+              </p>
+            )}
+          </div>
+
+          {/* 지급 예정 금액 */}
+          {withdrawalAmount && !errors.withdrawalAmount && expectedAmount > 0 && (
+            <div className="mt-5 w-full bg-primary-50 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[14px] text-gray-700 font-medium">
+                  지급 예정 금액
+                </p>
+                <p className="text-[18px] font-semibold text-primary-400">
+                  {formattedExpectedAmount} p
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 계좌 정보 */}
+          <AccountInfoBlock
+            bankName={FIXED_BANK}
+            bankLogo={BANK_LOGO}
+            accountNumber={accountNumber}
+            onAccountNumberChange={handleAccountNumberChange}
+            error={errors.accountNumber}
+            className="mt-8"
           />
-          {errors.withdrawalAmount && (
-            <p
-              id="withdrawal-amount-error"
-              className="mt-1 text-sm text-red-500"
-              role="alert"
-            >
-              {errors.withdrawalAmount}
-            </p>
+
+          {/* 유의사항 */}
+          <div className="mt-8 w-full p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <h3 className="text-[14px] text-gray-700 font-semibold mb-2">
+              유의사항
+            </h3>
+            <ul className="space-y-1 text-[12px] text-gray-600 leading-relaxed">
+              <li>• 환전 신청 후 처리까지 1-2 영업일이 소요됩니다.</li>
+              <li>• 최소 환전 금액은 1p입니다.</li>
+              <li>
+                • 계좌 정보를 정확히 입력해주세요. 잘못된 정보로 인한 손실은
+                책임지지 않습니다.
+              </li>
+              <li>• 환전 신청 후 취소가 불가능합니다.</li>
+            </ul>
+          </div>
+
+          {/* 성공/실패 메시지 */}
+          {submitStatus === "success" && (
+            <div className="mt-4 w-full p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-700 font-medium text-center">
+                환전 신청이 완료되었습니다.
+              </p>
+            </div>
+          )}
+          {submitStatus === "error" && (
+            <div className="mt-4 w-full p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700 font-medium text-center">
+                환전 신청 중 오류가 발생했습니다. 다시 시도해주세요.
+              </p>
+            </div>
           )}
         </div>
 
-      {/* 지급 예정 금액 */}
-      {withdrawalAmount && !errors.withdrawalAmount && expectedAmount > 0 && (
-        <div className="mt-5 w-full bg-primary-50 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-[14px] text-gray-700 font-medium">
-              지급 예정 금액
-            </p>
-            <p className="text-[18px] text-primary-400 font-semibold">
-              {formattedExpectedAmount} p
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* 계좌 정보 */}
-      <AccountInfoBlock
-        bankName={FIXED_BANK}
-        bankLogo={BANK_LOGO}
-        accountNumber={accountNumber}
-        onAccountNumberChange={handleAccountNumberChange}
-        error={errors.accountNumber}
-        className="mt-8"
-      />
-
-      {/* 유의사항 */}
-      <div className="mt-8 w-full p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-        <h3 className="text-[14px] text-gray-700 font-semibold mb-2">
-          유의사항
-        </h3>
-        <ul className="space-y-1 text-[12px] text-gray-600 leading-relaxed">
-          <li>• 환전 신청 후 처리까지 1-2 영업일이 소요됩니다.</li>
-          <li>• 최소 환전 금액은 1p입니다.</li>
-          <li>
-            • 계좌 정보를 정확히 입력해주세요. 잘못된 정보로 인한 손실은
-            책임지지 않습니다.
-          </li>
-          <li>• 환전 신청 후 취소가 불가능합니다.</li>
-        </ul>
-      </div>
-
-      {/* 성공/실패 메시지 */}
-      {submitStatus === "success" && (
-        <div className="mt-4 w-full p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-700 font-medium text-center">
-            환전 신청이 완료되었습니다.
-          </p>
-        </div>
-      )}
-      {submitStatus === "error" && (
-        <div className="mt-4 w-full p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700 font-medium text-center">
-            환전 신청 중 오류가 발생했습니다. 다시 시도해주세요.
-          </p>
-        </div>
-      )}
-
-      {/* 환전 신청 버튼 */}
-      <div className="mt-10 w-full">
-        <Button
-          onClick={handleSubmit}
-          disabled={!isButtonEnabled}
-          aria-label="환전 신청하기"
+        {/* 환전 신청 버튼 - 하단 고정 */}
+        <div 
+          className="w-full mt-6 shrink-0"
+          style={{
+            paddingBottom: "max(20px, env(safe-area-inset-bottom, 20px))",
+          }}
         >
-          환전 신청
-        </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!isButtonEnabled}
+            aria-label="환전 신청하기"
+          >
+            환전 신청
+          </Button>
+        </div>
       </div>
     </PageContainer>
   );

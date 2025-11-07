@@ -19,8 +19,11 @@ export default function Profile() {
   };
 
   const handleAccountOpen = () => {
-    // 계좌 개설 페이지로 이동
-    router.push("/account/open");
+    // 계좌 개설 페이지로 이동 시 단계 초기화
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accountAuthStep");
+    }
+    router.push("/account/open/auth");
   };
 
   const handlePointTransfer = () => {
@@ -95,7 +98,7 @@ export default function Profile() {
               포인트
             </p>
           </div>
-          <p className="text-[17px] text-primary-400/80 font-semibold leading-[1.38] tracking-[-0.34px]">
+          <p className="text-[17px] font-semibold leading-[1.38] tracking-[-0.34px] text-primary-400">
             {availablePoints.toLocaleString()} p
           </p>
         </button>

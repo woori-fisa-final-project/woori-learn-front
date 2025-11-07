@@ -15,8 +15,7 @@ export default function PointHistoryCard({
   type,
   className = "",
 }: PointHistoryCardProps) {
-  const amountColor =
-    type === "earn" ? "text-primary-400" : "text-gray-600";
+  const isEarn = type === "earn";
 
   return (
     <div
@@ -26,7 +25,9 @@ export default function PointHistoryCard({
         <p className="text-[14px] text-gray-600">{date}</p>
         <p className="text-[12px] text-gray-400">{status}</p>
       </div>
-      <p className={`text-[16px] font-semibold ${amountColor}`}>
+      <p className={`text-[16px] font-semibold ${
+        isEarn ? "text-primary-400" : "text-gray-500"
+      }`}>
         {amount} p
       </p>
     </div>

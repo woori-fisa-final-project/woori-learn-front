@@ -88,88 +88,94 @@ export default function PointList() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="포인트 관리"
-        onBack={handleBack}
-        rightElement={
-          <button
-            onClick={handleSearchClick}
-            className="w-6 h-6 flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
-            aria-label="조회조건선택"
-          >
-            <img
-              alt="조회"
-              src={searchIcon}
-              className="w-full h-full object-contain"
-            />
-          </button>
-        }
-      />
+      <div className="flex flex-col h-[calc(100dvh-60px)] w-full max-h-[calc(100dvh-60px)]">
+        <div className="flex-shrink-0">
+          <PageHeader
+            title="포인트 관리"
+            onBack={handleBack}
+            rightElement={
+              <button
+                onClick={handleSearchClick}
+                className="w-6 h-6 flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
+                aria-label="조회조건선택"
+              >
+                <img
+                  alt="조회"
+                  src={searchIcon}
+                  className="w-full h-full object-contain"
+                />
+              </button>
+            }
+          />
 
-      {/* Tabs */}
-      <div className="mt-8 w-full flex border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab("history")}
-            className={`flex-1 pb-3 text-[16px] font-medium transition-colors ${
-              activeTab === "history"
-                ? "text-primary-400 border-b-2 border-primary-400"
-                : "text-gray-400"
-            }`}
-          >
-            포인트 내역
-          </button>
-          <button
-            onClick={handleExchangeTab}
-            className={`flex-1 pb-3 text-[16px] font-medium transition-colors ${
-              activeTab === "exchange"
-                ? "text-primary-400 border-b-2 border-primary-400"
-                : "text-gray-400"
-            }`}
-          >
-            포인트 환전
-          </button>
-        </div>
+          {/* Tabs */}
+          <div className="mt-8 w-full flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab("history")}
+              className={`flex-1 pb-3 text-[16px] font-medium transition-colors ${
+                activeTab === "history"
+                  ? "text-primary-400 border-b-2 border-primary-400"
+                  : "text-gray-400"
+              }`}
+            >
+              포인트 내역
+            </button>
+            <button
+              onClick={handleExchangeTab}
+              className={`flex-1 pb-3 text-[16px] font-medium transition-colors ${
+                activeTab === "exchange"
+                  ? "text-primary-400 border-b-2 border-primary-400"
+                  : "text-gray-400"
+              }`}
+            >
+              포인트 환전
+            </button>
+          </div>
 
-      {/* Filter Info */}
-      {activeTab === "history" && (
-        <div className="mt-5 w-full flex items-center justify-between">
-          <p className="text-[14px] text-gray-500">
-            {filterState.status} / {filterState.sort} / {filterState.period}
-          </p>
-          <button
-            onClick={handleSearchClick}
-            className="w-6 h-6 flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
-            aria-label="조회조건선택"
-          >
-            <img
-              alt="조회"
-              src={searchIcon}
-              className="w-full h-full object-contain"
-            />
-          </button>
-        </div>
-      )}
-
-      {/* Point History List */}
-      {activeTab === "history" && (
-        <div className="mt-5 w-full flex flex-col gap-4">
-          {filteredData.length > 0 ? (
-            filteredData.map((item) => (
-              <PointHistoryCard
-                key={item.id}
-                date={item.date}
-                status={item.status}
-                amount={item.amount}
-                type={item.type}
-              />
-            ))
-          ) : (
-            <div className="w-full p-8 text-center text-gray-500">
-              <p>필터 조건에 맞는 내역이 없습니다.</p>
+          {/* Filter Info */}
+          {activeTab === "history" && (
+            <div className="mt-5 w-full flex items-center justify-between">
+              <p className="text-[14px] text-gray-500">
+                {filterState.status} / {filterState.sort} / {filterState.period}
+              </p>
+              <button
+                onClick={handleSearchClick}
+                className="w-6 h-6 flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
+                aria-label="조회조건선택"
+              >
+                <img
+                  alt="조회"
+                  src={searchIcon}
+                  className="w-full h-full object-contain"
+                />
+              </button>
             </div>
           )}
         </div>
-      )}
+
+        {/* Point History List - 스크롤 가능한 영역 */}
+        {activeTab === "history" && (
+          <div className="flex-1 overflow-y-auto min-h-0 mt-5 w-full">
+            <div className="flex flex-col gap-4 pb-4">
+              {filteredData.length > 0 ? (
+                filteredData.map((item) => (
+                  <PointHistoryCard
+                    key={item.id}
+                    date={item.date}
+                    status={item.status}
+                    amount={item.amount}
+                    type={item.type}
+                  />
+                ))
+              ) : (
+                <div className="w-full p-8 text-center text-gray-500">
+                  <p>필터 조건에 맞는 내역이 없습니다.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Bottom Sheet */}
       <FilterBottomSheet

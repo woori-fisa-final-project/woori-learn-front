@@ -69,7 +69,9 @@ export default function FilterBottomSheet({
         className="bg-white rounded-t-[20px] w-full max-w-[min(100%,_430px)] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px] p-6 animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-[20px] text-gray-700 font-semibold mb-6">조회조건선택</h2>
+        <h2 className="text-[20px] text-gray-700 font-semibold mb-6">
+          조회조건선택
+        </h2>
 
         {/* 조회기간 */}
         <div className="mb-6">
@@ -79,10 +81,10 @@ export default function FilterBottomSheet({
               <button
                 key={period}
                 onClick={() => setSelectedPeriod(period)}
-                className={`flex-1 h-[44px] rounded-[10px] text-[14px] font-medium transition-all border-[1px] ${
+                className={`flex-1 h-[44px] rounded-[10px] text-[14px] font-medium transition-all border-[1px] bg-gray-100 text-gray-500 ${
                   selectedPeriod === period
-                    ? "bg-gray-100 text-gray-500 border-primary-400" 
-                    : "bg-gray-100 text-gray-500 border-gray-100"
+                    ? "border-primary-400"
+                    : "border-gray-100"
                 }`}
               >
                 {period}
@@ -101,7 +103,7 @@ export default function FilterBottomSheet({
                 onClick={() => setSelectedSort(sort)}
                 className={`flex-1 h-[44px] rounded-[10px] text-[14px] font-medium transition-all border-[1px] ${
                   selectedSort === sort
-                    ? "bg-gray-100 text-gray-500 border-primary-400" 
+                    ? "bg-gray-100 text-gray-500 border-primary-400"
                     : "bg-gray-100 text-gray-500 border-gray-100"
                 }`}
               >
@@ -123,10 +125,9 @@ export default function FilterBottomSheet({
                   onClick={() => setSelectedStatus(status)}
                   className={`h-[44px] rounded-[10px] text-[14px] font-medium transition-all border-[1px] ${
                     selectedStatus === status
-                      ? "bg-gray-100 text-gray-500 border-primary-400" 
-                    : "bg-gray-100 text-gray-500 border-gray-100"
+                      ? "bg-gray-100 text-gray-500 border-primary-400"
+                      : "bg-gray-100 text-gray-500 border-gray-100"
                   }`}
-                 
                 >
                   {status}
                 </button>
@@ -140,10 +141,9 @@ export default function FilterBottomSheet({
                   onClick={() => setSelectedStatus(status)}
                   className={`h-[44px] rounded-[10px] text-[14px] font-medium transition-all border-[1px] ${
                     selectedStatus === status
-                      ? "bg-gray-100 text-gray-500 border-primary-400" 
-                    : "bg-gray-100 text-gray-500 border-gray-100"
+                      ? "bg-gray-100 text-gray-500 border-primary-400"
+                      : "bg-gray-100 text-gray-500 border-gray-100"
                   }`}
-                  
                 >
                   {status}
                 </button>
