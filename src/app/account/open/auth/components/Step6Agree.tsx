@@ -215,12 +215,7 @@ export default function Step6Agree({ onNext, onBack }: Step6AgreeProps) {
 
             {/* 상품 안내 수신 방식 선택 */}
             <div className="mt-[20px] w-full px-5 pb-4">
-              <div className="flex items-center gap-2 mb-[16px]">
-                <img
-                  alt="체크"
-                  src="/images/Termchecks.png"
-                  className="w-4 h-4 object-contain opacity-50"
-                />
+              <div className="mb-[16px]">
                 <p className="text-[16px] text-gray-700 font-normal">
                   상품자료 받는 방법(중복선택 가능)
                 </p>

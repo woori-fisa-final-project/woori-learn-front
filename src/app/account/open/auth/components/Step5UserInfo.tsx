@@ -8,19 +8,29 @@ import PageContainer from "@/components/common/PageContainer";
 import { useAccountData } from "@/lib/hooks/useAccountData";
 import { useStepValidation } from "@/lib/hooks/useStepValidation";
 
-// 휴대폰 번호 마스킹 처리 (010-****-****)
+// 휴대폰 번호 마스킹 처리 (가운데 자리만 마스킹)
 const maskPhoneNumber = (phoneNumber: string): string => {
   if (!phoneNumber) return "";
   // 숫자만 추출
   const numbers = phoneNumber.replace(/[^0-9]/g, "");
-  if (numbers.length >= 11) {
-    // 010-1234-5678 형식
-    return `010-${"*".repeat(4)}-${"*".repeat(4)}`;
-  } else if (numbers.length >= 7) {
-    // 010-1234 형식
-    return `010-${"*".repeat(numbers.length - 3)}-${"*".repeat(4)}`;
+  if (numbers.length === 11) {
+    // 010-1234-5678 -> 010-****-5678
+    return `${numbers.slice(0, 3)}-****-${numbers.slice(7)}`;
   }
-  return phoneNumber;
+  if (numbers.length === 10) {
+    // 010-123-4567 -> 010-***-4567
+    return `${numbers.slice(0, 3)}-***-${numbers.slice(6)}`;
+  }
+  if (numbers.length > 3) {
+    // 기타 길이: 앞 3자리 유지, 나머지 중간 자리 마스킹
+    const prefix = numbers.slice(0, 3);
+    const suffixLength = Math.min(4, Math.max(numbers.length - 3, 0));
+    const suffix = numbers.slice(-suffixLength);
+    const middleLength = Math.max(numbers.length - (3 + suffixLength), 0);
+    const middle = "*".repeat(middleLength || 1);
+    return `${prefix}-${middle}-${suffix}`;
+  }
+  return numbers;
 };
 
 interface Step5UserInfoProps {

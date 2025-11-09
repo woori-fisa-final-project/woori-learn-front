@@ -86,13 +86,10 @@ export default function PasswordBottomSheet({
         className="bg-white rounded-t-[20px] w-full max-w-[min(100%,_430px)] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px] p-6 animate-slideUp max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-[20px] text-gray-700 font-semibold mb-2">
-          계좌 비밀번호 등록
-        </h2>
-        <p className="text-[14px] text-gray-500 mb-6">
+        <p className="text-[16px] text-gray-700 font-medium text-center mb-6">
           {step === "password"
-            ? "4자리 숫자 비밀번호를 입력해주세요"
-            : "비밀번호를 한 번 더 입력해주세요"}
+            ? "사용하실 비밀번호 4자리를 입력해주세요."
+            : "다시 한번 입력해 주세요."}
         </p>
 
         {step === "password" ? (
