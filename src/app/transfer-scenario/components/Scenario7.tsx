@@ -21,7 +21,7 @@ export default function Scenario7({ onRestart }: Scenario7Props) {
   const depositAccount = accountNumber || "000-000-000000";
 
   return (
-    <div className="flex min-h-[calc(100dvh-140px)] flex-col items-center px-[20px] pt-[80px]">
+    <div className="flex h-full flex-col items-center pt-[80px]">
       <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#E4EEFF]">
          <span className="text-[32px] text-[#2F6FD9]">✔</span>
       </div>

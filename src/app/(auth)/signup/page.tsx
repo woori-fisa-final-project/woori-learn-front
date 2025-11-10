@@ -15,13 +15,16 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const isAllFieldsFilled = name.trim() !== "" && id.trim() !== "" && password.trim() !== "" && confirmPassword.trim() !== "";
-
+  const isAllFieldsFilled = name.trim() !== "" && id.trim() !== "" && password.trim() !== "" && confirmPassword.trim() !== "" && password === confirmPassword;
   const handleBack = () => {
     router.push("/login");
   };
 
   const handleSignup = () => {
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
     if (isAllFieldsFilled) {
       router.push("/login");
     }

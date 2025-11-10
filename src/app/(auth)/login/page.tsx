@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 import PasswordToggleIcon from "@/components/common/PasswordToggleIcon";
@@ -10,10 +10,31 @@ const logoImage = "/images/logo1.png";
 export default function LoginPage() {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberId, setRememberId] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const savedId = localStorage.getItem("rememberedId");
+    if (savedId) {
+      setId(savedId);
+      setRememberId(true);
+    }
+  }, []);
 
   const handleTogglePassword = () => {
     setShowPassword((prev) => !prev);
+  };
+
+  const handleLogin = () => {
+    if (typeof window !== "undefined") {
+      if (rememberId) {
+        localStorage.setItem("rememberedId", id);
+      } else {
+        localStorage.removeItem("rememberedId");
+      }
+    }
+    // TODO: 로그인 로직 추가 예정
   };
 
   return (
@@ -50,7 +71,13 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-[32px] flex items-center gap-2">
-            <input type="checkbox" id="remember-id" className="h-4 w-4 rounded-sm border-primary-400 text-primary-400 focus:ring-primary-400" />
+            <input
+              type="checkbox"
+              id="remember-id"
+              checked={rememberId}
+              onChange={(event) => setRememberId(event.target.checked)}
+              className="h-4 w-4 rounded-sm border-primary-400 text-primary-400 focus:ring-primary-400"
+            />
             <label htmlFor="remember-id" className="text-[14px] text-gray-600">
               아이디 기억하기
             </label>
@@ -58,7 +85,9 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-[80px]">
-          <Button variant="primary">로그인</Button>
+          <Button variant="primary" onClick={handleLogin}>
+            로그인
+          </Button>
         </div>
 
         <div className="mt-[20px] text-center">

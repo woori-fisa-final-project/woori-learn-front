@@ -18,6 +18,10 @@ export default function ChangePasswordPage() {
   };
 
   const handleSubmit = () => {
+    if (newPassword !== confirmPassword) {
+      alert("새 비밀번호가 일치하지 않습니다.");
+      return;
+    }
     if (currentPassword && newPassword && confirmPassword) {
       router.push("/mypage");
     }

@@ -62,18 +62,7 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-140px)] flex-col">
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex h-[24px] w-[24px] items-center justify-center text-[18px] text-gray-600"
-          aria-label="닫기"
-        >
-          ✕
-        </button>
-      </div>
-
+    <div className="flex h-full flex-col">
       <section className="mt-[32px] space-y-[24px]">
         <div className="flex items-center justify-between">
           <h1 className="text-[22px] font-bold text-gray-900">

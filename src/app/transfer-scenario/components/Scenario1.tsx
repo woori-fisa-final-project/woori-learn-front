@@ -3,7 +3,6 @@
 type Scenario1Props = {
   onOpenBankSheet: () => void;
   onContactTransfer: () => void;
-  onBack: () => void;
 };
 
 const GUIDE_ITEMS = [
@@ -19,20 +18,9 @@ const GUIDE_ITEMS = [
   },
 ];
 
-export default function Scenario1({ onOpenBankSheet, onContactTransfer, onBack }: Scenario1Props) {
+export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenario1Props) {
   return (
-    <div className="flex min-h-[calc(100dvh-140px)] flex-col">
-      <div className="flex h-[44px] w-[44px] flex items-center">
-        <button
-          type="button"
-          onClick={onBack}
-          className="w-[14px] h-[7px] flex items-center justify-center -rotate-90 shrink-0"
-          aria-label="뒤로가기"
-        >
-          <img src="/images/backicon.png" alt="뒤로가기" className="h-full w-full object-contain" />
-        </button>
-      </div>
-
+    <div className="flex h-full flex-col">
       <section className="mt-[18px] space-y-[12px]">
         <h1 className="text-[24px] font-bold text-gray-900">어디로 이체하시겠어요?</h1>
         

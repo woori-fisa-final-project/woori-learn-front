@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import Scenario1 from "./Scenario1";
 import Scenario2 from "./Scenario2";
@@ -22,72 +23,126 @@ export default function ScenarioContainer() {
     return Math.min(Math.max(step, 1), 7);
   }, [step]);
 
-  const goToStep = (target: number) => {
+  const goToStep = useCallback((target: number) => {
     const next = Math.min(Math.max(target, 1), 7);
     setStep(next);
-  };
+  }, []);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setStep(1);
     setBankSheetOpen(false);
     setPasswordSheetOpen(false);
     resetFlow();
     setSelectedBank("국민은행");
-  };
+  }, [resetFlow, setSelectedBank]);
 
-  const handleBackToMain = () => {
+  const handleBackToMain = useCallback(() => {
     handleReset();
     router.push("/woorimain");
-  };
+  }, [handleReset, router]);
+
+  const { setOnBack } = useScenarioHeader();
+
+  useEffect(() => {
+    const handleHeaderBack = () => {
+      if (isPasswordSheetOpen) {
+        setPasswordSheetOpen(false);
+        goToStep(4);
+        return;
+      }
+
+      if (isBankSheetOpen) {
+        setBankSheetOpen(false);
+        goToStep(1);
+        return;
+      }
+
+      if (clampedStep <= 2) {
+        handleBackToMain();
+        return;
+      }
+
+      if (clampedStep === 3) {
+        goToStep(1);
+        return;
+      }
+
+      if (clampedStep === 4 || clampedStep === 5) {
+        goToStep(3);
+        return;
+      }
+
+      if (clampedStep === 6) {
+        goToStep(4);
+        return;
+      }
+
+      if (clampedStep === 7) {
+        handleReset();
+        router.push("/woorimain");
+        return;
+      }
+
+      goToStep(clampedStep - 1);
+    };
+
+    setOnBack(() => handleHeaderBack);
+    return () => {
+      setOnBack(null);
+    };
+  }, [
+    clampedStep,
+    goToStep,
+    handleBackToMain,
+    handleReset,
+    isBankSheetOpen,
+    isPasswordSheetOpen,
+    router,
+    setOnBack,
+  ]);
 
   return (
-    <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-white">
-      <main className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-y-auto px-[20px] pt-[60px]">
-          {clampedStep <= 2 && (
-            <Scenario1
-              onOpenBankSheet={() => {
-                setBankSheetOpen(true);
-                goToStep(2);
-              }}
-              onContactTransfer={() => {}}
-              onBack={handleBackToMain}
-            />
-          )}
-          {clampedStep === 3 && (
-            <Scenario3
-              onNext={() => goToStep(4)}
-              onBack={() => goToStep(1)}
-            />
-          )}
-          {(clampedStep === 4 || (clampedStep === 5 && isPasswordSheetOpen)) && (
-            <Scenario4
-              onNext={() => {
-                setPasswordSheetOpen(true);
-                goToStep(5);
-              }}
-              onBack={() => goToStep(3)}
-            />
-          )}
-          {clampedStep === 6 && (
-            <Scenario6
-              onConfirm={() => goToStep(7)}
-              onReenterAccount={() => goToStep(1)}
-              onReenterAmount={() => goToStep(4)}
-              onCancel={() => goToStep(1)}
-              onBack={() => goToStep(4)}
-            />
-          )}
-          {clampedStep === 7 && (
-            <Scenario7
-              onRestart={() => {
-                handleReset();
-                router.push("/woorimain");
-              }}
-            />
-          )}
-        </div>
-      </main>
+    <div className="relative mx-auto flex h-full w-full max-w-[430px] flex-col bg-white">
+      <div className="flex flex-1 flex-col px-[20px] pb-[24px]">
+        {clampedStep <= 2 && (
+          <Scenario1
+            onOpenBankSheet={() => {
+              setBankSheetOpen(true);
+              goToStep(2);
+            }}
+            onContactTransfer={() => {}}
+          />
+        )}
+        {clampedStep === 3 && (
+          <Scenario3 onNext={() => goToStep(4)} onBack={() => goToStep(1)} />
+        )}
+        {(clampedStep === 4 || (clampedStep === 5 && isPasswordSheetOpen)) && (
+          <Scenario4
+            onNext={() => {
+              setPasswordSheetOpen(true);
+              goToStep(5);
+            }}
+            onBack={() => goToStep(3)}
+          />
+        )}
+        {clampedStep === 6 && (
+          <Scenario6
+            onConfirm={() => goToStep(7)}
+            onReenterAccount={() => goToStep(1)}
+            onReenterAmount={() => goToStep(4)}
+            onCancel={() => goToStep(1)}
+            onBack={() => goToStep(4)}
+          />
+        )}
+        {clampedStep === 7 && (
+          <Scenario7
+            onRestart={() => {
+              handleReset();
+              router.push("/woorimain");
+            }}
+          />
+        )}
+      </div>
 
       {isBankSheetOpen && (
         <Scenario2

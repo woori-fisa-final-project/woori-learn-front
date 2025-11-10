@@ -205,7 +205,7 @@ export default function PointExchangePage() {
             className="mt-8"
           />
 
-          <div className="mt-8 w-full rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+          <div className="mt-6 w-full rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <h3 className="mb-2 text-[14px] font-semibold text-gray-700">유의사항</h3>
             <ul className="space-y-1 text-[12px] leading-relaxed text-gray-600">
               <li>• 환전 신청 후 처리까지 1-2 영업일이 소요됩니다.</li>

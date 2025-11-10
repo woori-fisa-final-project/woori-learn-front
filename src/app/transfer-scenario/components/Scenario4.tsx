@@ -99,26 +99,8 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-140px)] flex-col">
-      <header className="flex items-center justify-between text-[15px] text-gray-600">
-      <button
-          type="button"
-          onClick={onBack}
-          className="w-[14px] h-[7px] flex items-center justify-center -rotate-90 shrink-0"
-          aria-label="뒤로가기"
-        >
-          <img src="/images/backicon.png" alt="뒤로가기" className="h-full w-full object-contain" />
-        </button>
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-[14px] font-medium text-[#2F6FD9]"
-        >
-          취소
-        </button>
-      </header>
-
-      <section className="mt-[32px] space-y-[20px]">
+    <div className="flex h-full flex-col">
+      <section className=" space-y-[20px]">
         <div className="flex items-center gap-[12px]">
           <img
             src="/images/bank1.png"
