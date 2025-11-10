@@ -34,10 +34,10 @@ export default function ExitModal({ isOpen, onClose, onExit }: ExitModalProps) {
         }`}
       >
         <h2 className="text-lg font-semibold text-gray-900">
-          학습을 종료하시겠어요? 🐝
+          학습을 종료하시겠어요?
         </h2>
         <p className="mt-2 text-sm text-gray-500">
-          지금 나가면 진행 중인 내용이 저장되지 않습니다.
+          종료하시려면 나가기 버튼을 눌러주세요{" "}
         </p>
 
         <div className="mt-6 flex items-center gap-3">
@@ -51,7 +51,7 @@ export default function ExitModal({ isOpen, onClose, onExit }: ExitModalProps) {
           <button
             type="button"
             onClick={onExit}
-            className="flex-1 rounded-xl bg-[#2482C5] py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#1E6FB1]"
+            className="flex-1 rounded-xl bg-[#648DDB] py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#1E6FB1]"
           >
             나가기
           </button>

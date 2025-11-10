@@ -6,14 +6,17 @@ export const metadata: Metadata = {
   description: "Splash test",
 };
 
+// 브라우저 가로 스크롤을 막고 모든 하위 페이지를 렌더링합니다.
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko"> {/* 문서 전체의 언어를 한국어로 지정합니다. */}
-      <body className="overflow-x-hidden">{children}</body> {/* 브라우저 가로 스크롤을 막고 모든 하위 페이지를 렌더링합니다. */}
+    <html lang="ko">
+      <body className="overflow-x-hidden">{children}</body>
+      {/* 브라우저 가로 스크롤을 막고 모든 하위 페이지를 렌더링합니다.*/}
     </html>
   );
 }
