@@ -1,3 +1,8 @@
+/**
+ * [SECURITY UPDATE] Gemini feedback 적용
+ * - Replaced intrusive alert with inline error messaging
+ * - Maintained UX consistency with signup form validation
+ */
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -12,6 +17,7 @@ export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleBack = () => {
     router.push("/mypage");
@@ -19,10 +25,13 @@ export default function ChangePasswordPage() {
 
   const handleSubmit = () => {
     if (newPassword !== confirmPassword) {
-      alert("새 비밀번호가 일치하지 않습니다.");
+      setError("새 비밀번호가 일치하지 않습니다. 다시 확인해주세요.");
       return;
     }
+
+    setError("");
     if (currentPassword && newPassword && confirmPassword) {
+      // NOTE: 실제 비밀번호 변경은 서버 측 검증 및 처리 후에만 허용되어야 합니다.
       router.push("/mypage");
     }
   };
@@ -70,6 +79,12 @@ export default function ChangePasswordPage() {
           showEyeIcon
         />
       </div>
+
+      {error && (
+        <p className="mt-2 text-sm font-medium text-red-500" role="alert">
+          {error}
+        </p>
+      )}
 
       <div className="mt-10 w-full">
         <Button onClick={handleSubmit} disabled={!isButtonEnabled}>

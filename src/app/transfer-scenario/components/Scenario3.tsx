@@ -47,11 +47,7 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
 
   const handleNext = () => {
     if (!isValid) return;
-    if (cleanedInput === TARGET_ACCOUNT.replace(/[^0-9]/g, "")) {
-      setRecipientName("김집주");
-    } else {
-      setRecipientName("나누구");
-    }
+    // recipientName is already managed in useEffect
     onNext();
   };
 
