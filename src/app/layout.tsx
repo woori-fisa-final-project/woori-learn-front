@@ -16,7 +16,6 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="overflow-x-hidden">{children}</body>
-      {/* 브라우저 가로 스크롤을 막고 모든 하위 페이지를 렌더링합니다.*/}
     </html>
   );
 }
