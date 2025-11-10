@@ -1,15 +1,15 @@
-"use client";
-import { ReactNode } from "react";
+"use client"; // 버튼 클릭과 상태 변경을 처리하므로 클라이언트 전용으로 선언합니다.
+import { ReactNode } from "react"; // 버튼 안에 표시할 JSX 콘텐츠를 받기 위해 ReactNode 타입을 사용합니다.
 
 interface ButtonProps {
-  children: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  variant?: "primary" | "secondary";
-  size?: "sm" | "md" | "lg";
-  fullWidth?: boolean;
-  className?: string;
-  type?: "button" | "submit" | "reset";
+  children: ReactNode; // 버튼에 렌더링할 텍스트 또는 요소입니다.
+  onClick?: () => void; // 버튼 클릭 시 실행할 핸들러입니다.
+  disabled?: boolean; // 비활성화 상태 여부입니다.
+  variant?: "primary" | "secondary"; // 스타일 테마를 구분하는 옵션입니다.
+  size?: "sm" | "md" | "lg"; // 버튼의 높이와 텍스트 크기를 결정합니다.
+  fullWidth?: boolean; // 버튼이 부모 너비를 모두 차지할지 여부입니다.
+  className?: string; // 추가 스타일 클래스를 주입하기 위한 속성입니다.
+  type?: "button" | "submit" | "reset"; // 버튼 타입을 명시합니다.
 }
 
 export default function Button({
@@ -32,16 +32,16 @@ export default function Button({
   // 너비 설정
   const widthClass = fullWidth ? "w-full" : "";
 
-  const fontClass = size === "sm" ? "font-normal" : "font-semibold";
+  const fontClass = size === "sm" ? "font-normal" : "font-semibold"; // 버튼 크기에 따라 글꼴 두께를 변화시킵니다.
   const trackingClass =
-    size === "sm" ? "tracking-[-0.42px]" : "tracking-[-0.48px]";
+    size === "sm" ? "tracking-[-0.42px]" : "tracking-[-0.48px]"; // 글자 간격을 크기별로 세밀하게 조정합니다.
 
   // 인라인 스타일로 색상 적용
   const getInlineStyles = (): React.CSSProperties => {
     const heightValue =
       size === "sm" ? "50px" : size === "md" ? "55px" : "60px";
 
-    const baseStyle: React.CSSProperties = {
+    const baseStyle: React.CSSProperties = { // 모든 변형에서 공통으로 사용하는 기본 스타일 속성입니다.
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -56,7 +56,7 @@ export default function Button({
       zIndex: 1,
     };
 
-    if (disabled) {
+    if (disabled) { // 비활성화된 상태에서는 배경과 글자 색을 고정하고 커서를 금지 표시로 변경합니다.
       if (variant === "secondary") {
         return {
           ...baseStyle,
@@ -73,7 +73,7 @@ export default function Button({
       };
     }
 
-    if (variant === "primary") {
+    if (variant === "primary") { // 기본(primary) 변형일 때 파란색 계열 배경과 흰색 텍스트를 적용합니다.
       return {
         ...baseStyle,
         backgroundColor: "#648ddb",
@@ -82,7 +82,7 @@ export default function Button({
       };
     }
 
-    if (variant === "secondary") {
+    if (variant === "secondary") { // 보조(secondary) 변형일 때는 밝은 회색 배경과 어두운 글자색을 적용합니다.
       return {
         ...baseStyle,
         backgroundColor: "#f5f5f5",
@@ -91,7 +91,7 @@ export default function Button({
       };
     }
 
-    return {
+    return { // 정의되지 않은 변형은 기본(primary) 스타일로 처리합니다.
       ...baseStyle,
       backgroundColor: "#648ddb",
       color: "#ffffff",
@@ -99,7 +99,7 @@ export default function Button({
     };
   };
 
-  const inlineStyles = getInlineStyles();
+  const inlineStyles = getInlineStyles(); // 변형과 상태를 반영한 인라인 스타일을 계산합니다.
 
   return (
     <button

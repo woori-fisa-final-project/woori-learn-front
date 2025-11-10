@@ -1,13 +1,13 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 선언하여 상태 및 브라우저 기능을 사용할 수 있도록 합니다.
 
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import PageHeader from "@/components/common/PageHeader";
-import PageContainer from "@/components/common/PageContainer";
-import PointHistoryCard from "@/components/common/PointHistoryCard";
-import FilterBottomSheet from "@/components/common/FilterBottomSheet";
+import { useRouter } from "next/navigation"; // 페이지 전환을 처리하기 위해 라우터를 사용합니다.
+import { useMemo, useState } from "react"; // 필터 상태와 결과를 관리하기 위해 상태와 메모 훅을 사용합니다.
+import PageHeader from "@/components/common/PageHeader"; // 상단 헤더 UI를 담당하는 공통 컴포넌트입니다.
+import PageContainer from "@/components/common/PageContainer"; // 전체 페이지 레이아웃을 감싸는 컨테이너입니다.
+import PointHistoryCard from "@/components/common/PointHistoryCard"; // 포인트 내역 하나를 표시하는 카드 컴포넌트입니다.
+import FilterBottomSheet from "@/components/common/FilterBottomSheet"; // 필터 조건을 선택할 수 있는 바텀 시트입니다.
 
-const searchIcon = "/images/search.png";
+const searchIcon = "/images/search.png"; // 조회 조건 버튼에 사용할 검색 아이콘입니다.
 
 const pointHistoryData: Array<{
   id: number;
@@ -25,41 +25,41 @@ const pointHistoryData: Array<{
 ];
 
 export default function PointListPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"history" | "exchange">("history");
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-  const [filterState, setFilterState] = useState({ period: "3개월", sort: "최신순", status: "전체" });
+  const router = useRouter(); // 다른 페이지로 이동하기 위한 라우터 인스턴스입니다.
+  const [activeTab, setActiveTab] = useState<"history" | "exchange">("history"); // 현재 선택된 탭 상태입니다.
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false); // 필터 바텀 시트 열림 여부를 관리합니다.
+  const [filterState, setFilterState] = useState({ period: "3개월", sort: "최신순", status: "전체" }); // 필터 조건 상태입니다.
 
   const handleBack = () => {
-    router.push("/mypage");
+    router.push("/mypage"); // 뒤로가기 시 마이페이지로 이동합니다.
   };
 
   const handleSearchClick = () => {
-    setIsBottomSheetOpen(true);
+    setIsBottomSheetOpen(true); // 조회 조건 버튼 클릭 시 바텀 시트를 엽니다.
   };
 
   const handleBottomSheetClose = () => {
-    setIsBottomSheetOpen(false);
+    setIsBottomSheetOpen(false); // 바텀 시트를 닫습니다.
   };
 
   const handleFilterApply = (filters: { period: string; sort: string; status: string }) => {
-    setFilterState(filters);
-    setIsBottomSheetOpen(false);
+    setFilterState(filters); // 선택된 필터 조건을 저장합니다.
+    setIsBottomSheetOpen(false); // 적용 후 바텀 시트를 닫습니다.
   };
 
   const handleExchangeTab = () => {
-    router.push("/points/exchange");
+    router.push("/points/exchange"); // 환전 탭 선택 시 환전 페이지로 이동합니다.
   };
 
   const filteredData = useMemo(() => {
-    let filtered = [...pointHistoryData];
+    let filtered = [...pointHistoryData]; // 원본 데이터를 복사해 필터링합니다.
 
     if (filterState.status !== "전체") {
-      filtered = filtered.filter((item) => item.status === filterState.status);
+      filtered = filtered.filter((item) => item.status === filterState.status); // 상태 조건이 전체가 아니면 해당 상태만 남깁니다.
     }
 
     const now = new Date();
-    const startDate = new Date(now);
+    const startDate = new Date(now); // 기간 필터의 시작 날짜를 계산하기 위해 현재 날짜 기준으로 설정합니다.
     switch (filterState.period) {
       case "1주일":
         startDate.setDate(startDate.getDate() - 7);
@@ -83,7 +83,7 @@ export default function PointListPage() {
     filtered.sort((a, b) => {
       const dateA = new Date(a.date.replace(/\./g, "-")).getTime();
       const dateB = new Date(b.date.replace(/\./g, "-")).getTime();
-      return filterState.sort === "최신순" ? dateB - dateA : dateA - dateB;
+      return filterState.sort === "최신순" ? dateB - dateA : dateA - dateB; // 정렬 조건에 따라 최신/과거 순으로 정렬합니다.
     });
 
     return filtered;
@@ -98,7 +98,7 @@ export default function PointListPage() {
             onBack={handleBack}
           />
 
-          <div className="mt-8 flex w-full border-b border-gray-200">
+          <div className="mt-8 flex w/full border-b border-gray-200">
             <button
               onClick={() => setActiveTab("history")}
               className={`flex-1 pb-3 text-[16px] font-medium transition-colors ${

@@ -1,39 +1,39 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 선언하여 상태와 브라우저 API를 사용할 수 있도록 합니다.
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import Input from "@/components/common/Input";
-import Button from "@/components/common/Button";
-import PageHeader from "@/components/common/PageHeader";
-import PageContainer from "@/components/common/PageContainer";
-import AccountInfoBlock from "@/components/common/AccountInfoBlock";
-import { useUserData } from "@/lib/hooks/useUserData";
+import { useRouter } from "next/navigation"; // 페이지 이동을 위해 Next.js 라우터 훅을 사용합니다.
+import { useState } from "react"; // 입력값과 상태를 관리하기 위해 React 상태 훅을 사용합니다.
+import Input from "@/components/common/Input"; // 공통 입력 컴포넌트를 가져옵니다.
+import Button from "@/components/common/Button"; // 제출 버튼에 사용할 공통 버튼입니다.
+import PageHeader from "@/components/common/PageHeader"; // 페이지 상단 헤더를 표시합니다.
+import PageContainer from "@/components/common/PageContainer"; // 전체 레이아웃을 감싸는 컨테이너입니다.
+import AccountInfoBlock from "@/components/common/AccountInfoBlock"; // 계좌 정보 입력 블록 UI를 재사용합니다.
+import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 포인트 데이터를 제공하는 커스텀 훅입니다.
 
-const FIXED_BANK = "우리은행";
-const BANK_LOGO = "/images/woori.png";
+const FIXED_BANK = "우리은행"; // 환전 계좌가 연결될 은행명을 고정값으로 정의합니다.
+const BANK_LOGO = "/images/woori.png"; // 은행 로고 이미지 경로입니다.
 
 export default function PointExchangePage() {
-  const router = useRouter();
-  const [withdrawalAmount, setWithdrawalAmount] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const { availablePoints } = useUserData();
-  const [errors, setErrors] = useState<{ withdrawalAmount?: string; accountNumber?: string }>({});
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const router = useRouter(); // 라우터를 이용해 다른 페이지로 이동합니다.
+  const [withdrawalAmount, setWithdrawalAmount] = useState(""); // 환전 금액 입력값을 문자열로 저장합니다.
+  const [accountNumber, setAccountNumber] = useState(""); // 입금받을 계좌번호 입력값을 저장합니다.
+  const { availablePoints } = useUserData(); // 현재 사용자의 보유 포인트를 가져옵니다.
+  const [errors, setErrors] = useState<{ withdrawalAmount?: string; accountNumber?: string }>({}); // 각 입력 필드의 에러 메시지를 관리합니다.
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle"); // 제출 결과 상태를 표시하기 위한 값입니다.
 
   const handleBack = () => {
-    router.push("/mypage");
+    router.push("/mypage"); // 뒤로가기 시 마이페이지로 이동합니다.
   };
 
   const handleHistoryTab = () => {
-    router.push("/points/list");
+    router.push("/points/list"); // 포인트 내역 탭으로 전환합니다.
   };
 
-  const expectedAmount = withdrawalAmount ? parseInt(withdrawalAmount.replace(/,/g, "")) : 0;
-  const formattedExpectedAmount = expectedAmount.toLocaleString();
+  const expectedAmount = withdrawalAmount ? parseInt(withdrawalAmount.replace(/,/g, "")) : 0; // 입력된 환전 금액을 정수로 계산합니다.
+  const formattedExpectedAmount = expectedAmount.toLocaleString(); // 지급 예정 금액을 천 단위 구분 기호와 함께 표시합니다.
 
   const validateForm = () => {
-    const newErrors: typeof errors = {};
-    const amount = parseInt(withdrawalAmount.replace(/,/g, ""));
+    const newErrors: typeof errors = {}; // 각 입력 항목의 에러 메시지를 저장할 객체입니다.
+    const amount = parseInt(withdrawalAmount.replace(/,/g, "")); // 쉼표를 제거한 후 금액을 숫자로 변환합니다.
 
     if (!withdrawalAmount) {
       newErrors.withdrawalAmount = "환전 금액을 입력해주세요.";
@@ -56,9 +56,9 @@ export default function PointExchangePage() {
   };
 
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/[^0-9]/g, "");
-    setWithdrawalAmount(value);
-    setSubmitStatus("idle");
+    const value = event.target.value.replace(/[^0-9]/g, ""); // 숫자가 아닌 문자를 제거합니다.
+    setWithdrawalAmount(value); // 입력값을 상태에 반영합니다.
+    setSubmitStatus("idle"); // 입력이 변경되면 제출 상태를 초기화합니다.
 
     if (value) {
       const amount = parseInt(value);
@@ -89,9 +89,9 @@ export default function PointExchangePage() {
   };
 
   const handleAccountNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/[^0-9-]/g, "");
-    setAccountNumber(value);
-    setSubmitStatus("idle");
+    const value = event.target.value.replace(/[^0-9-]/g, ""); // 숫자와 하이픈만 허용합니다.
+    setAccountNumber(value); // 계좌번호 상태를 갱신합니다.
+    setSubmitStatus("idle"); // 입력 이후 제출 상태를 초기화합니다.
 
     if (value && !/^\d+(-?\d+)*$/.test(value)) {
       setErrors((prev) => ({
@@ -114,7 +114,7 @@ export default function PointExchangePage() {
 
   const handleSubmit = () => {
     if (validateForm()) {
-      setSubmitStatus("idle");
+      setSubmitStatus("idle"); // 제출 직전 상태를 초기화합니다.
 
       try {
         console.log("환전 신청 완료", {
@@ -134,7 +134,7 @@ export default function PointExchangePage() {
     }
   };
 
-  const isButtonEnabled = withdrawalAmount && accountNumber.trim() && Object.keys(errors).length === 0;
+  const isButtonEnabled = withdrawalAmount && accountNumber.trim() && Object.keys(errors).length === 0; // 두 필드가 채워지고 에러가 없을 때 버튼을 활성화합니다.
 
   return (
     <PageContainer>

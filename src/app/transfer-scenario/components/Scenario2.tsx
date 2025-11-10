@@ -1,11 +1,11 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 선언하여 바텀 시트 상호작용을 처리합니다.
 
 type Scenario2Props = {
-  onSelect: (bankName: string) => void;
-  onClose: () => void;
+  onSelect: (bankName: string) => void; // 은행을 선택했을 때 상위 단계로 전달하는 콜백입니다.
+  onClose: () => void; // 바텀 시트를 닫을 때 호출되는 콜백입니다.
 };
 
-const BANK_ITEMS = [
+const BANK_ITEMS = [ // 화면에 보여줄 은행 목록과 사용 가능 여부를 정적 데이터로 정의합니다.
   { name: "우리은행", image: "/images/bank1.png", disabled: true },
   { name: "농협은행", image: "/images/bank2.png", disabled: true },
   { name: "국민은행", image: "/images/bank3.png", disabled: false },
@@ -26,7 +26,7 @@ export default function Scenario2({ onSelect, onClose }: Scenario2Props) {
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
       onClick={(event) => {
         if (event.target === event.currentTarget) {
-          onClose();
+          onClose(); // 바텀 시트 외부 영역을 클릭하면 시트를 닫습니다.
         }
       }}
     >
@@ -35,7 +35,7 @@ export default function Scenario2({ onSelect, onClose }: Scenario2Props) {
           <h2 className="text-[18px] font-semibold text-gray-900">은행을 선택해주세요</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={onClose} // 닫기 버튼을 클릭하면 시트를 닫습니다.
             className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gray-100 text-[16px] text-gray-500"
             aria-label="닫기"
           >
@@ -49,7 +49,7 @@ export default function Scenario2({ onSelect, onClose }: Scenario2Props) {
                 key={bank.name}
                 type="button"
                 disabled={bank.disabled}
-                onClick={() => !bank.disabled && onSelect(bank.name)}
+                onClick={() => !bank.disabled && onSelect(bank.name)} // 사용 가능할 때만 선택 콜백을 실행합니다.
                 className={`flex h-[85px] w-[108px] flex-col items-center justify-center rounded-[20px]  bg-gray-50 text-[13px] font-medium text-gray-600 transition ${
                   !bank.disabled ? "hover:border-[#2F6FD9] hover:text-[#2F6FD9]" : ""
                 }`}

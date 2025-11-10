@@ -1,12 +1,12 @@
-"use client";
+"use client"; // 이 컴포넌트가 입력 이벤트 등 클라이언트 전용 기능을 사용함을 명시합니다.
 
 interface AccountInfoBlockProps {
-  bankName: string;
-  bankLogo: string;
-  accountNumber: string;
-  onAccountNumberChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  error?: string;
-  className?: string;
+  bankName: string; // 표시할 은행 이름입니다.
+  bankLogo: string; // 은행 로고 이미지 경로입니다.
+  accountNumber: string; // 현재 입력된 계좌번호 값입니다.
+  onAccountNumberChange: (e: React.ChangeEvent<HTMLInputElement>) => void; // 계좌번호 입력 변경을 상위에서 처리하기 위한 핸들러입니다.
+  error?: string; // 계좌번호 유효성 검사 결과 메시지입니다.
+  className?: string; // 외부에서 추가로 전달받는 스타일 클래스입니다.
 }
 
 export default function AccountInfoBlock({
@@ -17,6 +17,7 @@ export default function AccountInfoBlock({
   error,
   className = "",
 }: AccountInfoBlockProps) {
+  // 전달받은 계좌 정보와 오류 상태를 기반으로 입력 필드를 구성합니다.
   return (
     <div className={`w-full ${className}`}>
       <label className="block text-[16px] text-gray-600 font-medium mb-3">

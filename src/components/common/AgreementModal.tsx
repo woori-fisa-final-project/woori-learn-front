@@ -1,11 +1,11 @@
-"use client";
-import Button from "@/components/common/Button";
+"use client"; // 모달 열림 상태를 클라이언트에서 제어하므로 클라이언트 전용으로 선언합니다.
+import Button from "@/components/common/Button"; // 모달 하단에 표시될 공통 버튼입니다.
 
 interface AgreementModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  content: string;
+  isOpen: boolean; // 모달 표시 여부를 제어하는 플래그입니다.
+  onClose: () => void; // 모달을 닫기 위한 콜백 함수입니다.
+  title: string; // 모달 상단에 표시될 제목입니다.
+  content: string; // 본문 스크롤 영역에 표시할 약관 내용입니다.
 }
 
 export default function AgreementModal({
@@ -14,10 +14,10 @@ export default function AgreementModal({
   title,
   content,
 }: AgreementModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) return null; // 닫혀 있는 상태에서는 아무 것도 렌더링하지 않습니다.
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget) { // 오버레이 영역을 직접 클릭했을 때만 모달을 닫습니다.
       onClose();
     }
   };

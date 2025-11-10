@@ -1,15 +1,15 @@
-"use client";
-import { useState, useEffect } from "react";
-import Button from "@/components/common/Button";
+"use client"; // 바텀 시트 열림 상태와 스크롤 잠금을 제어하므로 클라이언트 전용으로 선언합니다.
+import { useState, useEffect } from "react"; // 필터 선택 상태와 바텀 시트 생명주기를 관리합니다.
+import Button from "@/components/common/Button"; // 초기화 및 적용 버튼으로 커스텀 버튼 컴포넌트를 사용합니다.
 
 interface FilterBottomSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onApply: (filters: { period: string; sort: string; status: string }) => void;
+  isOpen: boolean; // 바텀 시트가 열렸는지 여부입니다.
+  onClose: () => void; // 바깥 영역 클릭 등으로 시트를 닫을 때 호출되는 콜백입니다.
+  onApply: (filters: { period: string; sort: string; status: string }) => void; // 선택된 필터 값을 상위 컴포넌트로 전달합니다.
   initialFilters: {
-    period: string;
-    sort: string;
-    status: string;
+    period: string; // 초기 조회 기간 값입니다.
+    sort: string; // 초기 정렬 기준입니다.
+    status: string; // 초기 상태 필터입니다.
   };
 }
 
@@ -19,35 +19,35 @@ export default function FilterBottomSheet({
   onApply,
   initialFilters,
 }: FilterBottomSheetProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState(initialFilters.period);
-  const [selectedSort, setSelectedSort] = useState(initialFilters.sort);
-  const [selectedStatus, setSelectedStatus] = useState(initialFilters.status);
+  const [selectedPeriod, setSelectedPeriod] = useState(initialFilters.period); // 현재 선택된 조회 기간입니다.
+  const [selectedSort, setSelectedSort] = useState(initialFilters.sort); // 현재 선택된 정렬 기준입니다.
+  const [selectedStatus, setSelectedStatus] = useState(initialFilters.status); // 현재 선택된 상태 필터입니다.
 
   useEffect(() => {
     if (isOpen) {
       setSelectedPeriod(initialFilters.period);
       setSelectedSort(initialFilters.sort);
       setSelectedStatus(initialFilters.status);
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "hidden"; // 시트가 열려 있을 때 배경 스크롤을 방지합니다.
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "unset"; // 닫히면 원래 스크롤 상태로 복구합니다.
     }
 
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "unset"; // 컴포넌트 언마운트 시에도 스크롤 잠금이 남지 않도록 처리합니다.
     };
   }, [isOpen, initialFilters]);
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget) { // 배경을 직접 클릭했을 때만 시트를 닫습니다.
       onClose();
     }
   };
 
   const handleReset = () => {
-    setSelectedPeriod("3개월");
-    setSelectedSort("최신순");
-    setSelectedStatus("전체");
+    setSelectedPeriod("3개월"); // 기본 조회 기간으로 되돌립니다.
+    setSelectedSort("최신순"); // 기본 정렬 기준으로 되돌립니다.
+    setSelectedStatus("전체"); // 상태 필터를 전체로 되돌립니다.
   };
 
   const handleApply = () => {
@@ -58,7 +58,7 @@ export default function FilterBottomSheet({
     });
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) return null; // 닫혀 있으면 아무 것도 렌더링하지 않습니다.
 
   return (
     <div

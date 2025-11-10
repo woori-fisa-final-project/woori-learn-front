@@ -1,8 +1,8 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 렌더링하여 상태와 이벤트를 활용합니다.
 
 type Scenario1Props = {
-  onOpenBankSheet: () => void;
-  onContactTransfer: () => void;
+  onOpenBankSheet: () => void; // 계좌번호 입력 바텀 시트를 여는 콜백입니다.
+  onContactTransfer: () => void; // 연락처 이체 버튼 클릭 시 실행할 콜백입니다.
 };
 
 const GUIDE_ITEMS = [
@@ -21,11 +21,13 @@ const GUIDE_ITEMS = [
 export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenario1Props) {
   return (
     <div className="flex h-full flex-col">
+      {/* 타이틀 영역: 사용자에게 이체 목적을 묻는 문구를 표시합니다. */}
       <section className="mt-[18px] space-y-[12px]">
         <h1 className="text-[24px] font-bold text-gray-900">어디로 이체하시겠어요?</h1>
         
       </section>
 
+      {/* 계좌번호 입력 버튼 및 추천/자주/내계좌 탭 메뉴 */}
       <section className="mt-[24px] space-y-[12px]">
         <button
           type="button"
@@ -55,6 +57,7 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
         </div>
       </section>
 
+      {/* 최근 입금 계좌 목록 헤더 영역 */}
       <section className="mt-[28px] flex items-center justify-between">
         <span className="text-[22px] font-semibold text-gray-500">최근입금계좌</span>
         <button type="button" className="text-[18px] text-gray-400" onClick={() => {}}>
@@ -62,12 +65,14 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
         </button>
       </section>
 
+      {/* 최근 이체 내역이 없을 때 빈 상태 안내를 보여줍니다. */}
       <section className="mt-[20px] flex flex-1 flex-col items-center justify-center  ">
           <img src="/images/file.png" alt="파일 아이콘" className="h-[66px] w-[54px]" />
-        
+
         <p className="mt-[16px] text-[16px] font-semibold text-gray-400">최근 이체 내역이 없어요</p>
       </section>
 
+      {/* 연락처를 선택하여 이체 플로우로 이동하는 버튼 */}
       <div className="mt-[20px] flex items-center justify-center">
         <button
           type="button"

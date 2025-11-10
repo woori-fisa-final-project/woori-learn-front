@@ -1,29 +1,29 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 선언하여 상태/라우터 등 브라우저 기능을 사용합니다.
 
-import { useRouter } from "next/navigation";
-import ServiceCardGrid from "@/components/common/ServiceCardGrid";
-import ProgressBar from "@/components/common/ProgressBar";
-import ProgressCard from "@/components/common/ProgressCard";
+import { useRouter } from "next/navigation"; // 페이지 전환을 위해 Next.js 라우터를 사용합니다.
+import ServiceCardGrid from "@/components/common/ServiceCardGrid"; // 서비스 카드 목록을 그리드 형태로 보여주는 공통 컴포넌트입니다.
+import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도를 단계별로 나타내는 프로그레스 바입니다.
+import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
 
-const logoImage = "/images/logo1.png";
-const accountImage = "/images/account-image.png";
-const utilityImage = "/images/utility-image.png";
-const savingsImage = "/images/savings-image.png";
-const loanImage = "/images/loan-image.png";
-const profileIcon = "/images/profileicon.png";
+const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
+const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
+const utilityImage = "/images/utility-image.png"; // 공과금 카드 이미지입니다.
+const savingsImage = "/images/savings-image.png"; // 예/적금 카드 이미지입니다.
+const loanImage = "/images/loan-image.png"; // 대출 카드 이미지입니다.
+const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용하는 아이콘입니다.
 
 export default function HomePage() {
-  const router = useRouter();
+  const router = useRouter(); // 페이지 이동 처리를 위해 라우터 인스턴스를 가져옵니다.
 
   const handleProfileClick = () => {
-    router.push("/mypage");
+    router.push("/mypage"); // 프로필 버튼 클릭 시 마이페이지로 이동합니다.
   };
 
   const handleAccountClick = () => {
-    router.push("/woorimain");
+    router.push("/woorimain"); // 계좌 조회/이체 서비스 카드를 눌렀을 때 우리 메인 화면으로 이동합니다.
   };
 
-  const serviceCards = [
+  const serviceCards = [ // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
     {
       title: "계좌 조회/\n이체",
       bgColor: "bg-primary-500",
@@ -35,7 +35,7 @@ export default function HomePage() {
       rounded: "rounded-[10px]",
       imageWidth: "66px",
       imageHeight: "59px",
-      onClick: handleAccountClick,
+      onClick: handleAccountClick, // 클릭 시 계좌 관련 시나리오 진입으로 이동합니다.
     },
     {
       title: "공과금",
@@ -75,7 +75,7 @@ export default function HomePage() {
     },
   ];
 
-  const progressSteps = [
+  const progressSteps = [ // 전체 진행도를 나타내는 5단계 프로그레스 바 구성입니다.
     { label: "계좌이체", bgColor: "primary-700" as const, textColor: "gray-500" as const },
     { label: "공과금", bgColor: "primary-700" as const, textColor: "gray-500" as const },
     { label: "예/적금", bgColor: "primary-700" as const, textColor: "gray-500" as const },
@@ -83,7 +83,7 @@ export default function HomePage() {
     { label: "마무리퀴즈", bgColor: "green-500" as const, textColor: "green-500" as const },
   ];
 
-  const progressCards = [
+  const progressCards = [ // 각 교육 카테고리별 진행도 카드 데이터를 정의합니다.
     { title: "거래내역 조회", progress: 50 },
     { title: "공과금", progress: 100 },
     { title: "예/적금", progress: 100 },
@@ -93,6 +93,7 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
       <div className="w-full max-w-[390px] px-5 pt-[60px] pb-0 sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+        {/* 상단 로고와 프로필 영역 */}
         <div className="flex w-full items-center justify-between">
           <div className="relative h-[58px] w-[100px]">
             <img alt="로고" className="h-full w-full object-contain" src={logoImage} />
@@ -106,16 +107,20 @@ export default function HomePage() {
           </button>
         </div>
 
+        {/* 서비스 카드 그리드 */}
         <ServiceCardGrid cards={serviceCards} className="mt-10" />
 
+        {/* 전체 달성률 제목 */}
         <div className="mt-8 w-full">
           <h2 className="text-[18px] font-bold text-gray-600">전체 달성률</h2>
         </div>
 
+        {/* 진행률 바 */}
         <div className="mt-3">
           <ProgressBar steps={progressSteps} />
         </div>
 
+        {/* 교육별 진행도 카드 리스트 */}
         <div className="mt-0 w-full">
           <h2 className="mb-4 text-[18px] font-bold text-gray-600">교육별 진행도</h2>
           <div className="flex flex-col gap-[12px]">

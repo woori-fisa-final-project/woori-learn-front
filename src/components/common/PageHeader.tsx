@@ -1,12 +1,12 @@
-"use client";
-import { ReactNode } from "react";
+"use client"; // 헤더의 뒤로가기 버튼 등 상호작용을 처리하기 위해 클라이언트 전용으로 선언합니다.
+import { ReactNode } from "react"; // 우측 커스텀 요소를 받기 위해 ReactNode 타입을 사용합니다.
 
 interface PageHeaderProps {
-  title: string;
-  onBack?: () => void;
-  rightElement?: ReactNode;
-  titleSize?: "sm" | "md" | "lg";
-  className?: string;
+  title: string; // 헤더 중앙에 표시할 제목입니다.
+  onBack?: () => void; // 뒤로가기 버튼 클릭 시 실행할 콜백입니다.
+  rightElement?: ReactNode; // 헤더 오른쪽에 배치할 추가 요소입니다.
+  titleSize?: "sm" | "md" | "lg"; // 제목의 타이포 크기를 선택합니다.
+  className?: string; // 외부에서 전달하는 추가 클래스입니다.
 }
 
 const backIcon = "/images/backicon.png";
@@ -36,7 +36,7 @@ export default function PageHeader({
             <img
               alt="뒤로가기"
               className="w-[14px] h-[7px] object-contain"
-              src={backIcon}
+              src={backIcon} // 공통 뒤로가기 아이콘 이미지를 사용합니다.
             />
           </button>
         )}

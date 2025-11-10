@@ -1,11 +1,11 @@
-"use client";
-import { useState, useEffect } from "react";
-import NumericKeypad from "@/components/common/NumericKeypad";
+"use client"; // 비밀번호 입력 상태를 관리하므로 클라이언트 전용으로 선언합니다.
+import { useState, useEffect } from "react"; // 단계 전환과 비밀번호 상태를 관리합니다.
+import NumericKeypad from "@/components/common/NumericKeypad"; // 숫자 입력을 위한 공통 키패드 컴포넌트입니다.
 
 interface PasswordBottomSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (password: string) => void;
+  isOpen: boolean; // 바텀 시트 열림 여부입니다.
+  onClose: () => void; // 사용자가 바깥을 클릭하거나 닫기 동작을 했을 때 호출할 콜백입니다.
+  onConfirm: (password: string) => void; // 비밀번호가 두 번 일치했을 때 상위에서 처리할 콜백입니다.
 }
 
 export default function PasswordBottomSheet({
@@ -13,10 +13,10 @@ export default function PasswordBottomSheet({
   onClose,
   onConfirm,
 }: PasswordBottomSheetProps) {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [step, setStep] = useState<"password" | "confirm">("password");
+  const [password, setPassword] = useState(""); // 첫 번째 비밀번호 입력 값입니다.
+  const [confirmPassword, setConfirmPassword] = useState(""); // 두 번째 확인 입력 값입니다.
+  const [error, setError] = useState(""); // 두 입력이 일치하지 않을 때 보여줄 에러 메시지입니다.
+  const [step, setStep] = useState<"password" | "confirm">("password"); // 현재 진행 중인 단계(입력/확인)를 추적합니다.
 
   // 비밀번호가 4자리 입력되면 자동으로 다음 단계로 이동
   useEffect(() => {
@@ -58,11 +58,11 @@ export default function PasswordBottomSheet({
   };
 
   const handleClose = () => {
-    setPassword("");
+    setPassword(""); // 내부 입력 상태를 초기화합니다.
     setConfirmPassword("");
     setError("");
     setStep("password");
-    onClose();
+    onClose(); // 바텀 시트를 닫도록 상위 콜백을 호출합니다.
   };
 
   const handlePasswordChange = (value: string) => {
@@ -71,7 +71,7 @@ export default function PasswordBottomSheet({
   };
 
   const handleConfirmPasswordChange = (value: string) => {
-    setConfirmPassword(value);
+    setConfirmPassword(value); // 확인 단계 입력값을 업데이트합니다.
     setError("");
   };
 
