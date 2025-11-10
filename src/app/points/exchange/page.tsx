@@ -35,12 +35,12 @@ export default function PointExchangePage() {
     const newErrors: typeof errors = {};
     const amount = parseInt(withdrawalAmount.replace(/,/g, ""));
 
-    if (!withdrawalAmount || amount <= 0) {
+    if (!withdrawalAmount) {
       newErrors.withdrawalAmount = "환전 금액을 입력해주세요.";
-    } else if (amount > availablePoints) {
-      newErrors.withdrawalAmount = `보유 포인트(${availablePoints.toLocaleString()}p)를 초과할 수 없습니다.`;
     } else if (amount < 1) {
       newErrors.withdrawalAmount = "최소 환전 금액은 1p입니다.";
+    } else if (amount > availablePoints) {
+      newErrors.withdrawalAmount = `보유 포인트(${availablePoints.toLocaleString()}p)를 초과할 수 없습니다.`;
     }
 
     if (!accountNumber.trim()) {
