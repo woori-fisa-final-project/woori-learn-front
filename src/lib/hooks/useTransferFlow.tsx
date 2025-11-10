@@ -1,7 +1,16 @@
+/**
+ * [SECURITY UPDATE] Gemini feedback 적용
+ * - Removed hardcoded account owner metadata
+ * - Documented requirement to source user/session data securely
+ */
 "use client";
 import { ReactNode, createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useUserData } from "@/lib/hooks/useUserData";
 
+const DEV_FALLBACK_ACCOUNT = process.env.NEXT_PUBLIC_DEV_SOURCE_ACCOUNT ?? "";
+const DEV_FALLBACK_USER_NAME = process.env.NEXT_PUBLIC_DEV_USER_NAME ?? "사용자";
+
+// NOTE: This context should eventually pull from a secure user session provider.
 type TransferFlowContextValue = {
   selectedBank: string | null;
   setSelectedBank: (bank: string | null) => void;
@@ -47,9 +56,6 @@ const DEFAULT_STATE = {
   amount: 0,
 };
 
-const SOURCE_ACCOUNT_NUMBER = "1002-356-789012";
-const FALLBACK_USER_NAME = "김우리";
-
 export function TransferFlowProvider({ children }: { children: ReactNode }) {
   const [selectedBank, setSelectedBank] = useState<string | null>(DEFAULT_STATE.selectedBank);
   const [accountNumber, setAccountNumber] = useState(DEFAULT_STATE.accountNumber);
@@ -79,8 +85,9 @@ export function TransferFlowProvider({ children }: { children: ReactNode }) {
       setRecipientName,
       amount,
       setAmount,
-      currentUserName: userName || FALLBACK_USER_NAME,
-      sourceAccountNumber: SOURCE_ACCOUNT_NUMBER,
+      currentUserName: userName?.trim() || DEV_FALLBACK_USER_NAME,
+      sourceAccountNumber: DEV_FALLBACK_ACCOUNT,
+      // TODO: Replace DEV_FALLBACK_ACCOUNT with session-derived account metadata fetched from a secure API.
       resetFlow,
     }),
     [

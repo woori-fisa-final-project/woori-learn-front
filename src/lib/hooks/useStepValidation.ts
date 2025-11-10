@@ -1,30 +1,37 @@
+/**
+ * [SECURITY UPDATE] Gemini feedback 적용
+ * - Wrapped localStorage access to avoid trusting tampered client state
+ * - Documented requirement for server-side step validation
+ */
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-/**
- * 계좌 개설 단계별 접근 검증 Hook
- * @param currentStep 현재 단계 번호 (1-8)
- * @param requiredStep 이전 단계에서 완료되어야 하는 단계 번호 (Step1은 검증 불필요)
- */
+// NOTE: Client-side validation is convenience only. Server must re-validate critical flows.
 export function useStepValidation(currentStep: number, requiredStep?: number) {
   const router = useRouter();
 
   useEffect(() => {
-    // Step1은 검증 불필요
     if (currentStep === 1) {
       return;
     }
 
-    // requiredStep이 제공되지 않은 경우, currentStep - 1을 기본값으로 사용
     const required = requiredStep ?? currentStep - 1;
 
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
       const savedStep = Number(localStorage.getItem("accountAuthStep") || 1);
-      if (savedStep < required) {
+      // NOTE: This redirect is for UX only; server-side step validation must gatekeep actual access.
+      if (Number.isNaN(savedStep) || savedStep < required) {
         router.push("/account/open/auth");
-        return;
       }
+    } catch (error) {
+      console.warn("[useStepValidation] Failed to read accountAuthStep from localStorage:", error);
+      // TODO: Fetch authoritative step data from secure API endpoint (e.g. /api/account/auth/step).
+      router.push("/account/open/auth");
     }
   }, [router, currentStep, requiredStep]);
 }
