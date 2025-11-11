@@ -6,11 +6,13 @@ import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext"; // 시�
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우에서 공유하는 상태(출금 계좌 번호 등)를 가져옵니다.
 
 const QUICK_FILTERS = [
+  // 빠르게 필터를 토글할 수 있도록 라벨과 활성 여부를 정리한 배열입니다.
   { label: "입출금", active: true },
   { label: "우리금융그룹", active: false },
 ];
 
 const ACCOUNT_CARDS = [
+  // 화면에 노출될 각 계좌 카드를 정의하고, 필요 시 추가 정보를 포함합니다.
   {
     title: "WON통장",
     bank: "우리",
@@ -36,7 +38,7 @@ export default function Scenario8() {
   const { sourceAccountNumber } = useTransferFlow(); // 사용자가 선택한 출금 계좌 번호를 가져옵니다.
 
   useEffect(() => {
-    setTitle("전체계좌");
+    setTitle("전체계좌"); // 목록 화면이라는 것을 헤더에서 명확히 보여 줍니다.
     setOnBack(() => () => {
       router.push("/woorimain"); // 시나리오 8에서 뒤로가기를 누르면 항상 우리메인 화면으로 이동하도록 고정합니다.
     });
@@ -48,6 +50,7 @@ export default function Scenario8() {
   }, [router, setOnBack, setTitle]);
 
   const renderAccountNumber = (item: (typeof ACCOUNT_CARDS)[number]) => {
+    // 출금 계좌 카드를 렌더링할 때는 컨텍스트에서 최신 번호를 꺼내고, 그렇지 않으면 카드에 정의된 값을 표시합니다.
     if (item.accountKey === "source") {
       return sourceAccountNumber; // 출금 계좌 카드일 때는 컨텍스트에 저장된 계좌번호를 사용합니다.
     }
@@ -55,8 +58,8 @@ export default function Scenario8() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col">
-      <main className="flex-1 overflow-y-auto px-[20px] pb-[40px]">
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col"> {/* 모바일 해상도를 기준으로 한 가운데 정렬된 래퍼입니다. */}
+      <main className="flex-1 overflow-y-auto px-[20px] pb-[40px]"> {/* 스크롤 가능한 실제 콘텐츠 영역입니다. */}
         {/* 탭 네비게이션 영역 */}
         <section className="mt-[24px] flex items-center justify-between">
           <nav className="flex items-center gap-[12px] text-[15px] font-semibold">

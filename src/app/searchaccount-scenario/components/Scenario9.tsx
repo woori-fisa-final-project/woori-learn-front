@@ -67,7 +67,10 @@ const MOCK_TRANSACTIONS: Transaction[] = [
 ];
 
 function formatKoreanDate(date: Date) {
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}.${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function subMonths(base: Date, months: number) {
@@ -108,8 +111,12 @@ export default function Scenario9() {
     };
   }, []);
 
-  const [filters, setFilters] = useState<FilterState>(() => createDefaultFilters()); // 실제로 적용된 필터 상태입니다.
-  const [draftFilters, setDraftFilters] = useState<FilterState>(() => createDefaultFilters()); // 바텀시트에서 임시로 조정 중인 필터입니다.
+  const [filters, setFilters] = useState<FilterState>(() =>
+    createDefaultFilters()
+  ); // 실제로 적용된 필터 상태입니다.
+  const [draftFilters, setDraftFilters] = useState<FilterState>(() =>
+    createDefaultFilters()
+  ); // 바텀시트에서 임시로 조정 중인 필터입니다.
 
   useEffect(() => {
     // 헤더의 뒤로가기 버튼을 누르면 시나리오 8 단계로 복귀하도록 설정합니다.
@@ -172,13 +179,20 @@ export default function Scenario9() {
     return sorted;
   }, [appliedFilters]);
 
-  const displayRange = `${formatKoreanDate(appliedFilters.start)}~${formatKoreanDate(appliedFilters.end)}`;
+  const displayRange = `${formatKoreanDate(
+    appliedFilters.start
+  )}~${formatKoreanDate(appliedFilters.end)}`;
   const totalAmount = useMemo(() => {
-    return filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+    return filteredTransactions.reduce(
+      (sum, transaction) => sum + transaction.amount,
+      0
+    );
   }, [filteredTransactions]);
 
   const groupedTransactions = useMemo(() => {
-    return filteredTransactions.reduce<Array<{ label: string; items: Transaction[] }>>((groups, transaction) => {
+    return filteredTransactions.reduce<
+      Array<{ label: string; items: Transaction[] }>
+    >((groups, transaction) => {
       const [year, month] = transaction.date.split("-");
       const monthNumber = Number(month);
       const label = `${year}년 ${monthNumber}월`;
@@ -204,7 +218,9 @@ export default function Scenario9() {
 
   const handleSelectPeriod = useCallback(
     (period: PeriodLabel) => {
-      const selectedOption = PERIOD_OPTIONS.find((option) => option.label === period);
+      const selectedOption = PERIOD_OPTIONS.find(
+        (option) => option.label === period
+      );
       if (!selectedOption) {
         return;
       }
@@ -215,7 +231,7 @@ export default function Scenario9() {
         endDate: new Date(today),
       }));
     },
-    [today],
+    [today]
   );
 
   const handleApplyFilters = useCallback(() => {
@@ -226,11 +242,14 @@ export default function Scenario9() {
   const handleSelectTransaction = useCallback(
     (transaction: Transaction) => {
       if (typeof window !== "undefined") {
-        sessionStorage.setItem(TRANSACTION_STORAGE_KEY, JSON.stringify(transaction));
+        sessionStorage.setItem(
+          TRANSACTION_STORAGE_KEY,
+          JSON.stringify(transaction)
+        );
       }
       router.push("/searchaccount-scenario?step=10");
     },
-    [router],
+    [router]
   );
 
   return (
@@ -271,7 +290,9 @@ export default function Scenario9() {
           <div className="flex flex-wrap items-center justify-between gap-[12px] text-[13px] text-gray-600">
             <span>{displayRange}</span>
             <div className="flex items-center gap-[8px]">
-              <span>{filters.period === "맞춤기간" ? "맞춤기간" : filters.period}</span>
+              <span>
+                {filters.period === "맞춤기간" ? "맞춤기간" : filters.period}
+              </span>
               <span className="text-gray-400">·</span>
               <span>{filters.type}</span>
               <span className="text-gray-400">·</span>
@@ -282,7 +303,11 @@ export default function Scenario9() {
                 className="inline-flex items-center justify-center bg-transparent p-0 text-gray-600 align-middle"
                 aria-label="조회 조건 열기"
               >
-                <img src="/images/search.png" alt="조회" className="h-[18px] w-[18px] object-contain grayscale" />
+                <img
+                  src="/images/search.png"
+                  alt="조회"
+                  className="h-[18px] w-[18px] object-contain grayscale"
+                />
               </button>
             </div>
           </div>
@@ -291,7 +316,7 @@ export default function Scenario9() {
             <div className="flex items-center justify-between">
               <span>기간 내 합계</span>
               <span className="text-[15px] font-semibold text-gray-900">
-              {totalAmount > 0
+                {totalAmount > 0
                   ? `+${totalAmount.toLocaleString()}원`
                   : `${totalAmount.toLocaleString()}원`}
               </span>
@@ -303,7 +328,9 @@ export default function Scenario9() {
         <section className="mt-[28px]">
           {groupedTransactions.map((group) => (
             <div key={group.label} className="mb-[20px]">
-              <h2 className="text-[16px] font-semibold text-gray-900">{group.label}</h2>
+              <h2 className="text-[16px] font-semibold text-gray-900">
+                {group.label}
+              </h2>
               <ul className="mt-[16px] space-y-[12px]">
                 {group.items.map((transaction) => (
                   <li
@@ -324,10 +351,14 @@ export default function Scenario9() {
                       </span>
                     </div>
                     <div className="mt-[10px] flex items-baseline justify-between">
-                      <p className="text-[15px] text-gray-900">{transaction.description}</p>
+                      <p className="text-[15px] text-gray-900">
+                        {transaction.description}
+                      </p>
                       <p
                         className={`text-[18px] font-semibold ${
-                          transaction.amount >= 0 ? "text-[#2F6FD9]" : "text-gray-900"
+                          transaction.amount >= 0
+                            ? "text-[#2F6FD9]"
+                            : "text-gray-900"
                         }`}
                       >
                         {transaction.amount >= 0
@@ -368,7 +399,9 @@ export default function Scenario9() {
           {/* 바텀시트 */}
           <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-[24px] bg-white p-[24px] shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-[16px] font-semibold text-gray-900">조회조건선택</h3>
+              <h3 className="text-[16px] font-semibold text-gray-900">
+                조회조건선택
+              </h3>
               <button
                 type="button"
                 onClick={handleCloseBottomSheet}
@@ -381,7 +414,9 @@ export default function Scenario9() {
 
             <div className="mt-[20px] space-y-[24px]">
               <section>
-                <h4 className="text-[14px] font-medium text-gray-700">조회기간</h4>
+                <h4 className="text-[14px] font-medium text-gray-700">
+                  조회기간
+                </h4>
                 <div className="mt-[12px] grid grid-cols-4 gap-[10px]">
                   {PERIOD_OPTIONS.map((option) => (
                     <button
@@ -398,12 +433,12 @@ export default function Scenario9() {
                     </button>
                   ))}
                 </div>
-
-                
               </section>
 
               <section>
-                <h4 className="text-[14px] font-medium text-gray-700">거래구분</h4>
+                <h4 className="text-[14px] font-medium text-gray-700">
+                  거래구분
+                </h4>
                 <div className="mt-[12px] flex items-center gap-[10px]">
                   {TRANSACTION_TYPE_TABS.map((tab) => (
                     <button
@@ -416,7 +451,9 @@ export default function Scenario9() {
                         }))
                       }
                       className={`rounded-[12px] px-[14px] py-[10px] text-[13px] ${
-                        draftFilters.type === tab ? "bg-[#2F6FD9] text-white" : "bg-[#F5F6F8] text-gray-600"
+                        draftFilters.type === tab
+                          ? "bg-[#2F6FD9] text-white"
+                          : "bg-[#F5F6F8] text-gray-600"
                       }`}
                     >
                       {tab}
@@ -439,7 +476,9 @@ export default function Scenario9() {
                         }))
                       }
                       className={`rounded-[12px] px-[14px] py-[10px] text-[13px] ${
-                        draftFilters.sortOrder === tab ? "bg-[#2F6FD9] text-white" : "bg-[#F5F6F8] text-gray-600"
+                        draftFilters.sortOrder === tab
+                          ? "bg-[#2F6FD9] text-white"
+                          : "bg-[#F5F6F8] text-gray-600"
                       }`}
                     >
                       {tab}
@@ -447,7 +486,6 @@ export default function Scenario9() {
                   ))}
                 </div>
               </section>
-
             </div>
 
             <div className="mt-[28px] flex items-center gap-[12px]">
@@ -474,4 +512,3 @@ export default function Scenario9() {
     </div>
   );
 }
-
