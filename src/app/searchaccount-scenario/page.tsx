@@ -14,11 +14,15 @@ export default function SearchAccountScenarioPage() {
   const searchParams = useSearchParams(); // 현재 URL의 쿼리 파라미터를 읽습니다.
   const step = searchParams.get("step"); // step 값이 "9"인 경우 거래내역 조회 화면을 노출합니다.
 
+  const scenarios: { [key: string]: React.ReactNode } = {
+    "9": <Scenario9 />,
+    "10": <Scenario10 />,
+  };
+
   return (
     <TransferFlowProvider>
       {/* 이체 시나리오와 동일한 컨텍스트를 재사용하여 계좌 정보 연동을 유지합니다. */}
-      {step === "9" ? <Scenario9 /> : step === "10" ? <Scenario10 /> : <Scenario8 />} {/* 기본은 시나리오 8, step=9일 때 시나리오 9, step=10일 때 상세 화면을 렌더링합니다. */}
+      {(step && scenarios[step]) || <Scenario8 />}
     </TransferFlowProvider>
   );
 }
-
