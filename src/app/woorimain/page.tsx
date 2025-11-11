@@ -136,10 +136,12 @@ function ServiceMenuSheet({
             aria-label="뒤로가기"
             className="flex h-[24px] w-[24px] items-center justify-center"
           >
-            <img
+             <Image
               src="/images/backicon.png"
               alt="뒤로가기"
-              className="h-[12px] w-[12px] -rotate-90 object-contain"
+              width={12}
+              height={12}
+              className="-rotate-90 object-contain"
             />
           </button>
           <div className="text-center">
@@ -152,7 +154,6 @@ function ServiceMenuSheet({
             alt="설정"
             width={16}
             height={16}
-           
           />
         </header>
 
@@ -163,7 +164,6 @@ function ServiceMenuSheet({
               alt="검색"
               width={13}
               height={13}
-              
             />
             <input
               type="text"
@@ -185,19 +185,22 @@ function ServiceMenuSheet({
 
         <nav className="mt-[28px] flex-1 overflow-y-auto px-[20px] pb-[24px]">
           <ul className="mt-[16px] space-y-[20px] text-[16px] text-gray-800">
-            {SERVICE_MENU_ITEMS.map((item) => (
-              <li
-                key={item}
-                className="cursor-pointer transition hover:text-primary-500"
-                onClick={() => {
-                  if (item === "자동이체") {
-                    onNavigate("/automaticpayment-scenario");
-                    onClose();
-                    return;
-                  }
-                }}
-              >
-                {item}
+          {SERVICE_MENU_ITEMS.map((item) => (
+              <li key={item}>
+                <button
+                  type="button"
+                  className="w-full cursor-pointer text-left transition hover:text-primary-500"
+                  onClick={() => {
+                    if (item === "자동이체") {
+                      onNavigate("/automaticpayment-scenario");
+                      onClose();
+                      return;
+                    }
+                    alert(`${item} 메뉴는 준비 중입니다.`);
+                  }}
+                >
+                  {item}
+                </button>
               </li>
             ))}
           </ul>

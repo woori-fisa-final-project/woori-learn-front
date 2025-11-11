@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import Button from "@/components/common/Button";
 import BottomSheet from "@/components/common/BottomSheet";
+import Image from "next/image";
 
 export type AutoTransferInfo = {
   status: string;
@@ -62,7 +63,7 @@ export default function Scenario11({
   };
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col bg-white">
+    <div className="mx-auto flex min-h-[85dvh] w-full max-w-[390px] flex-col bg-white">
       <main className="flex h-full flex-1 flex-col px-[20px] pb-[24px]">
         <section className="mt-[26px] space-y-[14px]">
           <div className="flex items-start justify-between">
@@ -106,7 +107,6 @@ export default function Scenario11({
             size="md"
             onClick={handleRegister}
             fullWidth
-            className="mt-[260px]"
           >
             자동이체 등록하기
           </Button>
@@ -142,10 +142,11 @@ export default function Scenario11({
 function EmptyState() {
   return (
     <div className=" mt-[60px] flex flex-col items-center justify-center text-center">
-      <img
+        <Image
         src="/images/file.png"
         alt="빈 상태"
-        className="h-[70px] w-[56px]"
+        width={56}
+        height={70}
       />
       <p className="mt-[18px] text-[15px] text-gray-500">
         등록된 자동이체가 없어요
