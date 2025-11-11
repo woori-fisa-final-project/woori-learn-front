@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터를 사용합니다.
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다.
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 type NavItem = {
   label: string;
@@ -40,7 +42,7 @@ const QUICK_MENU = [
   { label: "분실 신고", icon: "🚨" },
 ];
 
-function HeaderUserBar({ userName }: { userName?: string }) {
+function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu: () => void }) {
   // 상단 사용자 인사 영역입니다.
   return (
     <header className="mb-[30px] flex items-center justify-between">
@@ -57,11 +59,151 @@ function HeaderUserBar({ userName }: { userName?: string }) {
         <span role="img" aria-label="notification">
           🔔
         </span>
-        <span role="img" aria-label="menu">
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          className="flex h-[28px] w-[28px] items-center justify-center rounded-full text-[22px] transition hover:bg-gray-100"
+          aria-label="전체 메뉴 열기"
+        >
           ☰
-        </span>
+        </button>
       </div>
     </header>
+  );
+}
+
+const MENU_TAGS = ["뱅킹", "상품", "생활혜택", "안내지원", "부가서비스"];
+
+const SERVICE_MENU_ITEMS = [
+  "이체/출금",
+  "즉시/예약이체",
+  "다건이체",
+  "이체내역조회",
+  "자동이체",
+  "계좌이동서비스",
+  "더치페이",
+  "ATM/영업점출금",
+  "착오송금반환",
+];
+
+function ServiceMenuSheet({
+  isOpen,
+  onClose,
+  userName,
+  onNavigate,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  userName?: string;
+  onNavigate: (route: string) => void;
+}) {
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isVisible, setIsVisible] = useState(isOpen);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setIsVisible(true));
+      });
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setShouldRender(false), 220);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`fixed inset-0 z-[60] flex justify-end bg-black/40 transition-opacity duration-200 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <button type="button" className="flex-1" aria-label="메뉴 닫기" onClick={onClose} />
+      <div
+        className={`flex h-full w-2/3 max-w-[260px] flex-col bg-white shadow-2xl transition-transform duration-200 ${
+          isVisible ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <header className="flex items-center justify-between px-[20px] pt-[24px] pb-[12px]">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="뒤로가기"
+            className="flex h-[24px] w-[24px] items-center justify-center"
+          >
+            <img
+              src="/images/backicon.png"
+              alt="뒤로가기"
+              className="h-[12px] w-[12px] -rotate-90 object-contain"
+            />
+          </button>
+          <div className="text-center">
+            <p className="text-[16px] font-semibold text-gray-900">
+              {userName ? `${userName} 님` : "김우리 님"}
+            </p>
+          </div>
+          <Image
+            src="/images/setting.png"
+            alt="설정"
+            width={16}
+            height={16}
+           
+          />
+        </header>
+
+        <div className="px-[20px]">
+          <div className="flex items-center rounded-[12px] border border-gray-200 px-[12px]">
+            <Image
+              src="/images/readingglasses.png"
+              alt="검색"
+              width={13}
+              height={13}
+              
+            />
+            <input
+              type="text"
+              placeholder="메뉴, 상품 등을 검색해 보세요"
+              className="ml-[8px] h-[42px] flex-1 bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 focus:outline-none"
+            />
+          </div>
+          <div className="mt-[16px] flex flex-wrap gap-[8px] text-[12px]">
+            {MENU_TAGS.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-[12px] bg-gray-100 px-[12px] py-[6px] text-gray-600"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <nav className="mt-[28px] flex-1 overflow-y-auto px-[20px] pb-[24px]">
+          <ul className="mt-[16px] space-y-[20px] text-[16px] text-gray-800">
+            {SERVICE_MENU_ITEMS.map((item) => (
+              <li
+                key={item}
+                className="cursor-pointer transition hover:text-primary-500"
+                onClick={() => {
+                  if (item === "자동이체") {
+                    onNavigate("/automaticpayment-scenario");
+                    onClose();
+                    return;
+                  }
+                }}
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </div>
   );
 }
 
@@ -213,9 +355,18 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
 export default function WooriMainPage() {
   const router = useRouter(); // 버튼 클릭 시 이동을 처리하기 위해 라우터를 사용합니다.
   const { userName } = useUserData(); // 사용자 이름을 가져와 헤더에 표시합니다.
+  const [isMenuOpen, setMenuOpen] = useState(false);
 
   const handleNavigate = (route: string) => {
     router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
+  };
+
+  const handleOpenMenu = () => {
+    setMenuOpen(true);
+  };
+
+  const handleCloseMenu = () => {
+    setMenuOpen(false);
   };
 
   const handleTransfer = () => {
@@ -231,7 +382,7 @@ export default function WooriMainPage() {
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col">
         {/* 사용자 인사 헤더 */}
         <div className="px-[20px] pt-[60px]">
-          <HeaderUserBar userName={userName} />
+          <HeaderUserBar userName={userName} onOpenMenu={handleOpenMenu} />
         </div>
         <main className="flex-1 overflow-y-auto px-[20px] pb-[140px]">
           <div className="space-y-[24px] pb-[24px]">
@@ -251,6 +402,12 @@ export default function WooriMainPage() {
       </div>
       {/* 하단 네비게이션 */}
       <BottomNav onNavigate={handleNavigate} />
+      <ServiceMenuSheet
+        isOpen={isMenuOpen}
+        onClose={handleCloseMenu}
+        userName={userName}
+        onNavigate={handleNavigate}
+      />
     </div>
   );
 }

@@ -27,7 +27,7 @@ export default function Scenario11({
   autoTransferInfo,
 }: Scenario11Props) {
   const router = useRouter();
-  const { setOnBack, setTitle, setScrollLocked } = useScenarioHeader();
+  const { setOnBack, setTitle } = useScenarioHeader();
   const [isSheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -35,14 +35,12 @@ export default function Scenario11({
     setOnBack(() => () => {
       router.push("/woorimain");
     });
-    setScrollLocked(true);
 
     return () => {
       setTitle("");
       setOnBack(null);
-      setScrollLocked(false);
     };
-  }, [router, setOnBack, setScrollLocked, setTitle]);
+  }, [router, setOnBack, setTitle]);
 
   const handleRegister = () => {
     setSheetOpen(true);

@@ -35,10 +35,10 @@ export default function BottomSheet({
       zIndex="z-[100]"
     >
       {/* ✅ Overlay 자체가 fixed inset-0로 되어 있다고 가정 */}
-      <div className="absolute bottom-0 left-1/2 w-full max-w-[390px] -translate-x-1/2 animate-slideUp rounded-t-[20px] bg-white pb-[24px] shadow-2xl">
+      <div className="absolute bottom-0 left-1/2 w-full max-w-[390px] -translate-x-1/2 animate-slideUp rounded-t-[20px] bg-white pb-[50px] shadow-2xl">
         {(title || showCloseButton) && (
           <header className="flex items-center justify-between px-[20px] pt-[22px] pb-[12px]">
-            <h2 className="text-[18px] font-semibold text-gray-800">
+            <h2 className="text-[20px] font-semibold text-gray-800">
               {title}
             </h2>
             {showCloseButton && (
