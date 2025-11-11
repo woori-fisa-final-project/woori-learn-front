@@ -5,19 +5,24 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 type ScenarioHeaderContextValue = {
   onBack: (() => void) | null; // 헤더의 뒤로가기 버튼에 연결될 함수입니다.
   setOnBack: (handler: (() => void) | null) => void; // 뒤로가기 함수 등록 또는 해제를 위한 setter입니다.
+  title: string;
+  setTitle: (value: string) => void;
 };
 
 const ScenarioHeaderContext = createContext<ScenarioHeaderContextValue | undefined>(undefined); // 기본값을 undefined로 두어 프로바이더 없이 사용 시 오류를 발생시킵니다.
 
 export function ScenarioHeaderProvider({ children }: { children: ReactNode }) {
   const [onBack, setOnBack] = useState<(() => void) | null>(null); // 현재 등록된 뒤로가기 핸들러를 상태로 관리합니다.
+  const [title, setTitle] = useState("");
 
   const value = useMemo(
     () => ({
       onBack,
       setOnBack,
+      title,
+      setTitle,
     }),
-    [onBack]
+    [onBack, title]
   );
 
   return <ScenarioHeaderContext.Provider value={value}>{children}</ScenarioHeaderContext.Provider>; // 컨텍스트 값으로 자식 컴포넌트를 감싸서 어디서든 뒤로가기 핸들러를 설정할 수 있게 합니다.
