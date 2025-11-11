@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext"; // 뒤로가기 동작을 시나리오별로 제어하기 위해 컨텍스트를 사용합니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 시나리오 8에서 선택한 계좌 정보를 이어받기 위해 컨텍스트를 사용합니다.
 
+// 거래 조회 페이지에서 필요한 타입 정의를 나열합니다. 정렬 기준, 거래 유형, 기간 선택을 문자열 리터럴로 제한해 타입 안정성을 높입니다.
 type SortOrder = "최신순" | "과거순";
 type TransactionType = "전체" | "입금" | "출금";
 type PeriodLabel = "이번달" | "3개월" | "6개월" | "1년";
@@ -27,6 +28,7 @@ type FilterState = {
   sortOrder: SortOrder;
 };
 
+// 필터 버튼에서 빠르게 기간을 지정할 수 있도록 라벨과 월 수를 매핑해 둡니다.
 const PERIOD_OPTIONS: Array<{ label: PeriodLabel; months: number }> = [
   { label: "이번달", months: 1 },
   { label: "3개월", months: 3 },
@@ -39,6 +41,7 @@ const SORT_TABS: SortOrder[] = ["최신순", "과거순"];
 
 export const TRANSACTION_STORAGE_KEY = "searchaccount:lastTransaction";
 
+// 실제 서비스에서는 API 응답으로 대체될 더미 거래 내역입니다.
 const MOCK_TRANSACTIONS: Transaction[] = [
   {
     id: "t1",
@@ -86,7 +89,7 @@ export default function Scenario9() {
   const { setOnBack, setTitle } = useScenarioHeader(); // 헤더의 뒤로가기 버튼 및 중앙 타이틀을 설정합니다.
   const { sourceAccountNumber } = useTransferFlow(); // 출금 계좌 번호를 재사용하여 화면에 노출합니다.
 
-  const today = useMemo(() => new Date(), []);
+  const today = useMemo(() => new Date(), []); // 컴포넌트가 마운트될 때의 날짜를 기준으로 필터를 초기화합니다.
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false); // 조회조건선택 바텀시트 열림 상태입니다.
 
   const createDefaultFilters = useCallback((): FilterState => {
@@ -125,6 +128,7 @@ export default function Scenario9() {
   }, [router, setOnBack, setTitle]);
 
   const appliedFilters = useMemo(() => {
+    // 필터 상태를 기반으로 실제 비교에 사용할 시작/종료 시각을 계산합니다.
     const start = new Date(filters.startDate);
     start.setHours(0, 0, 0, 0);
     const end = new Date(filters.endDate);
@@ -139,6 +143,7 @@ export default function Scenario9() {
   }, [filters]);
 
   const filteredTransactions = useMemo(() => {
+    // 거래 리스트에서 조건에 맞는 데이터만 필터링하고 정렬합니다.
     const { start, end, type, order } = appliedFilters;
 
     const filtered = MOCK_TRANSACTIONS.filter((transaction) => {
@@ -174,10 +179,11 @@ export default function Scenario9() {
 
   const displayRange = `${formatKoreanDate(appliedFilters.start)}~${formatKoreanDate(appliedFilters.end)}`;
   const totalAmount = useMemo(() => {
-    return filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+    return filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0); // 조건에 해당하는 거래 금액을 모두 더해 기간 합계를 계산합니다.
   }, [filteredTransactions]);
 
   const groupedTransactions = useMemo(() => {
+    // 같은 연도/월에 속하는 거래를 묶어서 화면에 나누어 보여 줍니다.
     return filteredTransactions.reduce<Array<{ label: string; items: Transaction[] }>>((groups, transaction) => {
       const [year, month] = transaction.date.split("-");
       const monthNumber = Number(month);
@@ -204,6 +210,7 @@ export default function Scenario9() {
 
   const handleSelectPeriod = useCallback(
     (period: PeriodLabel) => {
+      // 기본 기간 버튼을 눌렀을 때 해당 기간에 맞도록 임시 필터 값을 갱신합니다.
       const selectedOption = PERIOD_OPTIONS.find((option) => option.label === period);
       if (!selectedOption) {
         return;
@@ -234,30 +241,24 @@ export default function Scenario9() {
   );
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      <main className="flex-1 overflow-y-auto px-[20px] pb-[32px]">
+    <div className="flex min-h-[100dvh] flex-col"> {/* 전체 페이지를 세로 배치하여 헤더 아래 콘텐츠와 바텀시트를 구성합니다. */}
+      <main className="flex-1 overflow-y-auto px-[20px] pb-[32px]"> {/* 스크롤 가능한 거래 조회 메인 영역입니다. */}
         {/* 계좌 요약 헤더 */}
-        <section className="mt-[2px]">
-          <div className="flex items-center gap-[12px]">
-            <img
-              src="/images/bank1.png"
-              alt="우리은행 로고"
-              className="h-[40px] w-[40px]"
-            />
+        <section className="pt-[24px]">
+          <header className="flex items-center justify-between">
             <div>
-              <p className="text-[14px] text-gray-500">WON통장</p>
+              <p className="text-[12px] text-gray-500">거래내역조회</p>
               <p className="mt-[4px] text-[18px] font-semibold text-gray-900">
                 우리 {sourceAccountNumber || "0000-000-000000"}
               </p>
             </div>
-          </div>
-
-          <div className="mt-[20px] flex flex-col items-end">
-            <p className="text-[20px] font-bold text-gray-900">0원</p>
-            <p className="mt-[8px] text-[13px] text-gray-500">
-              출금가능금액 0원
-            </p>
-          </div>
+            <div>
+              <p className="text-[20px] font-bold text-gray-900">0원</p>
+              <p className="mt-[8px] text-[13px] text-gray-500">
+                출금가능금액 0원
+              </p>
+            </div>
+          </header>
           <button
             type="button"
             className="mt-[14px] w-full rounded-[10px] bg-[#2F6FD9] py-[12px] text-[15px] font-semibold text-white"
@@ -291,9 +292,9 @@ export default function Scenario9() {
             <div className="flex items-center justify-between">
               <span>기간 내 합계</span>
               <span className="text-[15px] font-semibold text-gray-900">
-                {totalAmount === 0
-                  ? "0원"
-                  : `${totalAmount > 0 ? "+" : ""}${Math.abs(totalAmount).toLocaleString()}원`}
+              {totalAmount > 0
+                  ? `+${totalAmount.toLocaleString()}원`
+                  : `${totalAmount.toLocaleString()}원`}
               </span>
             </div>
           </div>
@@ -302,13 +303,13 @@ export default function Scenario9() {
         {/* 거래내역 목록 */}
         <section className="mt-[28px]">
           {groupedTransactions.map((group) => (
-            <div key={group.label} className="mb-[20px]">
+            <div key={group.label} className="mb/[20px]">
               <h2 className="text-[16px] font-semibold text-gray-900">{group.label}</h2>
               <ul className="mt-[16px] space-y-[12px]">
                 {group.items.map((transaction) => (
                   <li
                     key={transaction.id}
-                    className="cursor-pointer rounded-[16px] bg-white p-[18px] shadow-sm transition hover:bg-[#F6F8FC]"
+                    className="cursor-pointer rounded-[16px] bg-white p/[18px] shadow-sm transition hover:bg-[#F6F8FC]"
                     role="button"
                     onClick={() => handleSelectTransaction(transaction)}
                     onKeyDown={(event) => {
@@ -337,7 +338,7 @@ export default function Scenario9() {
                     </div>
                     <div className="mt-[8px] flex justify-end text-[13px] text-gray-500">
                       <span>잔액</span>
-                      <span className="ml-[6px]">
+                      <span className="ml/[6px]">
                         {(transaction.runningBalance ?? 0).toLocaleString()}원
                       </span>
                     </div>
@@ -450,20 +451,20 @@ export default function Scenario9() {
 
             </div>
 
-            <div className="mt-[28px] flex items-center gap-[12px]">
+            <div className="mt/[28px] flex items-center gap/[12px]">
               <button
                 type="button"
                 onClick={() => {
                   setDraftFilters(createDefaultFilters());
                 }}
-                className="flex-1 rounded-[12px] border border-[#D3DCF0] py-[12px] text-[14px] font-medium text-gray-600"
+                className="flex-1 rounded-[12px] border border-[#D3DCF0] py/[12px] text-[14px] font-medium text-gray-600"
               >
                 초기화
               </button>
               <button
                 type="button"
                 onClick={handleApplyFilters}
-                className="flex-1 rounded-[12px] bg-[#2F6FD9] py-[12px] text-[14px] font-semibold text-white"
+                className="flex-1 rounded/[12px] bg-[#2F6FD9] py/[12px] text-[14px] font-semibold text-white"
               >
                 적용하기
               </button>
