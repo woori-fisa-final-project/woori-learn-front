@@ -11,7 +11,7 @@ type ScenarioHeaderProps = {
 
 export default function ScenarioHeader({ className = "" }: ScenarioHeaderProps) {
   const router = useRouter(); // 기본 뒤로가기 라우팅을 처리합니다.
-  const { onBack } = useScenarioHeader(); // 컨텍스트에서 단계별 맞춤 뒤로가기 핸들러를 가져옵니다.
+  const { onBack, title } = useScenarioHeader(); // 컨텍스트에서 단계별 맞춤 뒤로가기 핸들러와 중앙 타이틀을 가져옵니다.
   const [isModalOpen, setIsModalOpen] = useState(false); // 학습 종료 모달의 열림 상태입니다.
 
   const handleBack = useCallback(() => {
@@ -42,24 +42,33 @@ export default function ScenarioHeader({ className = "" }: ScenarioHeaderProps) 
   return (
     <>
       <header
-        className={`sticky top-0 z-40 flex h-[60px] items-center justify-between bg-white px-[20px] font-sans ${className}`}
+        className={`sticky top-0 z-40 flex items-center bg-white px-[20px] py-[16px] font-sans ${className}`}
       >
-        <button
-          type="button"
-          onClick={handleBack}
-          className="w-[14px] h-[7px] flex items-center justify-center -rotate-90 shrink-0"
-          aria-label="뒤로가기"
-        >
-          <img src="/images/backicon.png" alt="뒤로가기" className="h-full w-full object-contain" />
-        </button>  
-        <button
-          type="button"
-          onClick={handleOpenModal}
-          className="text-[14px] font-medium text-[#2F6FD9]"
-          aria-label="학습 종료"
-        >
-          학습 종료
-        </button>
+        <div className="flex flex-1 justify-start">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex h-[24px] w-[24px] items-center justify-center"
+            aria-label="뒤로가기"
+          >
+            <img src="/images/backicon.png" alt="뒤로가기" className="h-[12px] w-[12px] -rotate-90 object-contain" />
+          </button>
+        </div>
+
+        <div className="flex flex-1 justify-center">
+          <span className="text-[15px] font-semibold text-gray-600">{title}</span>
+        </div>
+
+        <div className="flex flex-1 justify-end">
+          <button
+            type="button"
+            onClick={handleOpenModal}
+            className="whitespace-nowrap text-[14px] font-medium text-[#2F6FD9]"
+            aria-label="학습 종료"
+          >
+            학습 종료
+          </button>
+        </div>
       </header>
 
       <ExitModal
