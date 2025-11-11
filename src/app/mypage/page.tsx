@@ -1,63 +1,63 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 선언하여 상태 및 브라우저 API를 사용할 수 있도록 합니다.
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import Modal from "@/components/common/Modal";
-import PageHeader from "@/components/common/PageHeader";
-import PageContainer from "@/components/common/PageContainer";
-import { useUserData } from "@/lib/hooks/useUserData";
+import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터 훅을 불러옵니다.
+import { useState } from "react"; // 모달 열림 상태 등 컴포넌트 상태 관리를 위해 useState를 사용합니다.
+import Modal from "@/components/common/Modal"; // 탈퇴 확인 모달을 표시하는 공통 컴포넌트입니다.
+import PageHeader from "@/components/common/PageHeader"; // 페이지 상단의 헤더 UI를 담당합니다.
+import PageContainer from "@/components/common/PageContainer"; // 페이지 전반 레이아웃을 감싸는 컨테이너입니다.
+import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름, 포인트 등 마이페이지에 필요한 데이터를 제공하는 커스텀 훅입니다.
 
-const profileImage = "/images/profileicon2.png";
-const pointIcon = "/images/pointicon.png";
+const profileImage = "/images/profileicon2.png"; // 프로필 영역에 표시할 이미지 경로입니다.
+const pointIcon = "/images/pointicon.png"; // 포인트 카드에 사용할 아이콘 이미지입니다.
 
 export default function ProfilePage() {
-  const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { userName, availablePoints } = useUserData();
+  const router = useRouter(); // 페이지 이동을 위해 라우터 인스턴스를 가져옵니다.
+  const [isModalOpen, setIsModalOpen] = useState(false); // 회원탈퇴 모달의 열림 상태를 관리합니다.
+  const { userName, availablePoints } = useUserData(); // 사용자 이름과 보유 포인트를 가져옵니다.
 
   const handleBack = () => {
-    router.push("/home");
+    router.push("/home"); // 뒤로가기 시 홈 화면으로 이동합니다.
   };
 
   const handleAccountOpen = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("accountAuthStep");
+      localStorage.removeItem("accountAuthStep"); // 계좌 개설 플로우 진행 단계 기록을 초기화합니다.
     }
     router.push("/account/open/auth");
   };
 
   const handlePointTransfer = () => {
-    router.push("/points/list");
+    router.push("/points/list"); // 포인트 관련 내역/환전 페이지로 이동합니다.
   };
 
   const handleChangeName = () => {
-    router.push("/mypage/changename");
+    router.push("/mypage/changename"); // 이름 변경 화면으로 이동합니다.
   };
 
   const handleChangePassword = () => {
-    router.push("/mypage/password");
+    router.push("/mypage/password"); // 비밀번호 변경 화면으로 이동합니다.
   };
 
   const handleSecessionClick = () => {
-    setIsModalOpen(true);
+    setIsModalOpen(true); // 탈퇴 버튼 클릭 시 확인 모달을 엽니다.
   };
 
   const handleModalCancel = () => {
-    setIsModalOpen(false);
+    setIsModalOpen(false); // 모달에서 취소를 선택하면 닫습니다.
   };
 
   const handleModalConfirm = () => {
-    setIsModalOpen(false);
-    router.push("/login");
+    setIsModalOpen(false); // 탈퇴 확정 시 모달을 닫고
+    router.push("/login"); // 로그인 화면으로 이동합니다.
   };
 
   const handleLogout = () => {
-    router.push("/login");
+    router.push("/login"); // 로그아웃 버튼 클릭 시 로그인 화면으로 이동합니다.
   };
 
   return (
     <PageContainer>
-      <PageHeader title="내 정보" onBack={handleBack} titleSize="lg" />
+      <PageHeader title="내 정보" onBack={handleBack} titleSize="lg" /> {/* 상단 헤더: 뒤로가기 및 제목 */}
 
       <div className="mt-12 flex w-full items-center gap-5">
         <div className="relative h-[56px] w-[56px] shrink-0">

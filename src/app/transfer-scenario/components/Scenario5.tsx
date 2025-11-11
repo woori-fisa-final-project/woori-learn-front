@@ -1,71 +1,71 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 선언하여 바텀 시트 상호작용을 처리합니다.
 
-import { useEffect, useState } from "react";
-import Button from "@/components/common/Button";
-import NumericKeypad from "@/components/common/NumericKeypad";
+import { useEffect, useState } from "react"; // 비밀번호 입력 상태와 실패 횟수를 관리하기 위해 React 훅을 사용합니다.
+import Button from "@/components/common/Button"; // 바텀 시트 하단의 확인 버튼을 렌더링합니다.
+import NumericKeypad from "@/components/common/NumericKeypad"; // 숫자 패드 UI를 제공하는 공통 컴포넌트입니다.
 
-const REQUIRED_PASSWORD = "1234";
+const REQUIRED_PASSWORD = "1234"; // 시나리오에서 사용되는 고정 비밀번호 값입니다.
 
 type Scenario5Props = {
-  onSuccess: () => void;
-  onClose: () => void;
+  onSuccess: () => void; // 비밀번호 검증에 성공했을 때 호출되는 콜백입니다.
+  onClose: () => void; // 바텀 시트를 닫을 때 실행되는 콜백입니다.
 };
 
 export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
-  const [password, setPassword] = useState("");
-  const [hasError, setHasError] = useState(false);
-  const [failureCount, setFailureCount] = useState(0);
+  const [password, setPassword] = useState(""); // 현재 입력 중인 비밀번호 값을 저장합니다.
+  const [hasError, setHasError] = useState(false); // 마지막 입력에서 오류가 발생했는지 여부입니다.
+  const [failureCount, setFailureCount] = useState(0); // 실패 횟수를 기록하여 사용자에게 노출합니다.
 
   useEffect(() => {
     setPassword("");
     setHasError(false);
-    setFailureCount(0);
+    setFailureCount(0); // 바텀 시트가 열릴 때마다 상태를 초기화합니다.
   }, []);
 
   const handleValueChange = (value: string) => {
-    if (value.length > 4) return;
+    if (value.length > 4) return; // 4자리보다 길어지지 않도록 제한합니다.
     setPassword(value);
     if (hasError) {
-      setHasError(false);
+      setHasError(false); // 숫자 입력이 다시 시작되면 오류 표시를 제거합니다.
     }
 
     if (value.length === 4) {
       if (value === REQUIRED_PASSWORD) {
-        setFailureCount(0);
+        setFailureCount(0); // 성공하면 실패 횟수를 초기화합니다.
         setTimeout(() => {
-          setPassword("");
-          onSuccess();
+          setPassword(""); // 비밀번호 입력을 비우고
+          onSuccess(); // 성공 콜백을 실행합니다.
         }, 120);
       } else {
-        setHasError(true);
-        setFailureCount((prev) => prev + 1);
-        setPassword("");
+        setHasError(true); // 오류 메시지를 표시합니다.
+        setFailureCount((prev) => prev + 1); // 실패 횟수를 1 증가시킵니다.
+        setPassword(""); // 다시 입력할 수 있도록 비밀번호를 초기화합니다.
       }
     }
   };
 
   const handleSubmit = () => {
     if (password.length < 4) {
-      return;
+      return; // 4자리가 채워지지 않으면 제출하지 않습니다.
     }
 
     if (password !== REQUIRED_PASSWORD) {
-      setHasError(true);
-      setFailureCount((prev) => prev + 1);
-      setPassword("");
+      setHasError(true); // 잘못된 경우 오류 메시지를 표시합니다.
+      setFailureCount((prev) => prev + 1); // 실패 횟수를 증가시킵니다.
+      setPassword(""); // 다시 입력하도록 비밀번호를 초기화합니다.
       return;
     }
 
-    setFailureCount(0);
-    setPassword("");
-    onSuccess();
+    setFailureCount(0); // 성공 시 실패 횟수를 초기화하고
+    setPassword(""); // 비밀번호 입력을 비웁니다.
+    onSuccess(); // 성공 콜백을 실행합니다.
   };
 
   const handleClose = () => {
-    setPassword("");
-    setHasError(false);
-    setFailureCount(0);
-    onClose();
+    setPassword(""); // 닫을 때 입력값을 초기화합니다.
+    setHasError(false); // 오류 상태를 초기화합니다.
+    setFailureCount(0); // 실패 횟수를 초기화합니다.
+    onClose(); // 상위에서 전달한 닫기 콜백을 호출합니다.
   };
 
   return (
@@ -73,7 +73,7 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
       onClick={(event) => {
         if (event.target === event.currentTarget) {
-          handleClose();
+          handleClose(); // 바깥 영역을 클릭하면 시트를 닫습니다.
         }
       }}
     >

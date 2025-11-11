@@ -1,7 +1,7 @@
-"use client";
+"use client"; // 클라이언트 컴포넌트로 선언하여 라우터와 상태 훅을 활용할 수 있습니다.
 
-import { useRouter } from "next/navigation";
-import { useUserData } from "@/lib/hooks/useUserData";
+import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터를 사용합니다.
+import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다.
 
 type NavItem = {
   label: string;
@@ -41,6 +41,7 @@ const QUICK_MENU = [
 ];
 
 function HeaderUserBar({ userName }: { userName?: string }) {
+  // 상단 사용자 인사 영역입니다.
   return (
     <header className="mb-[30px] flex items-center justify-between">
       <p className="text-[20px] font-semibold text-gray-800">
@@ -64,23 +65,36 @@ function HeaderUserBar({ userName }: { userName?: string }) {
   );
 }
 
-function AccountCard({ onTransfer, onViewAll }: { onTransfer: () => void; onViewAll: () => void }) {
+function AccountCard({
+  onTransfer,
+  onViewAll,
+}: {
+  onTransfer: () => void;
+  onViewAll: () => void;
+}) {
+  // 대표 계좌 요약 카드입니다.
   return (
     <section className="rounded-[16px] bg-white p-5 shadow-sm">
       <div className="flex items-center gap-[10px]">
-        <img src="/images/woorilogo.png" alt="Woori Bank" className="h-[20px] w-auto" />
+        <img
+          src="/images/woorilogo.png"
+          alt="Woori Bank"
+          className="h-[20px] w-auto"
+        />
         <p className="text-[18px] font-semibold text-gray-900">WON 통장</p>
       </div>
       <div className="mt-[14px] flex items-center justify-between">
         <p className="text-[13px] text-gray-600">우리 1002-166-728332</p>
-        <span className="rounded-full bg-primary-50 px-[10px] py-[4px] text-[11px] text-primary-500">한도제한</span>
+        <span className="rounded-full bg-primary-400 px-[10px] py-[4px] text-[11px] text-primary-500">
+          한도제한
+        </span>
       </div>
       <div className="mt-[18px] flex items-center justify-between">
         <p className="text-[26px] font-bold text-gray-900">0원</p>
         <button
           type="button"
           onClick={onTransfer}
-          className="rounded-[12px] bg-primary-500 px-[16px] py-[8px] text-[13px] font-semibold text-white shadow-sm transition hover:bg-primary-600"
+          className="rounded-[12px] bg-primary-500 px-[16px] py-[8px] text-[13px] font-semibold text-gray-700 shadow-sm transition hover:bg-primary-600"
         >
           이체
         </button>
@@ -88,7 +102,7 @@ function AccountCard({ onTransfer, onViewAll }: { onTransfer: () => void; onView
       <button
         type="button"
         onClick={onViewAll}
-        className="mt-[16px] w-full rounded-[12px] border border-gray-300 py-[10px] text-[14px] font-medium text-gray-700"
+        className="mt-[16px] w-full rounded-[12px] py-[10px] text-[14px] font-semibold text-gray-700 shadow-sm transition hover:bg-primary-600"
       >
         전체계좌보기
       </button>
@@ -97,11 +111,15 @@ function AccountCard({ onTransfer, onViewAll }: { onTransfer: () => void; onView
 }
 
 function QuickMenuList() {
+  // 자주 사용하는 빠른 메뉴 목록입니다.
   return (
     <section className="rounded-[16px] bg-transparent">
       <div className="flex flex-col gap-[10px]">
         {QUICK_MENU.map((item) => (
-          <div key={item.label} className="flex items-center gap-[12px] text-[15px] font-medium text-gray-800">
+          <div
+            key={item.label}
+            className="flex items-center gap-[12px] text-[15px] font-medium text-gray-800"
+          >
             <span className="text-[18px]" role="img" aria-hidden>
               {item.icon}
             </span>
@@ -114,6 +132,7 @@ function QuickMenuList() {
 }
 
 function AlertCard() {
+  // 보이스피싱 주의 안내 카드입니다.
   return (
     <section className="flex items-center justify-between rounded-[16px] bg-[#FEECEC] px-[20px] py-[16px]">
       <div>
@@ -132,9 +151,12 @@ function AlertCard() {
 }
 
 function ServiceGrid() {
+  // 우리금융그룹의 다양한 서비스를 그리드로 보여줍니다.
   return (
     <section className="space-y-[16px]">
-      <h2 className="text-[18px] font-semibold text-gray-800">우리금융그룹 서비스</h2>
+      <h2 className="text-[18px] font-semibold text-gray-800">
+        우리금융그룹 서비스
+      </h2>
       <div className="grid grid-cols-3 gap-[16px]">
         {SERVICES.map((service) => (
           <div
@@ -153,13 +175,34 @@ function ServiceGrid() {
 }
 
 function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
+  // 하단 탭 네비게이션입니다.
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white"
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}
+    >
       <div className="mx-auto flex w-full max-w-[390px] items-center justify-between px-[28px] pt-[12px]">
         {NAV_ITEMS.map((item) => (
-          <button key={item.label} type="button" onClick={() => onNavigate(item.route)} className="flex flex-col items-center gap-[6px]">
-            <span className={`text-[18px] ${item.active ? "text-[#2482C5]" : "text-gray-400"}`}>{item.icon}</span>
-            <span className={`text-[11px] font-medium ${item.active ? "text-[#2482C5]" : "text-gray-400"}`}>{item.label}</span>
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => onNavigate(item.route)}
+            className="flex flex-col items-center gap-[6px]"
+          >
+            <span
+              className={`text-[18px] ${
+                item.active ? "text-[#2482C5]" : "text-gray-400"
+              }`}
+            >
+              {item.icon}
+            </span>
+            <span
+              className={`text-[11px] font-medium ${
+                item.active ? "text-[#2482C5]" : "text-gray-400"
+              }`}
+            >
+              {item.label}
+            </span>
           </button>
         ))}
       </div>
@@ -168,36 +211,45 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
 }
 
 export default function WooriMainPage() {
-  const router = useRouter();
-  const { userName } = useUserData();
+  const router = useRouter(); // 버튼 클릭 시 이동을 처리하기 위해 라우터를 사용합니다.
+  const { userName } = useUserData(); // 사용자 이름을 가져와 헤더에 표시합니다.
 
   const handleNavigate = (route: string) => {
-    router.push(route);
+    router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
   };
 
   const handleTransfer = () => {
-    router.push("/transfer-scenario");
+    router.push("/transfer-scenario"); // 이체 시나리오 진입 페이지로 이동합니다.
   };
 
   const handleViewAllAccounts = () => {
-    router.push("/transfer-scenario/scenario8");
+    router.push("/searchaccount-scenario"); // 전체 계좌 조회 시나리오 페이지로 이동합니다.
   };
 
   return (
     <div className="min-h-[100dvh] bg-[#F5F7FB]">
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col">
+        {/* 사용자 인사 헤더 */}
         <div className="px-[20px] pt-[60px]">
           <HeaderUserBar userName={userName} />
         </div>
         <main className="flex-1 overflow-y-auto px-[20px] pb-[140px]">
           <div className="space-y-[24px] pb-[24px]">
-            <AccountCard onTransfer={handleTransfer} onViewAll={handleViewAllAccounts} />
+            {/* 대표 계좌 카드 */}
+            <AccountCard
+              onTransfer={handleTransfer}
+              onViewAll={handleViewAllAccounts}
+            />
+            {/* 빠른 메뉴 목록 */}
             <QuickMenuList />
+            {/* 보이스피싱 안내 카드 */}
             <AlertCard />
+            {/* 우리금융그룹 서비스 */}
             <ServiceGrid />
           </div>
         </main>
       </div>
+      {/* 하단 네비게이션 */}
       <BottomNav onNavigate={handleNavigate} />
     </div>
   );
