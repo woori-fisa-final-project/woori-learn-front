@@ -237,7 +237,7 @@ export default function Scenario9() {
     <div className="flex min-h-[100dvh] flex-col">
       <main className="flex-1 overflow-y-auto px-[20px] pb-[32px]">
         {/* 계좌 요약 헤더 */}
-        <section className="mt-[2px]">
+        <section className="mt-[20px]">
           <div className="flex items-center gap-[12px]">
             <img
               src="/images/bank1.png"
@@ -291,9 +291,9 @@ export default function Scenario9() {
             <div className="flex items-center justify-between">
               <span>기간 내 합계</span>
               <span className="text-[15px] font-semibold text-gray-900">
-                {totalAmount === 0
-                  ? "0원"
-                  : `${totalAmount > 0 ? "+" : ""}${Math.abs(totalAmount).toLocaleString()}원`}
+              {totalAmount > 0
+                  ? `+${totalAmount.toLocaleString()}원`
+                  : `${totalAmount.toLocaleString()}원`}
               </span>
             </div>
           </div>

@@ -105,6 +105,7 @@ export default function Scenario8() {
             onTransfer={(account) => {
               if (!account.transferAvailable) {
                 window.alert(account.disabledMessage ?? "해당 계좌에서는 이체를 이용할 수 없습니다."); // 예적금 계좌에서는 제한 메시지를 출력합니다.
+                // 추후 위비 말풍선으로 대체하기 꼭꼭꼭!!!
                 return;
               }
               router.push("/searchaccount-scenario?step=9"); // 향후 조건이 충족되면 동일한 경로로 이동할 수 있습니다.

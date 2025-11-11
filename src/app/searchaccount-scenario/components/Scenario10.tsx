@@ -33,22 +33,47 @@ export default function Scenario10() {
   }, [router, setOnBack, setTitle]);
 
   useEffect(() => {
+    // 이미 transaction 상태가 존재한다면
+    // → sessionStorage를 다시 읽을 필요가 없으므로 effect 실행을 중단.
+    if (transaction) {
+      return; 
+    }
+  
+    // Next.js는 SSR(서버 사이드 렌더링)을 하기 때문에
+    // window, sessionStorage 같은 브라우저 전용 객체는 서버에서 undefined.
+    // → 이 코드는 브라우저 환경에서만 실행되도록 조건을 걸어줌.
     if (typeof window === "undefined") {
       return;
     }
+  
+    // 세션 스토리지에서 TRANSACTION_STORAGE_KEY라는 키로 저장된 데이터 읽기.
+    // (거래 정보 JSON 문자열이 저장되어 있음)
     const stored = sessionStorage.getItem(TRANSACTION_STORAGE_KEY);
+  
+    // 세션에 해당 데이터가 없으면 (= 사용자가 직접 10단계로 접근했거나 세션이 초기화됨)
+    // 이전 단계(9단계)로 리다이렉트 시킴.
     if (!stored) {
       router.push("/searchaccount-scenario?step=9");
       return;
     }
+  
     try {
+      // 세션에 저장된 JSON 문자열을 실제 객체로 변환
       const parsed: Transaction = JSON.parse(stored);
+  
+      // 변환된 거래 데이터를 상태로 저장 (→ UI나 로직에서 사용 가능)
       setTransaction(parsed);
     } catch (error) {
+      // JSON 파싱이 실패할 경우 (데이터 손상 등)
+      // 콘솔에 에러를 출력하고, 다시 이전 단계(9단계)로 이동시킴.
       console.error("Failed to parse transaction detail", error);
       router.push("/searchaccount-scenario?step=9");
     }
-  }, [router]);
+  
+    // 의존성 배열: router 또는 transaction이 바뀔 때만 실행됨.
+    // transaction이 이미 세팅되어 있으면 위의 if(transaction)에서 조기 종료.
+  }, [router, transaction]);
+  
 
   const detail = useMemo(() => {
     if (!transaction) {
@@ -82,7 +107,7 @@ export default function Scenario10() {
             label="메모입력"
             value={
               <button type="button" className="text-left text-[14px] font-medium text-[#2F6FD9]">
-                메모를입력해보세요
+                메모를 입력해보세요
               </button>
             }
           />
