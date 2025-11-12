@@ -5,11 +5,11 @@ export interface Scenario {
 
 export interface ScenarioStep {
   id: number;
-  scenario_id: number;
+  scenarioId: number;
   type: string; // 예: 설명, 퀴즈 등
   content: Record<string, any>; // JSON 데이터
-  next_step?: number;
-  quiz_id?: number;
+  nextStep?: number;
+  quizId?: number;
 }
 
 export interface Quiz {

@@ -12,6 +12,7 @@ import Image from "next/image";
 
 // 자동이체 등록 정보 카드에 표시할 데이터를 정의한다.
 export type AutoTransferInfo = {
+  id: number;
   status: string;
   title: string;
   bankName: string;
@@ -98,34 +99,8 @@ export default function Scenario11({
 
   const handleOpenDetail = () => {
     if (!autoTransferInfo) return;
-    const params = new URLSearchParams({
-      origin: "main",
-      status: autoTransferInfo.status,
-      title: autoTransferInfo.title,
-      bankName: autoTransferInfo.bankName,
-      bankAccount: autoTransferInfo.bankAccount,
-      amount: autoTransferInfo.amount,
-      schedule: autoTransferInfo.schedule,
-    });
-    const optionalParamKeys: Array<keyof AutoTransferInfo> = [
-      "transferDay",
-      "frequency",
-      "startDate",
-      "endDate",
-      "ownerName",
-      "recipientName",
-      "registerDate",
-      "sourceAccountBank",
-      "sourceAccountNumber",
-    ];
-
-    optionalParamKeys.forEach((key) => {
-      const value = autoTransferInfo[key];
-      if (value) {
-        params.set(key, value);
-      }
-    });
-    router.push(`/automaticpayment-scenario/detail?${params.toString()}`);
+    // ID만 전달하고 상세 페이지에서 API 호출
+    router.push(`/automaticpayment-scenario/detail?autoPaymentId=${autoTransferInfo.id}`);
   };
 
   // 자동이체 메인 화면의 전체 레이아웃을 렌더링한다.

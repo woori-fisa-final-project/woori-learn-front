@@ -18,25 +18,11 @@ import Scenario16 from "./Scenario16";
 import Scenario17 from "./Scenario17";
 import type { ScheduleSummary } from "./types";
 import Image from "next/image";
+import { createAutoPayment } from "@/lib/api/autoPayment";
+import { getAccountList } from "@/lib/api/account";
+import type { EducationalAccount } from "@/types/account";
 
-
-// 시나리오에서 선택할 수 있는 출금 계좌 목록을 하드코딩된 데이터로 제공한다.
-const ACCOUNTS = [
-  {
-    id: "source-1",
-    name: "WON통장",
-    bank: "우리은행",
-    number: "110-123-456789",
-    balance: "잔액 300,000원",
-  },
-  {
-    id: "source-2",
-    name: "WON통장",
-    bank: "우리은행",
-    number: "110-987-654321",
-    balance: "잔액 1,000,000원",
-  },
-];
+const TEMP_USER_ID = 1; // 임시 사용자 ID
 
 // 자동이체 등록 플로우가 이동할 수 있는 단계 값을 정의한다.
 type Step =
@@ -60,11 +46,23 @@ const STEP_PREVIOUS_MAP: Partial<Record<Step, Step>> = {
 };
 
 function AccountSelectStep({
+  accounts,
+  isLoading,
   onSelectAccount,
 }: {
-  onSelectAccount: (accountId: string) => void;
+  accounts: EducationalAccount[];
+  isLoading: boolean;
+  onSelectAccount: (accountId: number) => void;
 }) {
-  // 첫 번째 단계에서 사용자가 자동이체에 사용할 출금 계좌를 고르도록 UI를 렌더링한다.
+  // 계좌번호 포맷팅
+  const formatAccountNumber = (accountNumber?: string | null): string => {
+    if (!accountNumber) return "-";
+    const numbers = accountNumber.replace(/[^0-9]/g, "");
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+  };
+
   return (
     <div className="flex flex-1 flex-col">
       <section className="mt-[32px] space-y-[16px]">
@@ -73,36 +71,45 @@ function AccountSelectStep({
         </h1>
       </section>
 
-      <section className="mt-[28px] space-y-[16px]">
-        {ACCOUNTS.map((account) => (
-          // 각 계좌 버튼을 렌더링하며 선택 시 상위 단계에 계좌 ID를 전달한다.
-          <button
-            key={account.id}
-            type="button"
-            onClick={() => onSelectAccount(account.id)}
-            className="w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
-          >
-            <div className="flex items-start gap-[12px]">
-              <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#E8F1FF]">
-              <Image
-                  src="/images/woorilogo.png"
-                  alt="우리은행"
-                  width={24}
-                  height={24}
-                  className="object-contain"
-                />
+      {isLoading ? (
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-gray-500">계좌 목록을 불러오는 중...</p>
+        </div>
+      ) : accounts.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-gray-500">등록된 계좌가 없습니다.</p>
+        </div>
+      ) : (
+        <section className="mt-[28px] space-y-[16px]">
+          {accounts.map((account) => (
+            <button
+              key={account.id}
+              type="button"
+              onClick={() => onSelectAccount(account.id)}
+              className="w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
+            >
+              <div className="flex items-start gap-[12px]">
+                <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#E8F1FF]">
+                  <Image
+                    src="/images/woorilogo.png"
+                    alt="우리은행"
+                    width={24}
+                    height={24}
+                    className="object-contain"
+                  />
+                </div>
+                <div className="flex flex-col gap-[4px]">
+                  <p className="text-[17px] font-semibold text-gray-900">{account.accountName}</p>
+                  <p className="text-[13px] text-gray-500">
+                    우리은행 {formatAccountNumber(account.accountNumber)}
+                  </p>
+                  <p className="text-[13px] text-gray-500">잔액 {account.balance.toLocaleString()}원</p>
+                </div>
               </div>
-              <div className="flex flex-col gap-[4px]">
-                <p className="text-[17px] font-semibold text-gray-900">{account.name}</p>
-                <p className="text-[13px] text-gray-500">
-                  {account.bank} {account.number}
-                </p>
-                <p className="text-[13px] text-gray-500">{account.balance}</p>
-              </div>
-            </div>
-          </button>
-        ))}
-      </section>
+            </button>
+          ))}
+        </section>
+      )}
     </div>
   );
 }
@@ -126,18 +133,39 @@ export default function Scenario12() {
   // 은행 선택 바텀시트 노출 여부를 관리한다.
   const [isBankSheetOpen, setBankSheetOpen] = useState(false);
   // 사용자가 고른 계좌 정보를 저장하여 다른 단계에서도 참조한다.
-  const [selectedAccount, setSelectedAccount] = useState<typeof ACCOUNTS[number] | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<EducationalAccount | null>(null);
   // 일정 요약 정보를 저장해 이후 단계에서 검증 및 표시한다.
   const [scheduleSummary, setScheduleSummary] = useState<ScheduleSummary | null>(null);
   // 비밀번호 바텀시트 열림 여부를 관리한다.
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState(false);
   // 뒤로가기 시 현재 단계를 안정적으로 참조하기 위해 ref를 사용한다.
   const stepRef = useRef(step);
+  // 계좌 목록 관련 state
+  const [accounts, setAccounts] = useState<EducationalAccount[]>([]);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
 
   // step 상태가 변할 때마다 ref에 최신 값을 저장해 뒤로가기 처리에서 사용한다.
   useEffect(() => {
     stepRef.current = step;
   }, [step]);
+
+  // 컴포넌트 마운트 시 계좌 목록 조회
+  useEffect(() => {
+    async function fetchAccounts() {
+      try {
+        setIsLoadingAccounts(true);
+        const accountList = await getAccountList(TEMP_USER_ID);
+        setAccounts(accountList);
+      } catch (error) {
+        console.error("계좌 목록 조회 실패:", error);
+        setAccounts([]);
+      } finally {
+        setIsLoadingAccounts(false);
+      }
+    }
+
+    fetchAccounts();
+  }, []);
 
   // 화면이 나타날 때 헤더 제목을 설정하고 사라질 때 초기화한다.
   useEffect(() => {
@@ -177,11 +205,11 @@ export default function Scenario12() {
   }, [resetFlow]);
 
   // 계좌 선택 단계에서 사용자가 특정 계좌를 고를 때 상태를 갱신한다.
-  const handleSelectAccount = (accountId: string) => {
-    const account = ACCOUNTS.find((item) => item.id === accountId);
+  const handleSelectAccount = (accountId: number) => {
+    const account = accounts.find((item) => item.id === accountId);
     if (!account) return;
     setSelectedAccount(account);
-    setSourceAccountNumber(account.number);
+    setSourceAccountNumber(account.accountNumber);
     setBankSheetOpen(true);
   };
 
@@ -192,9 +220,18 @@ export default function Scenario12() {
     setStep("form");
   };
 
-  const displaySourceAccount = selectedAccount?.number ?? "000-0000-000000";
-  const displaySourceName = selectedAccount?.name ?? "우리은행계좌";
-  const displaySourceBank = selectedAccount?.bank ?? "우리은행";
+  // 계좌번호 포맷팅
+  const formatAccountNumber = (accountNumber?: string | null): string => {
+    if (!accountNumber) return "-";
+    const numbers = accountNumber.replace(/[^0-9]/g, "");
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+  };
+
+  const displaySourceAccount = selectedAccount ? formatAccountNumber(selectedAccount.accountNumber) : "000-0000-000000";
+  const displaySourceName = selectedAccount?.accountName ?? "우리은행계좌";
+  const displaySourceBank = "우리은행";
   const inboundBank = selectedBank ?? "국민은행";
   const inboundAccount = accountNumber || "-";
   const inboundName = recipientName || "받는 분";
@@ -241,59 +278,92 @@ export default function Scenario12() {
     setStep("consent");
   };
 
-  // 약관에 동의하고 확인을 누르면 완료 화면으로 진행한다.
-  const handleConsentCompleted = () => {
-    setStep("complete");
-  };
-
-  // 완료 화면에서 확인을 누르면 메인 자동이체 페이지로 돌아가면서 등록 정보를 전달한다.
-  const handleSuccessConfirm = () => {
+  // 약관에 동의하고 확인을 누르면 API를 호출하고 완료 화면으로 진행한다.
+  const handleConsentCompleted = async () => {
     if (!scheduleSummary) {
-      router.push("/automaticpayment-scenario");
+      console.error("일정 정보가 없습니다.");
       return;
     }
 
-    const inboundBank = selectedBank ?? "국민은행";
-    const inboundAccount = accountNumber || "-";
-    const transferAmount = amount > 0 ? amount : 0;
-    const scheduleLabel = `${scheduleSummary.transferDay}/${scheduleSummary.frequency}`;
+    try {
+      // 은행명을 은행 코드로 변환
+      const getBankCode = (bankName: string): string => {
+        const bankCodeMap: Record<string, string> = {
+          "한국은행": "001",
+          "산업은행": "002",
+          "기업은행": "003",
+          "국민은행": "004",
+          "수협은행": "007",
+          "농협은행": "011",
+          "우리은행": "020",
+          "SC제일은행": "023",
+          "한국씨티은행": "027",
+          "대구은행": "031",
+          "부산은행": "032",
+          "광주은행": "034",
+          "제주은행": "035",
+          "전북은행": "037",
+          "경남은행": "039",
+          "새마을금고": "045",
+          "신협": "048",
+          "상호저축은행": "050",
+          "우체국": "071",
+          "하나은행": "081",
+          "신한은행": "088",
+          "케이뱅크": "089",
+          "카카오뱅크": "090",
+        };
+        return bankCodeMap[bankName] || "020"; // 기본값: 우리은행
+      };
 
-    // 자동이체 목록 화면에서 요약 정보를 보여주기 위해 쿼리 파라미터를 구성한다.
-    const params = new URLSearchParams({
-      view: "registered",
-      status: "정상",
-      title: "타행자동이체",
-      bankName: inboundBank,
-      bankAccount: inboundAccount,
-      amount: `${transferAmount.toLocaleString()}원`,
-      schedule: scheduleLabel,
-    });
+      // frequency와 transferDay에서 숫자만 추출
+      const parseNumber = (str?: string): number => {
+        if (!str) return 0;
+        const match = str.match(/\d+/);
+        return match ? parseInt(match[0]) : 0;
+      };
 
-    params.set("sourceAccountBank", displaySourceBank);
-    params.set("sourceAccountNumber", displaySourceAccount);
-    params.set("ownerName", ownerName);
-    params.set("recipientName", inboundName);
-    params.set("transferDay", scheduleSummary.transferDay ?? "");
-    params.set("frequency", scheduleSummary.frequency ?? "");
+      const transferCycle = parseNumber(scheduleSummary.frequency);
+      const designatedDate = parseNumber(scheduleSummary.transferDay);
 
-    if (scheduleSummary.startDate) {
-      params.set("startDate", scheduleSummary.startDate);
+      // API 호출
+      await createAutoPayment({
+        educationalAccountId: selectedAccount?.id || 1,
+        depositBankCode: getBankCode(selectedBank || "국민은행"),
+        depositNumber: accountNumber || "",
+        amount: amount,
+        counterpartyName: recipientName || "받는 분",
+        displayName: "타행자동이체",
+        transferCycle: transferCycle,
+        designatedDate: designatedDate,
+        startDate: scheduleSummary.startDate,
+        expirationDate: scheduleSummary.endDate,
+        accountPassword: "1234", // 임시 하드코딩 (실제로는 입력받은 비밀번호 사용)
+      });
+
+      // 성공 시 완료 화면으로 이동
+      setStep("complete");
+    } catch (error) {
+      console.error("자동이체 등록 실패:", error);
+      alert("자동이체 등록에 실패했습니다. 다시 시도해주세요.");
     }
-    if (scheduleSummary.endDate) {
-      params.set("endDate", scheduleSummary.endDate);
-    }
+  };
 
-    const todayIso = new Date().toISOString().slice(0, 10);
-    params.set("registerDate", todayIso);
-
-    router.push(`/automaticpayment-scenario?${params.toString()}`);
+  // 완료 화면에서 확인을 누르면 메인 자동이체 페이지로 돌아간다.
+  const handleSuccessConfirm = () => {
+    // 메인 페이지에서 API로 목록을 다시 조회할 것이므로 파라미터 없이 이동
+    router.push("/automaticpayment-scenario");
   };
 
   return (
     <div className="mx-auto flex h-full flex-col min-h-[85dvh] w-full max-w-[390px] bg-white">
       <main className="flex h-full flex-col px-[20px] pb-[40px]">
         {step === "account" && (
-          <AccountSelectStep onSelectAccount={handleSelectAccount} />
+          <AccountSelectStep
+            accounts={accounts}
+            isLoading={isLoadingAccounts}
+            onSelectAccount={handleSelectAccount}
+          />
         )}
 
         {/* 단계 상태에 따라 다음 시나리오 컴포넌트를 조건부로 보여준다. */}
