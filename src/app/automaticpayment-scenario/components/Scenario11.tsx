@@ -107,19 +107,24 @@ export default function Scenario11({
       amount: autoTransferInfo.amount,
       schedule: autoTransferInfo.schedule,
     });
-    if (autoTransferInfo.transferDay) params.set("transferDay", autoTransferInfo.transferDay);
-    if (autoTransferInfo.frequency) params.set("frequency", autoTransferInfo.frequency);
-    if (autoTransferInfo.startDate) params.set("startDate", autoTransferInfo.startDate);
-    if (autoTransferInfo.endDate) params.set("endDate", autoTransferInfo.endDate);
-    if (autoTransferInfo.ownerName) params.set("ownerName", autoTransferInfo.ownerName);
-    if (autoTransferInfo.recipientName) params.set("recipientName", autoTransferInfo.recipientName);
-    if (autoTransferInfo.registerDate) params.set("registerDate", autoTransferInfo.registerDate);
-    if (autoTransferInfo.sourceAccountBank) {
-      params.set("sourceAccountBank", autoTransferInfo.sourceAccountBank);
-    }
-    if (autoTransferInfo.sourceAccountNumber) {
-      params.set("sourceAccountNumber", autoTransferInfo.sourceAccountNumber);
-    }
+    const optionalParamKeys: Array<keyof AutoTransferInfo> = [
+      "transferDay",
+      "frequency",
+      "startDate",
+      "endDate",
+      "ownerName",
+      "recipientName",
+      "registerDate",
+      "sourceAccountBank",
+      "sourceAccountNumber",
+    ];
+
+    optionalParamKeys.forEach((key) => {
+      const value = autoTransferInfo[key];
+      if (value) {
+        params.set(key, value);
+      }
+    });
     router.push(`/automaticpayment-scenario/detail?${params.toString()}`);
   };
 

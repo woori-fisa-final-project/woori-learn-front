@@ -49,6 +49,16 @@ type Step =
   | "consent"
   | "complete";
 
+const STEP_PREVIOUS_MAP: Partial<Record<Step, Step>> = {
+  form: "account",
+  amount: "form",
+  review: "amount",
+  schedule: "review",
+  confirm: "schedule",
+  consent: "confirm",
+  complete: "consent",
+};
+
 function AccountSelectStep({
   onSelectAccount,
 }: {
@@ -140,31 +150,12 @@ export default function Scenario12() {
   useEffect(() => {
     const handleBack = () => {
       const current = stepRef.current;
-      switch (current) {
-        case "account":
-          router.back();
-          break;
-        case "form":
-          setStep("account");
-          break;
-        case "amount":
-          setStep("form");
-          break;
-        case "review":
-          setStep("amount");
-          break;
-        case "schedule":
-          setStep("review");
-          break;
-        case "confirm":
-          setStep("schedule");
-          break;
-        case "consent":
-          setStep("confirm");
-          break;
-        case "complete":
-          setStep("consent");
-          break;
+      const prevStep = STEP_PREVIOUS_MAP[current];
+
+      if (prevStep) {
+        setStep(prevStep);
+      } else if (current === "account") {
+        router.back();
       }
     };
 

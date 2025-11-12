@@ -3,6 +3,7 @@
 // 자동이체 일정 입력 단계에서 필요한 React 상태와 공통 컴포넌트를 불러온다.
 import { useEffect, useState } from "react";
 import Button from "@/components/common/Button";
+import { clampDayToMonth, formatYMD } from "@/utils/dateUtils";
 import type { ScheduleSummary } from "./types";
 
 // 상위 컴포넌트에서 완료 콜백을 전달받기 위한 props 타입을 정의한다.
@@ -159,8 +160,22 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                   value={startDate.slice(0, 7)}
                   onChange={(event) => {
                     const value = event.target.value;
-                    const preservedDay = getDayOrDefault(startDate);
-                    setStartDate(value ? `${value}-${preservedDay}` : "");
+                    if (!value) {
+                      setStartDate("");
+                      return;
+                    }
+                    const [yearString, monthString] = value.split("-");
+                    const year = Number(yearString);
+                    const month = Number(monthString);
+                    if (!year || !month) {
+                      setStartDate("");
+                      return;
+                    }
+                    const prevDay = startDate
+                      ? new Date(startDate).getDate()
+                      : Number(getDayOrDefault(startDate)) || 1;
+                    const adjustedDay = clampDayToMonth(year, month, prevDay);
+                    setStartDate(formatYMD(year, month, adjustedDay));
                   }}
                   className="w-full rounded-[12px] border border-gray-200 px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none"
                 />
@@ -172,8 +187,21 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                   value={endDate ? endDate.slice(0, 7) : ""}
                   onChange={(event) => {
                     const value = event.target.value;
-                    const preservedDay = getDayOrDefault(endDate || startDate);
-                    setEndDate(value ? `${value}-${preservedDay}` : "");
+                    if (!value) {
+                      setEndDate("");
+                      return;
+                    }
+                    const [yearString, monthString] = value.split("-");
+                    const year = Number(yearString);
+                    const month = Number(monthString);
+                    if (!year || !month) {
+                      setEndDate("");
+                      return;
+                    }
+                    const baseDate = endDate || startDate;
+                    const prevDay = baseDate ? new Date(baseDate).getDate() : 1;
+                    const adjustedDay = clampDayToMonth(year, month, prevDay);
+                    setEndDate(formatYMD(year, month, adjustedDay));
                   }}
                   disabled={selectedDuration !== null}
                   className="w-full rounded-[12px] border border-gray-200 px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none disabled:cursor-not-allowed"
