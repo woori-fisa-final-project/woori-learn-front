@@ -127,7 +127,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
             </div>
           </div>
 
-          <div className="space-y-[12px]">
+          <div className="space-y-[16px]">
             <label className="text-[14px] font-medium text-gray-700">
               이체기간(월)
             </label>
@@ -151,10 +151,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 );
               })}
             </div>
-          </div>
-
-            
-            {/* 시작일과 종료일을 월 단위 입력으로 받아 사용자가 기간을 직접 지정할 수 있게 한다. */}
             <div className="grid grid-cols-2 gap-[12px]">
               <div className="flex flex-col gap-[6px]">
                 <span className="text-[13px] text-gray-500">시작일</span>
@@ -184,7 +180,8 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 />
               </div>
             </div>
-          
+          </div>
+
         </div>
       </section>
 

@@ -131,12 +131,8 @@ export default function Scenario8() {
       </main>
       <Modal
         isOpen={isAlertModalOpen}
-        onClose={handleCloseAlertModal}
-        title="안내"
-        description={alertMessage}
-        confirmText="확인"
         onConfirm={handleCloseAlertModal}
-        cancelText="닫기"
+        onClose={handleCloseAlertModal}
       >
         <AlertModalContent message={alertMessage} onClose={handleCloseAlertModal} />
       </Modal>

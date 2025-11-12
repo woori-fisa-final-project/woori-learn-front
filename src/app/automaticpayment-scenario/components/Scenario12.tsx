@@ -17,6 +17,8 @@ import Scenario15 from "./Scenario15";
 import Scenario16 from "./Scenario16";
 import Scenario17 from "./Scenario17";
 import type { ScheduleSummary } from "./types";
+import Image from "next/image";
+
 
 // 시나리오에서 선택할 수 있는 출금 계좌 목록을 하드코딩된 데이터로 제공한다.
 const ACCOUNTS = [
@@ -72,10 +74,12 @@ function AccountSelectStep({
           >
             <div className="flex items-start gap-[12px]">
               <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#E8F1FF]">
-                <img
+              <Image
                   src="/images/woorilogo.png"
                   alt="우리은행"
-                  className="h-[24px] w-[24px] object-contain"
+                  width={24}
+                  height={24}
+                  className="object-contain"
                 />
               </div>
               <div className="flex flex-col gap-[4px]">

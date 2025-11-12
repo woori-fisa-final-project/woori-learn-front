@@ -1,6 +1,7 @@
 import { formatDate } from "@/lib/utils/formatDate";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import type { Scenario18Detail } from "../components/Scenario18";
+import { formatDateRange } from "@/lib/utils/formatDateRange";
 
 export function parseScenarioDetail(searchParams: URLSearchParams | ReadonlyURLSearchParams): Scenario18Detail {
   const status = searchParams.get("status") ?? "정상";
@@ -20,8 +21,7 @@ export function parseScenarioDetail(searchParams: URLSearchParams | ReadonlyURLS
   const sourceAccountBank = searchParams.get("sourceAccountBank") ?? "우리은행";
   const sourceAccountNumber = searchParams.get("sourceAccountNumber") ?? "-";
 
-  const periodStart = startDate ? formatDate(startDate) : "-";
-  const periodEnd = endDate ? formatDate(endDate) : "미지정";
+  const period = formatDateRange(startDate ?? undefined, endDate ?? undefined);
   const registerDate = registerDateRaw ? formatDate(registerDateRaw) : formatDate(new Date());
 
   return {
@@ -30,7 +30,7 @@ export function parseScenarioDetail(searchParams: URLSearchParams | ReadonlyURLS
     amount,
     transferDay,
     frequency,
-    period: `${periodStart} ~ ${periodEnd}`,
+    period,
     ownerName,
     recipientName,
     registerDate,

@@ -3,6 +3,8 @@
 // 약관 동의 단계에서 체크 상태를 제어하기 위해 React 상태 훅을 사용한다.
 import { useState } from "react";
 import Button from "@/components/common/Button";
+import Image from "next/image";
+
 
 // 약관 동의 체크박스에 사용할 아이콘 경로를 정의한다.
 const TERMS_CHECK_ICON = "/images/Termcheck.png";
@@ -71,10 +73,11 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
               aria-pressed={isChecked}
               className="flex flex-1 items-center gap-[12px] text-left"
             >
-              <img
+              <Image
                 src={isChecked ? TERMS_CHECKED_ICON : TERMS_CHECK_ICON}
                 alt="약관 동의 체크"
-                className="h-[20px] w-[20px]"
+                width={20}
+                height={20}
               />
               <span className="text-[15px] font-medium text-gray-800">
                 [필수] 타행 자동이체 약관

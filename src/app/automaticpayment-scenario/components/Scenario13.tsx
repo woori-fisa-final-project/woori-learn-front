@@ -3,6 +3,7 @@
 // 금액 확인 단계에서 버튼과 이체 흐름 상태를 사용하기 위해 필요한 모듈을 가져온다.
 import Button from "@/components/common/Button";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import Image from "next/image";
 
 // 상위에서 전달받을 계좌 정보와 다음 단계 콜백을 정의한다.
 type Scenario13Props = {
@@ -31,10 +32,11 @@ export default function Scenario13({
       {/* 출금 계좌와 입금 계좌 정보를 나란히 보여준다. */}
       <section className="mt-[32px] space-y-[20px]">
         <div className="flex items-start gap-[12px]">
-          <img
+        <Image
             src="/images/bank1.png"
             alt="우리은행"
-            className="h-[32px] w-[32px]"
+            width={32}
+            height={32}
           />
           <div className="flex flex-col gap-[6px]">
             <p className="text-[15px] font-semibold text-gray-900">
@@ -47,10 +49,11 @@ export default function Scenario13({
         </div>
 
         <div className="flex items-start gap-[12px]">
-          <img
+        <Image
             src="/images/bank3.png"
             alt={displayBank}
-            className="h-[32px] w-[32px]"
+            width={32}
+            height={32}
           />
           <div className="flex flex-col gap-[6px]">
             <p className="text-[15px] font-semibold text-gray-900 whitespace-nowrap">

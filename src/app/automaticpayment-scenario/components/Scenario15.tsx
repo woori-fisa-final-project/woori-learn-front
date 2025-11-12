@@ -5,6 +5,7 @@ import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { formatDate } from "@/lib/utils/formatDate";
+import { formatDateRange } from "@/lib/utils/formatDateRange";
 import { useMemo } from "react";
 import type { ScheduleSummary } from "./types";
 
@@ -46,13 +47,7 @@ export default function Scenario15({
     return `${amount.toLocaleString()}원`;
   }, [amount]);
 
-  const formattedRegisterDate = useMemo(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    return formatDate(`${year}-${month}-${day}`);
-  }, []);
+  const formattedRegisterDate = useMemo(() => formatDate(new Date()), []);
 
   const inboundBank = selectedBank ?? "국민은행";
   const inboundAccount = accountNumber || "-";
@@ -60,16 +55,10 @@ export default function Scenario15({
   const ownerName = currentUserName ?? "김우리";
 
   // 일정 요약에 있는 시작일과 종료일을 표시용 문자열로 변환한다.
-  const formattedPeriod = useMemo(() => {
-    if (!scheduleSummary.startDate && !scheduleSummary.endDate) {
-      return "";
-    }
-    const start = formatDate(scheduleSummary.startDate);
-    const end = scheduleSummary.endDate
-      ? formatDate(scheduleSummary.endDate)
-      : "미지정";
-    return `${start} ~ ${end}`;
-  }, [scheduleSummary.endDate, scheduleSummary.startDate]);
+  const formattedPeriod = useMemo(
+    () => formatDateRange(scheduleSummary.startDate, scheduleSummary.endDate),
+    [scheduleSummary.endDate, scheduleSummary.startDate],
+  );
 
   return (
     <div className="flex h-full flex-col">

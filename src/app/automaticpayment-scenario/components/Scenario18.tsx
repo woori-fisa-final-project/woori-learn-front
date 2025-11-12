@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/common/Button";
+import BottomSheet from "@/components/common/BottomSheet";
 import InfoRow from "@/components/common/InfoRow";
 import Modal from "@/components/common/Modal";
 import { useMemo, useState } from "react";
@@ -83,15 +84,10 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
       
 
       <Modal
-         isOpen={isConfirmOpen}
-         onClose={handleCloseConfirm}
-         title="확인"
-         description="자동이체 해지 전 안내 메시지"
-         confirmText=""
-         cancelText=""
-         onConfirm={() => undefined}
-         zIndex="z-[100]"
-       >
+        isOpen={isConfirmOpen}
+        onClose={handleCloseConfirm}
+        zIndex="z-[100]"
+      >
         <div className="flex flex-col gap-[18px] text-left">
           <div className="space-y-[8px] text-[16px] text-gray-700">
             <p className="font-semibold text-gray-900">
@@ -99,9 +95,11 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
               {accountNumber ? `/${accountNumber}` : ""}의 자동 이체를 해지하시겠습니까?
             </p>
             <p>
+            <br/>
               타행자동이체 시 이체지정일 당일에 인증되므로 전 영업일까지 해지해 주세요.
             </p>
             <p>
+             <br/>
               자동이체 해지 당일 등록 건 취소 가능 여부는 고객센터로 문의하시기 바랍니다.
             </p>
           </div>
@@ -122,59 +120,41 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
         </div>
       </Modal>
 
-      {isReviewSheetOpen && (
-        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40">
-          <div className="w-full max-w-[390px] rounded-t-[24px] bg-white px-[20px] pb-[32px] pt-[24px]">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[18px] font-semibold text-gray-900">
-                자동이체 해지 정보를 확인해주세요
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setReviewSheetOpen(false);
-                }}
-                className="text-[18px] text-gray-400"
-                aria-label="닫기"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-[20px] space-y-[10px]">
-              <InfoRow label="받는 분" value={detail.recipientName} highlight compact />
-              <InfoRow label="이체금액" value={detail.amount} highlight compact />
-              <InfoRow label="출금정보" value={detail.sourceAccount} compact />
-              <InfoRow label="입금정보" value={detail.inboundAccount} compact />
-              <InfoRow label="이체주기" value={detail.frequency} compact />
-              <InfoRow label="이체기간" value={detail.period} compact />
-            </div>
-
-            <div className="mt-[28px] grid grid-cols-2 gap-[10px]">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="font-semibold"
-                onClick={() => {
-                  setReviewSheetOpen(false);
-                }}
-              >
-                취소
-              </Button>
-              <Button
-                size="sm"
-                className="font-semibold"
-                onClick={() => {
-                  setReviewSheetOpen(false);
-                  onNavigateToCancelComplete();
-                }}
-              >
-                확인했습니다
-              </Button>
-            </div>
-          </div>
+      <BottomSheet
+        isOpen={isReviewSheetOpen}
+        onClose={() => setReviewSheetOpen(false)}
+        title="자동이체 해지 정보를 확인해주세요"
+      >
+        <div className="mt-[20px] space-y-[10px]">
+          <InfoRow label="받는 분" value={detail.recipientName} highlight compact />
+          <InfoRow label="이체금액" value={detail.amount} highlight compact />
+          <InfoRow label="출금정보" value={detail.sourceAccount} compact />
+          <InfoRow label="입금정보" value={detail.inboundAccount} compact />
+          <InfoRow label="이체주기" value={detail.frequency} compact />
+          <InfoRow label="이체기간" value={detail.period} compact />
         </div>
-      )}
+
+        <div className="mt-[28px] grid grid-cols-2 gap-[10px]">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="font-semibold"
+            onClick={() => setReviewSheetOpen(false)}
+          >
+            취소
+          </Button>
+          <Button
+            size="sm"
+            className="font-semibold"
+            onClick={() => {
+              setReviewSheetOpen(false);
+              onNavigateToCancelComplete();
+            }}
+          >
+            확인했습니다
+          </Button>
+        </div>
+      </BottomSheet>
     </div>
   );
 }

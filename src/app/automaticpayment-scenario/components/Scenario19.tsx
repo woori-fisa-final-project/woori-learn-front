@@ -26,7 +26,7 @@ export default function Scenario19({ detail, onNavigateToQuiz }: Scenario19Props
   ], [detail]);
 
   return (
-    <div className="mx-auto flex h-[110dvh] w-full max-w-[390px] flex-col overflow-hidden bg-white px-[20px] py-[24px]">
+    <div className="mx-auto flex h-[100dvh] w-full max-w-[390px] flex-col overflow-hidden bg-white px-[20px] py-[24px]">
       <main className="flex flex-1 flex-col gap-[24px]">
         <div className="flex flex-col items-center gap-[12px] text-center">
           <Image src="/images/maincheck.png" alt="등록 완료" width={66} height={66} />

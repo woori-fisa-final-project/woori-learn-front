@@ -5,6 +5,7 @@ import Image from "next/image";
 import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { formatDate } from "@/lib/utils/formatDate";
+import { formatDateRange } from "@/lib/utils/formatDateRange";
 import type { ScheduleSummary } from "./types";
 
 // 완료 화면에 필요한 모든 정보를 상위에서 전달받는다.
@@ -33,7 +34,7 @@ export default function Scenario17({
   onConfirm,
 }: Scenario17Props) {
   const formattedAmount = amount > 0 ? `${amount.toLocaleString()}원` : "0원";
-  const formattedPeriod = buildPeriod(scheduleSummary);
+  const formattedPeriod = formatDateRange(scheduleSummary.startDate, scheduleSummary.endDate);
   const registerDate = formatDate(new Date());
 
   return (
@@ -69,15 +70,5 @@ export default function Scenario17({
 
     </div>
   );
-}
-
-function buildPeriod(summary: ScheduleSummary) {
-  // 시작일과 종료일을 조합해 기간 문자열을 만든다.
-  if (!summary.startDate && !summary.endDate) {
-    return "-";
-  }
-  const start = summary.startDate ? formatDate(new Date(summary.startDate)) : "-";
-  const end = summary.endDate ? formatDate(new Date(summary.endDate)) : "미지정";
-  return `${start} ~ ${end}`;
 }
 
