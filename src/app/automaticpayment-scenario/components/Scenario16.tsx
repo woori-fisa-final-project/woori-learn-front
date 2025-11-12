@@ -24,7 +24,6 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
       setIsChecked(false);
       return;
     }
-    setIsChecked(true);
     setDetailOpen(true);
   };
 
@@ -50,7 +49,6 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
   const handleModalConfirm = () => {
     setDetailOpen(false);
     setIsChecked(true);
-    onConfirm();
   };
 
   return (

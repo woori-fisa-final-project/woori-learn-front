@@ -141,7 +141,7 @@ function ServiceMenuSheet({
           >
              <Image
               src="/images/backicon.png"
-              alt="메뉴닫기기"
+              alt="메뉴닫기"
               width={12}
               height={12}
               className="-rotate-90 object-contain"

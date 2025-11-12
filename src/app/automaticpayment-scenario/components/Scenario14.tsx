@@ -155,8 +155,8 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
 
             
             {/* 시작일과 종료일을 월 단위 입력으로 받아 사용자가 기간을 직접 지정할 수 있게 한다. */}
-            <div className="flex flex-col gap-[12px] sm:grid sm:grid-cols-2">
-              <div className="flex flex-col gap-[6px] sm:max-w-none">
+            <div className="grid grid-cols-2 gap-[12px]">
+              <div className="flex flex-col gap-[6px]">
                 <span className="text-[13px] text-gray-500">시작일</span>
                 <input
                   type="month"
@@ -166,10 +166,10 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                     const preservedDay = getDayOrDefault(startDate);
                     setStartDate(value ? `${value}-${preservedDay}` : "");
                   }}
-                  className="w-full max-w-[350px] rounded-[12px] border border-gray-200 px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none sm:max-w-full"
+                  className="w-full rounded-[12px] border border-gray-200 px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none"
                 />
               </div>
-              <div className="flex flex-col gap-[6px] sm:max-w-none">
+              <div className="flex flex-col gap-[6px]">
                 <span className="text-[13px] text-gray-500">종료일</span>
                 <input
                   type="month"
@@ -180,7 +180,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                     setEndDate(value ? `${value}-${preservedDay}` : "");
                   }}
                   disabled={selectedDuration !== null}
-                  className="w-full max-w-[350px] rounded-[12px] border border-gray-200 px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none sm:max-w-full disabled:cursor-not-allowed"
+                  className="w-full rounded-[12px] border border-gray-200 px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none disabled:cursor-not-allowed"
                 />
               </div>
             </div>

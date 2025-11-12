@@ -25,6 +25,15 @@ export default function AutomaticPaymentScenarioPage() {
     const bankAccount = searchParams.get("bankAccount") || "000-0000-000000";
     const amount = searchParams.get("amount") || "0원";
     const schedule = searchParams.get("schedule") || "1일/1개월";
+    const transferDay = searchParams.get("transferDay");
+    const frequency = searchParams.get("frequency");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    const ownerName = searchParams.get("ownerName");
+    const recipientName = searchParams.get("recipientName");
+    const registerDate = searchParams.get("registerDate");
+    const sourceAccountBank = searchParams.get("sourceAccountBank");
+    const sourceAccountNumber = searchParams.get("sourceAccountNumber");
 
     return {
       status,
@@ -33,6 +42,15 @@ export default function AutomaticPaymentScenarioPage() {
       bankAccount,
       amount,
       schedule,
+      transferDay,
+      frequency,
+      startDate,
+      endDate,
+      ownerName,
+      recipientName,
+      registerDate,
+      sourceAccountBank,
+      sourceAccountNumber,
     };
   }, [hasAutoTransfer, searchParams]);
 

@@ -274,6 +274,23 @@ export default function Scenario12() {
       schedule: scheduleLabel,
     });
 
+    params.set("sourceAccountBank", displaySourceBank);
+    params.set("sourceAccountNumber", displaySourceAccount);
+    params.set("ownerName", ownerName);
+    params.set("recipientName", inboundName);
+    params.set("transferDay", scheduleSummary.transferDay ?? "");
+    params.set("frequency", scheduleSummary.frequency ?? "");
+
+    if (scheduleSummary.startDate) {
+      params.set("startDate", scheduleSummary.startDate);
+    }
+    if (scheduleSummary.endDate) {
+      params.set("endDate", scheduleSummary.endDate);
+    }
+
+    const todayIso = new Date().toISOString().slice(0, 10);
+    params.set("registerDate", todayIso);
+
     router.push(`/automaticpayment-scenario?${params.toString()}`);
   };
 

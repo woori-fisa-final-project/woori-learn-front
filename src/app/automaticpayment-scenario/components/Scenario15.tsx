@@ -73,7 +73,7 @@ export default function Scenario15({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="mt-[28px]">
+      <header className="mt-[5px]">
         <h1 className="text-[22px] text-center font-semibold text-gray-900">
           자동이체 등록정보를 확인해주세요
         </h1>

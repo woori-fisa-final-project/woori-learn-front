@@ -32,15 +32,13 @@ export default function Scenario17({
   amount,
   onConfirm,
 }: Scenario17Props) {
-  // 금액과 기간, 등록일을 보기 좋은 문자열로 변환한다.
   const formattedAmount = amount > 0 ? `${amount.toLocaleString()}원` : "0원";
   const formattedPeriod = buildPeriod(scheduleSummary);
   const registerDate = formatDate(new Date());
 
   return (
     <div className="flex h-full flex-col items-center text-center">
-      {/* 등록 성공을 시각적으로 알리는 아이콘과 메시지 영역이다. */}
-      <div className="mt-[13px] flex flex-col items-center gap-[20px]">
+      <div className="mt-[10px] flex flex-col items-center gap-[20px]">
         <Image src="/images/maincheck.png" alt="등록 완료" width={82} height={82} />
         <div>
           <h1 className="text-[24px] font-semibold text-gray-900 tracking-[-0.5px]">
@@ -52,8 +50,7 @@ export default function Scenario17({
         </div>
       </div>
 
-      {/* 자동이체 요약 정보를 카드 형태로 정리하여 제공한다. */}
-      <section className="mt-[26px] w-full space-y-[14px] rounded-[20px] border border-gray-100 bg-[#F5F7FA] px-[20px] py-[24px] text-left">
+      <section className="mt-[25px] w-full rounded-[20px] border border-gray-100 bg-[#F5F7FA] px-[20px] py-[24px] text-left">
         <InfoRow label="받는 분" value={inboundName} highlight />
         <InfoRow label="이체금액" value={formattedAmount} highlight />
         <InfoRow label="출금정보" value={`${sourceAccountBank} · ${sourceAccountNumber}`} />
@@ -66,10 +63,10 @@ export default function Scenario17({
         <InfoRow label="이체등록일" value={registerDate} />
       </section>
 
-      {/* 확인 버튼을 누르면 메인 자동이체 페이지로 되돌아간다. */}
       <div className="mt-[26px] w-full pb-[32px]">
         <Button onClick={onConfirm}>확인</Button>
       </div>
+
     </div>
   );
 }

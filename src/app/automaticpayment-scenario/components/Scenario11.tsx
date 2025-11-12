@@ -18,6 +18,15 @@ export type AutoTransferInfo = {
   bankAccount: string;
   amount: string;
   schedule: string;
+  transferDay?: string | null;
+  frequency?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  ownerName?: string | null;
+  recipientName?: string | null;
+  registerDate?: string | null;
+  sourceAccountBank?: string | null;
+  sourceAccountNumber?: string | null;
 };
 
 // 부모 컴포넌트가 전달하는 기본 정보와 선택적인 자동이체 정보를 정의한다.
@@ -87,6 +96,33 @@ export default function Scenario11({
     setFxInfoModalOpen(false);
   };
 
+  const handleOpenDetail = () => {
+    if (!autoTransferInfo) return;
+    const params = new URLSearchParams({
+      origin: "main",
+      status: autoTransferInfo.status,
+      title: autoTransferInfo.title,
+      bankName: autoTransferInfo.bankName,
+      bankAccount: autoTransferInfo.bankAccount,
+      amount: autoTransferInfo.amount,
+      schedule: autoTransferInfo.schedule,
+    });
+    if (autoTransferInfo.transferDay) params.set("transferDay", autoTransferInfo.transferDay);
+    if (autoTransferInfo.frequency) params.set("frequency", autoTransferInfo.frequency);
+    if (autoTransferInfo.startDate) params.set("startDate", autoTransferInfo.startDate);
+    if (autoTransferInfo.endDate) params.set("endDate", autoTransferInfo.endDate);
+    if (autoTransferInfo.ownerName) params.set("ownerName", autoTransferInfo.ownerName);
+    if (autoTransferInfo.recipientName) params.set("recipientName", autoTransferInfo.recipientName);
+    if (autoTransferInfo.registerDate) params.set("registerDate", autoTransferInfo.registerDate);
+    if (autoTransferInfo.sourceAccountBank) {
+      params.set("sourceAccountBank", autoTransferInfo.sourceAccountBank);
+    }
+    if (autoTransferInfo.sourceAccountNumber) {
+      params.set("sourceAccountNumber", autoTransferInfo.sourceAccountNumber);
+    }
+    router.push(`/automaticpayment-scenario/detail?${params.toString()}`);
+  };
+
   // 자동이체 메인 화면의 전체 레이아웃을 렌더링한다.
   return (
     <div className="mx-auto h-full flex-col flex min-h-[85dvh] w-full max-w-[390px] bg-white">
@@ -135,7 +171,7 @@ export default function Scenario11({
             {!hasAutoTransfer ? (
               <EmptyState />
             ) : (
-              <AutoTransferCard info={autoTransferInfo} />
+              <AutoTransferCard info={autoTransferInfo} onSelect={handleOpenDetail} />
             )}
           </div>
           {/* 화면 하단의 고정 버튼으로 새로운 자동이체 등록 플로우를 시작한다. */}
@@ -199,38 +235,41 @@ function EmptyState() {
   );
 }
 
-function AutoTransferCard({ info }: { info?: AutoTransferInfo }) {
-  // 표시할 데이터가 없다면 아무 것도 렌더링하지 않는다.
+function AutoTransferCard({
+  info,
+  onSelect,
+}: {
+  info?: AutoTransferInfo;
+  onSelect: () => void;
+}) {
   if (!info) {
     return null;
   }
 
   return (
-    <div className="mt-[100px] w-full">
-      {/* 자동이체 상세 정보를 카드 형태로 감싼다. */}
+    <button
+      type="button"
+      onClick={onSelect}
+      className="mt-[40px] w-full text-left transition hover:scale-[1.01]"
+    >
       <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px] shadow-[0_4px_16px_rgba(34,58,124,0.08)]">
         <div className="flex items-start justify-between">
-          {/* 왼쪽에는 상태 배지를 표시한다. */}
           <span className="rounded-full border border-[#1BAA90] px-[12px] py-[4px] text-[12px] font-semibold text-[#1BAA90]">
             {info.status}
           </span>
-        </div>
-
-        {/* 자동이체 명칭과 상세 화면으로 이동할 수 있음을 나타내는 아이콘을 보여준다. */}
-        <button type="button" className="mt-[20px] flex w-full items-center justify-between text-left">
-          <div className="flex items-center gap-[10px]">
-            <p className="text-[17px] font-semibold text-gray-900">{info.title}</p>
-          </div>
           <span className="text-[18px] text-gray-400">›</span>
-        </button>
-
-        {/* 입금은행과 계좌, 금액, 주기 정보를 목록 형태로 표현한다. */}
-        <div className="mt-[20px] space-y-[16px] text-[14px] text-gray-500">
+        </div>
+        <div className="mt-[16px] space-y-[16px] text-[14px] text-gray-500">
+          <div>
+            <p className="text-[13px] text-gray-400">자동이체</p>
+            <p className="mt-[6px] text-[17px] font-semibold text-gray-900">{info.title}</p>
+          </div>
           <InfoRow label="입금정보" value={`${info.bankName} ${info.bankAccount}`} />
           <InfoRow label="이체금액" value={info.amount} />
           <InfoRow label="이체일자/주기" value={info.schedule} />
         </div>
       </div>
-    </div>
+    </button>
   );
 }
+
