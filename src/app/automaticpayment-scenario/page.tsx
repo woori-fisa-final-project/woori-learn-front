@@ -19,15 +19,22 @@ export default function AutomaticPaymentScenarioPage() {
       return undefined;
     }
 
+    const status = searchParams.get("status") || "정상";
+    const title = searchParams.get("title") || "타행자동이체";
+    const bankName = searchParams.get("bankName") || "국민은행";
+    const bankAccount = searchParams.get("bankAccount") || "000-0000-000000";
+    const amount = searchParams.get("amount") || "0원";
+    const schedule = searchParams.get("schedule") || "1일/1개월";
+
     return {
-      status: "정상",
-      title: "타행자동이체",
-      bankName: "국민은행",
-      bankAccount: "00000000000000",
-      amount: "1,000원",
-      schedule: "31일/1개월",
+      status,
+      title,
+      bankName,
+      bankAccount,
+      amount,
+      schedule,
     };
-  }, [hasAutoTransfer]);
+  }, [hasAutoTransfer, searchParams]);
 
   return (
     <Scenario11
