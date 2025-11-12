@@ -1,9 +1,11 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 라우터와 상태를 사용할 수 있도록 합니다.
 
-import { useEffect } from "react"; // 헤더 뒤로가기 동작을 설정하기 위해 effect 훅을 사용합니다.
+import { useEffect, useState } from "react"; // 헤더 뒤로가기 동작과 모달 상태 제어를 위해 필요한 훅을 사용합니다.
 import { useRouter } from "next/navigation"; // 다른 페이지로 이동하기 위해 Next.js 라우터를 불러옵니다.
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext"; // 시나리오 헤더의 뒤로가기 버튼 동작을 커스터마이징합니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우에서 공유하는 상태(출금 계좌 번호 등)를 가져옵니다.
+import Modal from "@/components/common/Modal"; // 기존 alert 대신 안내 모달을 사용하기 위해 공통 모달 컴포넌트를 불러옵니다.
+import Button from "@/components/common/Button"; // 모달 내부에서 동일한 버튼 스타일을 재사용합니다.
 
 const QUICK_FILTERS = [
   // 빠르게 필터를 토글할 수 있도록 라벨과 활성 여부를 정리한 배열입니다.
@@ -36,6 +38,8 @@ export default function Scenario8() {
   const router = useRouter(); // 다른 시나리오 단계로 이동시 사용합니다.
   const { setOnBack, setTitle } = useScenarioHeader(); // 헤더 뒤로가기 버튼을 메인 화면으로 연결하기 위해 컨텍스트를 사용합니다.
   const { sourceAccountNumber } = useTransferFlow(); // 사용자가 선택한 출금 계좌 번호를 가져옵니다.
+  const [isAlertModalOpen, setAlertModalOpen] = useState(false); // 안내 모달의 노출 여부를 관리합니다.
+  const [alertMessage, setAlertMessage] = useState(""); // 모달에 표시할 안내 문구를 저장합니다.
 
   useEffect(() => {
     setTitle("전체계좌"); // 목록 화면이라는 것을 헤더에서 명확히 보여 줍니다.
@@ -55,6 +59,15 @@ export default function Scenario8() {
       return sourceAccountNumber; // 출금 계좌 카드일 때는 컨텍스트에 저장된 계좌번호를 사용합니다.
     }
     return item.accountNumber ?? "0000-000-000000"; // 그 외에는 카드에 정의된 계좌번호를 표시합니다.
+  };
+
+  const handleOpenAlertModal = (message: string) => {
+    setAlertMessage(message);
+    setAlertModalOpen(true);
+  };
+
+  const handleCloseAlertModal = () => {
+    setAlertModalOpen(false);
   };
 
   return (
@@ -107,7 +120,7 @@ export default function Scenario8() {
             renderAccountNumber={renderAccountNumber}
             onTransfer={(account) => {
               if (!account.transferAvailable) {
-                window.alert(account.disabledMessage ?? "해당 계좌에서는 이체를 이용할 수 없습니다."); // 예적금 계좌에서는 제한 메시지를 출력합니다.
+                handleOpenAlertModal(account.disabledMessage ?? "해당 계좌에서는 이체를 이용할 수 없습니다."); // 예적금 계좌에서는 제한 메시지를 모달로 안내합니다.
                 // 추후 위비 말풍선으로 대체하기 꼭꼭꼭!!!
                 return;
               }
@@ -116,9 +129,32 @@ export default function Scenario8() {
           />
         </section>
       </main>
+      <Modal
+        isOpen={isAlertModalOpen}
+        onConfirm={handleCloseAlertModal}
+        onClose={handleCloseAlertModal}
+      >
+        <AlertModalContent message={alertMessage} onClose={handleCloseAlertModal} />
+      </Modal>
     </div>
   );
 }
+
+const AlertModalContent = ({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) => (
+  <div className="flex flex-col items-center gap-[20px] px-[10px] py-[16px] text-center">
+    <h2 className="text-[18px] font-semibold text-gray-900">안내</h2>
+    <p className="text-[14px] text-gray-600 whitespace-pre-line">{message}</p>
+    <Button onClick={onClose} size="sm">
+      확인
+    </Button>
+  </div>
+);
 
 type CategoryBlockProps = {
   title: string;

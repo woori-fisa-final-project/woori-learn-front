@@ -22,6 +22,7 @@ type TransferFlowContextValue = { // 이체 시나리오에서 공유할 상태�
   setAmount: (amount: number) => void;
   currentUserName: string;
   sourceAccountNumber: string;
+  setSourceAccountNumber: (value: string) => void;
   resetFlow: () => void;
 };
 
@@ -54,6 +55,7 @@ const DEFAULT_STATE = { // 이체 시나리오 초기 상태를 한 곳에 모�
   accountNumber: "",
   recipientName: "",
   amount: 0,
+  sourceAccountNumber: DEV_FALLBACK_ACCOUNT,
 };
 
 export function TransferFlowProvider({ children }: { children: ReactNode }) { // 이체 시나리오 전반에 공유 상태를 제공하는 컨텍스트 프로바이더입니다.
@@ -61,6 +63,7 @@ export function TransferFlowProvider({ children }: { children: ReactNode }) { //
   const [accountNumber, setAccountNumber] = useState(DEFAULT_STATE.accountNumber); // 입력 중인 계좌번호를 상태로 저장합니다.
   const [recipientName, setRecipientName] = useState(DEFAULT_STATE.recipientName); // 수취인 이름을 상태로 관리합니다.
   const [amount, setAmount] = useState(DEFAULT_STATE.amount); // 이체 금액을 상태로 저장합니다.
+  const [sourceAccountNumber, setSourceAccountNumber] = useState(DEFAULT_STATE.sourceAccountNumber);
   const { userName } = useUserData(); // 현재 로그인한 사용자의 이름을 불러옵니다.
 
   const updateAccountNumber = useCallback((value: string) => { // 계좌번호 입력 시 형식을 자동으로 맞추는 함수입니다.
@@ -73,6 +76,7 @@ export function TransferFlowProvider({ children }: { children: ReactNode }) { //
     setAccountNumber(DEFAULT_STATE.accountNumber); // 입력된 계좌번호를 초기화합니다.
     setRecipientName(DEFAULT_STATE.recipientName); // 수취인 이름을 초기화합니다.
     setAmount(DEFAULT_STATE.amount); // 이체 금액을 0으로 초기화합니다.
+    setSourceAccountNumber(DEFAULT_STATE.sourceAccountNumber);
   }, []);
 
   const contextValue = useMemo<TransferFlowContextValue>(
@@ -86,8 +90,8 @@ export function TransferFlowProvider({ children }: { children: ReactNode }) { //
       amount,
       setAmount,
       currentUserName: userName?.trim() || DEV_FALLBACK_USER_NAME, // 사용자 이름이 없거나 공백이면 개발용 기본값을 사용합니다.
-      sourceAccountNumber: DEV_FALLBACK_ACCOUNT, // 출금 계좌번호는 개발용 환경 변수를 기본으로 사용합니다.
-      // TODO: Replace DEV_FALLBACK_ACCOUNT with session-derived account metadata fetched from a secure API.
+      sourceAccountNumber,
+      setSourceAccountNumber,
       resetFlow,
     }),
     [
@@ -99,6 +103,7 @@ export function TransferFlowProvider({ children }: { children: ReactNode }) { //
       amount,
       setAmount,
       userName,
+      sourceAccountNumber,
       resetFlow,
     ]
   );

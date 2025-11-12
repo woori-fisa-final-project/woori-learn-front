@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터를 사용합니다.
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다.
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Modal from "@/components/common/Modal";
+import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
 
 type NavItem = {
   label: string;
@@ -40,7 +44,7 @@ const QUICK_MENU = [
   { label: "분실 신고", icon: "🚨" },
 ];
 
-function HeaderUserBar({ userName }: { userName?: string }) {
+function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu: () => void }) {
   // 상단 사용자 인사 영역입니다.
   return (
     <header className="mb-[30px] flex items-center justify-between">
@@ -57,9 +61,14 @@ function HeaderUserBar({ userName }: { userName?: string }) {
         <span role="img" aria-label="notification">
           🔔
         </span>
-        <span role="img" aria-label="menu">
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          className="flex h-[28px] w-[28px] items-center justify-center rounded-full text-[22px] transition hover:bg-gray-100"
+          aria-label="전체 메뉴 열기"
+        >
           ☰
-        </span>
+        </button>
       </div>
     </header>
   );
@@ -213,9 +222,20 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
 export default function WooriMainPage() {
   const router = useRouter(); // 버튼 클릭 시 이동을 처리하기 위해 라우터를 사용합니다.
   const { userName } = useUserData(); // 사용자 이름을 가져와 헤더에 표시합니다.
+  const [isMenuOpen, setMenuOpen] = useState(false);
+  const [noticeMessage, setNoticeMessage] = useState("");
+  const [isNoticeOpen, setNoticeOpen] = useState(false);
 
   const handleNavigate = (route: string) => {
     router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
+  };
+
+  const handleOpenMenu = () => {
+    setMenuOpen(true);
+  };
+
+  const handleCloseMenu = () => {
+    setMenuOpen(false);
   };
 
   const handleTransfer = () => {
@@ -226,12 +246,21 @@ export default function WooriMainPage() {
     router.push("/searchaccount-scenario"); // 전체 계좌 조회 시나리오 페이지로 이동합니다.
   };
 
+  const handleOpenNotice = (message: string) => {
+    setNoticeMessage(message);
+    setNoticeOpen(true);
+  };
+
+  const handleCloseNotice = () => {
+    setNoticeOpen(false);
+  };
+
   return (
     <div className="min-h-[100dvh] bg-[#F5F7FB]">
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col">
         {/* 사용자 인사 헤더 */}
         <div className="px-[20px] pt-[60px]">
-          <HeaderUserBar userName={userName} />
+          <HeaderUserBar userName={userName} onOpenMenu={handleOpenMenu} />
         </div>
         <main className="flex-1 overflow-y-auto px-[20px] pb-[140px]">
           <div className="space-y-[24px] pb-[24px]">
@@ -251,6 +280,23 @@ export default function WooriMainPage() {
       </div>
       {/* 하단 네비게이션 */}
       <BottomNav onNavigate={handleNavigate} />
+      <ServiceMenuSheet
+        isOpen={isMenuOpen}
+        onClose={handleCloseMenu}
+        userName={userName}
+        onNavigate={handleNavigate}
+        onOpenNotice={handleOpenNotice}
+      />
+      <Modal
+        isOpen={isNoticeOpen}
+        onClose={handleCloseNotice}
+        title="서비스 준비 중"
+        description={noticeMessage || "서비스 준비 중입니다."}
+        confirmText="확인"
+        cancelText="닫기"
+        onConfirm={handleCloseNotice}
+        zIndex="z-[100]"
+      />
     </div>
   );
 }
