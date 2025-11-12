@@ -3,6 +3,8 @@
 // 완료 화면에서 사용할 이미지, 버튼 컴포넌트와 일정 요약 타입을 불러온다.
 import Image from "next/image";
 import Button from "@/components/common/Button";
+import InfoRow from "@/components/common/InfoRow";
+import { formatDate } from "@/lib/utils/formatDate";
 import type { ScheduleSummary } from "./types";
 
 // 완료 화면에 필요한 모든 정보를 상위에서 전달받는다.
@@ -72,29 +74,6 @@ export default function Scenario17({
   );
 }
 
-// 요약 정보 행에 사용할 props를 정의한다.
-type InfoRowProps = {
-  label: string;
-  value: string;
-  highlight?: boolean;
-};
-
-function InfoRow({ label, value, highlight = false }: InfoRowProps) {
-  // 항목 제목과 값을 한 줄로 배치하고 강조 여부에 따라 색상을 조정한다.
-  return (
-    <div className="flex items-center justify-between py-[5px] text-[13px] text-gray-600 first:pt-0 last:pb-0">
-      <span className={highlight ? "text-primary-600" : "text-gray-600"}>{label}</span>
-      <span
-        className={`text-[15px] ${
-          highlight ? "font-semibold text-primary-600" : "font-medium text-gray-900"
-        }`}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
 function buildPeriod(summary: ScheduleSummary) {
   // 시작일과 종료일을 조합해 기간 문자열을 만든다.
   if (!summary.startDate && !summary.endDate) {
@@ -103,20 +82,5 @@ function buildPeriod(summary: ScheduleSummary) {
   const start = summary.startDate ? formatDate(new Date(summary.startDate)) : "-";
   const end = summary.endDate ? formatDate(new Date(summary.endDate)) : "미지정";
   return `${start} ~ ${end}`;
-}
-
-function formatDate(source: Date | string) {
-  // Date 객체나 문자열을 YYYY.MM.DD 형식으로 변환한다.
-  const target = source instanceof Date ? source : new Date(source);
-  if (Number.isNaN(target.getTime())) {
-    if (typeof source === "string") {
-      return source.replaceAll("-", ".");
-    }
-    return "";
-  }
-  const year = target.getFullYear();
-  const month = String(target.getMonth() + 1).padStart(2, "0");
-  const day = String(target.getDate()).padStart(2, "0");
-  return `${year}.${month}.${day}`;
 }
 

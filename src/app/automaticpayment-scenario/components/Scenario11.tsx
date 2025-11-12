@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import Button from "@/components/common/Button";
 import BottomSheet from "@/components/common/BottomSheet";
+import Modal from "@/components/common/Modal";
+import InfoRow from "@/components/common/InfoRow";
 import Image from "next/image";
 
 // 자동이체 등록 정보 카드에 표시할 데이터를 정의한다.
@@ -37,6 +39,7 @@ export default function Scenario11({
   const { setOnBack, setTitle } = useScenarioHeader();
   // 바텀시트가 열려 있는지 여부를 관리하여 사용자 입력에 따라 UI를 토글한다.
   const [isSheetOpen, setSheetOpen] = useState(false);
+  const [isFxInfoModalOpen, setFxInfoModalOpen] = useState(false);
 
   // 컴포넌트가 마운트될 때 화면 제목과 뒤로가기 동작을 지정하고, 언마운트 시 원상복구한다.
   useEffect(() => {
@@ -71,9 +74,17 @@ export default function Scenario11({
     if (type === "krw") {
       router.push("/automaticpayment-scenario/register");
     } else {
-      window.alert("외화 자동이체 등록은 준비 중입니다.");
+      setFxInfoModalOpen(true);
     }
     setSheetOpen(false);
+  };
+
+  const handleCloseFxInfoModal = () => {
+    setFxInfoModalOpen(false);
+  };
+
+  const handleConfirmFxInfoModal = () => {
+    setFxInfoModalOpen(false);
   };
 
   // 자동이체 메인 화면의 전체 레이아웃을 렌더링한다.
@@ -157,6 +168,16 @@ export default function Scenario11({
           </button>
         </nav>
       </BottomSheet>
+      <Modal
+        isOpen={isFxInfoModalOpen}
+        onClose={handleCloseFxInfoModal}
+        title="서비스 준비 중"
+        description="외화 자동이체 등록 기능은 준비 중입니다."
+        confirmText="확인"
+        cancelText="닫기"
+        onConfirm={handleConfirmFxInfoModal}
+        zIndex="z-[100]"
+      />
     </div>
   );
 }
@@ -164,7 +185,7 @@ export default function Scenario11({
 function EmptyState() {
   // 자동이체가 하나도 없을 때 보여줄 일러스트와 안내 문구를 렌더링한다.
   return (
-    <div className=" mt-[60px] flex flex-col items-center justify-center text-center">
+    <div className=" mt-[150px] flex flex-col items-center justify-center text-center">
       <Image
         src="/images/file.png"
         alt="빈 상태"
@@ -185,24 +206,23 @@ function AutoTransferCard({ info }: { info?: AutoTransferInfo }) {
   }
 
   return (
-    <div className="mt-[28px] w-full">
+    <div className="mt-[100px] w-full">
       {/* 자동이체 상세 정보를 카드 형태로 감싼다. */}
       <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px] shadow-[0_4px_16px_rgba(34,58,124,0.08)]">
         <div className="flex items-start justify-between">
-          {/* 왼쪽에는 상태 배지를, 오른쪽에는 상태 텍스트를 표시한다. */}
+          {/* 왼쪽에는 상태 배지를 표시한다. */}
           <span className="rounded-full border border-[#1BAA90] px-[12px] py-[4px] text-[12px] font-semibold text-[#1BAA90]">
             {info.status}
           </span>
-          
         </div>
 
         {/* 자동이체 명칭과 상세 화면으로 이동할 수 있음을 나타내는 아이콘을 보여준다. */}
-        <div className="mt-[20px] flex items-center justify-between">
+        <button type="button" className="mt-[20px] flex w-full items-center justify-between text-left">
           <div className="flex items-center gap-[10px]">
             <p className="text-[17px] font-semibold text-gray-900">{info.title}</p>
           </div>
           <span className="text-[18px] text-gray-400">›</span>
-        </div>
+        </button>
 
         {/* 입금은행과 계좌, 금액, 주기 정보를 목록 형태로 표현한다. */}
         <div className="mt-[20px] space-y-[16px] text-[14px] text-gray-500">
@@ -211,16 +231,6 @@ function AutoTransferCard({ info }: { info?: AutoTransferInfo }) {
           <InfoRow label="이체일자/주기" value={info.schedule} />
         </div>
       </div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  // 정보 항목의 제목과 값을 수평으로 정렬하여 보여준다.
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-[13px] text-gray-500">{label}</span>
-      <span className="text-[15px] font-semibold text-gray-900">{value}</span>
     </div>
   );
 }

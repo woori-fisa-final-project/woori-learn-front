@@ -10,7 +10,7 @@ import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import Scenario2 from "@/app/transfer-scenario/components/Scenario2";
 import Scenario3 from "@/app/transfer-scenario/components/Scenario3";
 import Scenario4 from "@/app/transfer-scenario/components/Scenario4";
-import Scenario5 from "app/transfer-scenario/components/Scenario5";
+import Scenario5 from "@/app/transfer-scenario/components/Scenario5";
 import Scenario13 from "./Scenario13";
 import Scenario14 from "./Scenario14";
 import Scenario15 from "./Scenario15";
@@ -136,37 +136,31 @@ export default function Scenario12() {
   useEffect(() => {
     const handleBack = () => {
       const current = stepRef.current;
-      if (current === "account") {
-        router.back();
-        return;
-      }
-      if (current === "form") {
-        setStep("account");
-        return;
-      }
-      if (current === "amount") {
-        setStep("form");
-        return;
-      }
-      if (current === "review") {
-        setStep("amount");
-        return;
-      }
-      if (current === "schedule") {
-        setStep("review");
-        return;
-      }
-      if (current === "confirm") {
-        setStep("schedule");
-        return;
-      }
-      if (current === "consent") {
-        setStep("confirm");
-        return;
-      }
-      if (current === "complete") {
-        setStep("consent");
-        return;
+      switch (current) {
+        case "account":
+          router.back();
+          break;
+        case "form":
+          setStep("account");
+          break;
+        case "amount":
+          setStep("form");
+          break;
+        case "review":
+          setStep("amount");
+          break;
+        case "schedule":
+          setStep("review");
+          break;
+        case "confirm":
+          setStep("schedule");
+          break;
+        case "consent":
+          setStep("confirm");
+          break;
+        case "complete":
+          setStep("consent");
+          break;
       }
     };
 

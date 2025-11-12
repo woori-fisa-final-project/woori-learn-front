@@ -38,7 +38,7 @@ export default function Scenario13({
           />
           <div className="flex flex-col gap-[6px]">
             <p className="text-[15px] font-semibold text-gray-900">
-              우리은행계좌에서
+              {sourceAccountName}에서
             </p>
             <p className="text-[13px] text-gray-500">
               우리은행 · {sourceAccountNumber}

@@ -2,7 +2,9 @@
 
 // 자동이체 확인 단계에서 필요한 공통 컴포넌트와 상태 훅을 불러온다.
 import Button from "@/components/common/Button";
+import InfoRow from "@/components/common/InfoRow";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import { formatDate } from "@/lib/utils/formatDate";
 import { useMemo } from "react";
 import type { ScheduleSummary } from "./types";
 
@@ -72,7 +74,7 @@ export default function Scenario15({
   return (
     <div className="flex h-full flex-col">
       <header className="mt-[28px]">
-        <h1 className="text-[22px] ju text-center font-semibold text-gray-900">
+        <h1 className="text-[22px] text-center font-semibold text-gray-900">
           자동이체 등록정보를 확인해주세요
         </h1>
       </header>
@@ -108,35 +110,4 @@ export default function Scenario15({
       </section>
     </div>
   );
-}
-
-// 정보 행을 렌더링할 때 사용할 props 타입을 정의한다.
-type InfoRowProps = {
-  label: string;
-  value: string;
-  highlight?: boolean;
-};
-
-function InfoRow({ label, value, highlight = false }: InfoRowProps) {
-  // 각 항목의 제목과 값을 한 줄로 정렬하고 강조 여부에 따라 색상을 변경한다.
-  return (
-    <div className="flex items-center justify-between py-[12px] text-[13px] text-gray-600 first:pt-0 last:pb-0">
-      <span className={highlight ? "text-primary-600" : "text-gray-600"}>{label}</span>
-      <span
-        className={`text-[15px] ${
-          highlight ? "font-semibold text-primary-600" : "font-medium text-gray-900"
-        }`}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
-function formatDate(source: string) {
-  // YYYY-MM-DD 형식의 문자열을 UI에 맞는 YYYY.MM.DD 형식으로 변환한다.
-  if (!source) return "";
-  const [year, month, day] = source.split("-");
-  if (!year || !month || !day) return source.replaceAll("-", ".");
-  return `${year}.${month}.${day}`;
 }

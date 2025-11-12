@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다.
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Modal from "@/components/common/Modal";
 
 type NavItem = {
   label: string;
@@ -91,11 +92,13 @@ function ServiceMenuSheet({
   onClose,
   userName,
   onNavigate,
+  onOpenNotice,
 }: {
   isOpen: boolean;
   onClose: () => void;
   userName?: string;
   onNavigate: (route: string) => void;
+  onOpenNotice: (message: string) => void;
 }) {
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isVisible, setIsVisible] = useState(isOpen);
@@ -133,12 +136,12 @@ function ServiceMenuSheet({
           <button
             type="button"
             onClick={onClose}
-            aria-label="뒤로가기"
+            aria-label="메뉴닫기"
             className="flex h-[24px] w-[24px] items-center justify-center"
           >
              <Image
               src="/images/backicon.png"
-              alt="뒤로가기"
+              alt="메뉴닫기기"
               width={12}
               height={12}
               className="-rotate-90 object-contain"
@@ -190,13 +193,13 @@ function ServiceMenuSheet({
                 <button
                   type="button"
                   className="w-full cursor-pointer text-left transition hover:text-primary-500"
-                  onClick={() => {
+              onClick={() => {
                     if (item === "자동이체") {
                       onNavigate("/automaticpayment-scenario");
                       onClose();
                       return;
                     }
-                    alert(`${item} 메뉴는 준비 중입니다.`);
+                    onOpenNotice(`${item} 메뉴는 준비 중입니다.`);
                   }}
                 >
                   {item}
@@ -359,6 +362,8 @@ export default function WooriMainPage() {
   const router = useRouter(); // 버튼 클릭 시 이동을 처리하기 위해 라우터를 사용합니다.
   const { userName } = useUserData(); // 사용자 이름을 가져와 헤더에 표시합니다.
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const [noticeMessage, setNoticeMessage] = useState("");
+  const [isNoticeOpen, setNoticeOpen] = useState(false);
 
   const handleNavigate = (route: string) => {
     router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
@@ -378,6 +383,15 @@ export default function WooriMainPage() {
 
   const handleViewAllAccounts = () => {
     router.push("/searchaccount-scenario"); // 전체 계좌 조회 시나리오 페이지로 이동합니다.
+  };
+
+  const handleOpenNotice = (message: string) => {
+    setNoticeMessage(message);
+    setNoticeOpen(true);
+  };
+
+  const handleCloseNotice = () => {
+    setNoticeOpen(false);
   };
 
   return (
@@ -410,6 +424,17 @@ export default function WooriMainPage() {
         onClose={handleCloseMenu}
         userName={userName}
         onNavigate={handleNavigate}
+        onOpenNotice={handleOpenNotice}
+      />
+      <Modal
+        isOpen={isNoticeOpen}
+        onClose={handleCloseNotice}
+        title="서비스 준비 중"
+        description={noticeMessage || "서비스 준비 중입니다."}
+        confirmText="확인"
+        cancelText="닫기"
+        onConfirm={handleCloseNotice}
+        zIndex="z-[100]"
       />
     </div>
   );

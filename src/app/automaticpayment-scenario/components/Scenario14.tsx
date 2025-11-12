@@ -153,7 +153,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
             </div>
           </div>
 
-          <div className="space-y-[8px]">
             
             {/* 시작일과 종료일을 월 단위 입력으로 받아 사용자가 기간을 직접 지정할 수 있게 한다. */}
             <div className="flex flex-col gap-[12px] sm:grid sm:grid-cols-2">
@@ -185,7 +184,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 />
               </div>
             </div>
-          </div>
+          
         </div>
       </section>
 

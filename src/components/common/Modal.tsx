@@ -11,8 +11,7 @@ interface ModalProps {
   confirmText: string; // 확인 버튼에 표시할 라벨입니다.
   cancelText?: string; // 취소 버튼 텍스트(기본값은 "취소")입니다.
   onConfirm: () => void; // 확인 버튼 클릭 시 실행할 콜백입니다.
-  // confirmButtonColor?: string;
-  // cancelButtonColor?: string;
+  zIndex?: "z-40" | "z-50" | "z-[100]"; // 필요 시 다른 레이어보다 위에 올리기 위한 z-index
   children?: React.ReactNode; // 커스텀 콘텐츠를 렌더링하고 싶을 때 사용할 슬롯입니다.
 }
 
@@ -24,13 +23,12 @@ export default function Modal({
   confirmText,
   cancelText = "취소",
   onConfirm,
-  // confirmButtonColor = "bg-primary-400",
-  // cancelButtonColor = "bg-gray-100",
+  zIndex,
   children,
 }: ModalProps) {
   // 오버레이로 감싼 기본 모달 레이아웃을 제공하며, children이 주어지면 그대로 렌더링합니다.
   return (
-    <Overlay isOpen={isOpen} onClose={onClose}>
+    <Overlay isOpen={isOpen} onClose={onClose} zIndex={zIndex}>
       <div className="bg-white rounded-[20px] w-[350px] max-w-[calc(100vw-40px)] mx-auto p-6 animate-slideDown">
         {children ? (
           children
