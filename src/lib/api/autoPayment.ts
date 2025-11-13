@@ -119,10 +119,10 @@ export async function cancelAutoPayment(
 
   const url = `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`;
 
-  logApiCall("PUT", url, { autoPaymentId, educationalAccountId });
+  logApiCall("POST", url, { autoPaymentId, educationalAccountId });
 
   const response = await fetch(url, {
-    method: "PUT",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },

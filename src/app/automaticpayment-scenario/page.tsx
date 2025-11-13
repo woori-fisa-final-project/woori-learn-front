@@ -66,7 +66,18 @@ export default function AutomaticPaymentScenarioPage() {
       setIsLoading(true);
 
       // userId가 없으면 현재 로그인된 사용자 ID 사용
-      const currentUserId = userId ? parseInt(userId) : getCurrentUserId();
+      let currentUserId: number;
+      if (userId) {
+        const parsedUserId = parseInt(userId);
+        if (isNaN(parsedUserId)) {
+          devError("[fetchData] 유효하지 않은 userId:", userId);
+          currentUserId = getCurrentUserId();
+        } else {
+          currentUserId = parsedUserId;
+        }
+      } else {
+        currentUserId = getCurrentUserId();
+      }
 
       // 1. 계좌 목록 조회
       const accounts = await getAccountList(currentUserId);
