@@ -94,7 +94,7 @@ function AccountCard({
       </div>
       <div className="mt-[14px] flex items-center justify-between">
         <p className="text-[13px] text-gray-600">우리 1002-166-728332</p>
-        <span className="rounded-full bg-primary-400 px-[10px] py-[4px] text-[11px] text-primary-500">
+        <span className="rounded-full px-[10px] py-[4px] text-[11px] text-gray-700 border border-gray-300">
           한도제한
         </span>
       </div>
@@ -103,7 +103,7 @@ function AccountCard({
         <button
           type="button"
           onClick={onTransfer}
-          className="rounded-[12px] bg-primary-500 px-[16px] py-[8px] text-[13px] font-semibold text-gray-700 shadow-sm transition hover:bg-primary-600"
+          className="rounded-[12px] px-[16px] py-[8px] text-[13px] font-semibold text-gray-700 shadow-sm transition hover:bg-primary-600"
         >
           이체
         </button>
