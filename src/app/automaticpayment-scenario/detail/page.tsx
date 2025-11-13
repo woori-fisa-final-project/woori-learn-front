@@ -6,21 +6,24 @@ import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import Scenario18, { type Scenario18Detail } from "../components/Scenario18";
 import { getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import type { AutoPayment } from "@/types/autoPayment";
-import { convertToScenario18Detail } from "../utils/converter";
+import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
-import { devLog, devError } from "@/lib/utils/logger";
-import { useToast } from "@/lib/context/ToastContext";
+import { devLog, devError } from "@/utils/logger";
+import Modal from "@/components/common/Modal";
 
 export default function AutomaticPaymentDetailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { setTitle } = useScenarioHeader();
-  const { showError } = useToast();
 
   const [detail, setDetail] = useState<Scenario18Detail | null>(null);
   const [payment, setPayment] = useState<AutoPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [autoPaymentId, setAutoPaymentId] = useState<number | null>(null);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
 
   useEffect(() => {
     setTitle("자동이체");
@@ -34,7 +37,7 @@ export default function AutomaticPaymentDetailPage() {
       const idParam = searchParams.get("autoPaymentId");
       if (!idParam) {
         devError("[fetchDetail] autoPaymentId가 없습니다.");
-        showError("자동이체 정보를 찾을 수 없습니다.");
+        setErrorModal({ isOpen: true, message: "자동이체 정보를 찾을 수 없습니다." });
         return;
       }
 
@@ -43,7 +46,7 @@ export default function AutomaticPaymentDetailPage() {
       // NaN 체크 추가
       if (isNaN(id)) {
         devError("[fetchDetail] 유효하지 않은 autoPaymentId:", idParam);
-        showError("잘못된 자동이체 ID입니다.");
+        setErrorModal({ isOpen: true, message: "잘못된 자동이체 ID입니다." });
         return;
       }
 
@@ -56,7 +59,7 @@ export default function AutomaticPaymentDetailPage() {
       setDetail(convertedDetail);
     } catch (error) {
       devError("[fetchDetail] 자동이체 상세 조회 실패:", error);
-      showError("자동이체 정보를 불러오지 못했습니다.");
+      setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +94,7 @@ export default function AutomaticPaymentDetailPage() {
   const handleCancelAutoPayment = async () => {
     if (!autoPaymentId || !payment) {
       devError("[handleCancelAutoPayment] autoPaymentId 또는 payment 정보가 없습니다.");
-      showError("자동이체 정보를 찾을 수 없습니다.");
+      setErrorModal({ isOpen: true, message: "자동이체 정보를 찾을 수 없습니다." });
       return;
     }
 
@@ -109,16 +112,25 @@ export default function AutomaticPaymentDetailPage() {
       router.push(`/automaticpayment-scenario/cancelled?autoPaymentId=${autoPaymentId}`);
     } catch (error) {
       devError("[handleCancelAutoPayment] 자동이체 해지 실패:", error);
-      showError("자동이체 해지에 실패했습니다. 다시 시도해주세요.");
+      setErrorModal({ isOpen: true, message: "자동이체 해지에 실패했습니다.\n다시 시도해주세요." });
     }
   };
 
   return (
-    <Scenario18
-      detail={detail}
-      onBack={() => router.back()}
-      onNavigateToCancelComplete={handleCancelAutoPayment}
-    />
+    <>
+      <Scenario18
+        detail={detail}
+        onBack={() => router.back()}
+        onNavigateToCancelComplete={handleCancelAutoPayment}
+      />
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+        title="오류"
+        description={errorModal.message}
+        confirmText="확인"
+      />
+    </>
   );
 }
 

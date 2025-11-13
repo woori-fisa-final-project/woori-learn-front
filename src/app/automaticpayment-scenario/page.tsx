@@ -9,11 +9,11 @@ import { getAutoPaymentList } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
-import { formatAccountNumber, getAccountSuffix } from "@/lib/utils/accountUtils";
-import { getBankName } from "@/lib/utils/bankUtils";
-import { getCurrentUserId } from "@/lib/utils/authUtils";
+import { formatAccountNumber, getAccountSuffix } from "@/utils/accountUtils";
+import { getBankName } from "@/utils/bankUtils";
+import { getCurrentUserId } from "@/utils/authUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
-import { devLog, devError } from "@/lib/utils/logger";
+import { devLog, devError } from "@/utils/logger";
 
 // AutoPayment를 AutoTransferInfo로 변환하는 함수
 function convertToAutoTransferInfo(

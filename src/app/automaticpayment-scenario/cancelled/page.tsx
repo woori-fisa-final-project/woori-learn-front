@@ -6,8 +6,8 @@ import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import Scenario19 from "../components/Scenario19";
 import { getAutoPaymentDetail } from "@/lib/api/autoPayment";
 import type { Scenario18Detail } from "../components/Scenario18";
-import { convertToScenario18Detail } from "../utils/converter";
-import { devLog, devError } from "@/lib/utils/logger";
+import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
+import { devLog, devError } from "@/utils/logger";
 
 export default function AutomaticPaymentCancelCompletePage() {
   const searchParams = useSearchParams();

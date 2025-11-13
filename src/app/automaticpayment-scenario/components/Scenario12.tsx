@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 // 공통 유틸리티 함수를 불러온다.
-import { formatAccountNumber } from "@/lib/utils/accountUtils";
-import { getBankCode } from "@/lib/utils/bankUtils";
+import { formatAccountNumber } from "@/utils/accountUtils";
+import { getBankCode } from "@/utils/bankUtils";
 // 다른 시나리오 단계 컴포넌트를 순차적으로 사용하여 전체 플로우를 완성한다.
 import Scenario2 from "@/app/transfer-scenario/components/Scenario2";
 import Scenario3 from "@/app/transfer-scenario/components/Scenario3";
@@ -24,10 +24,10 @@ import Image from "next/image";
 import { createAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
 import type { EducationalAccount } from "@/types/account";
-import { getCurrentUserId } from "@/lib/utils/authUtils";
-import { parseNumber, parseTransferDay } from "@/lib/utils/numberUtils";
-import { devError } from "@/lib/utils/logger";
-import { useToast } from "@/lib/context/ToastContext";
+import { getCurrentUserId } from "@/utils/authUtils";
+import { parseNumber, parseTransferDay } from "@/utils/numberUtils";
+import { devError } from "@/utils/logger";
+import Modal from "@/components/common/Modal";
 
 // 자동이체 등록 플로우가 이동할 수 있는 단계 값을 정의한다.
 type Step =
@@ -114,7 +114,6 @@ export default function Scenario12() {
   // 자동이체 등록 흐름 전체를 제어하는 메인 페이지 컴포넌트이다.
   const router = useRouter();
   const { setTitle, setOnBack } = useScenarioHeader();
-  const { showError } = useToast();
   const {
     setSelectedBank,
     resetFlow,
@@ -142,6 +141,11 @@ export default function Scenario12() {
   // 계좌 목록 관련 state
   const [accounts, setAccounts] = useState<EducationalAccount[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+  // 에러 모달 상태
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
 
   // step 상태가 변할 때마다 ref에 최신 값을 저장해 뒤로가기 처리에서 사용한다.
   useEffect(() => {
@@ -157,7 +161,7 @@ export default function Scenario12() {
         setAccounts(accountList);
       } catch (error) {
         devError("[fetchAccounts] 계좌 목록 조회 실패:", error);
-        showError("계좌 목록을 불러오지 못했습니다.");
+        setErrorModal({ isOpen: true, message: "계좌 목록을 불러오지 못했습니다." });
         setAccounts([]);
       } finally {
         setIsLoadingAccounts(false);
@@ -273,12 +277,15 @@ export default function Scenario12() {
   // 약관에 동의하고 확인을 누르면 API를 호출하고 완료 화면으로 진행한다.
   const handleConsentCompleted = async () => {
     if (!scheduleSummary) {
-      console.error("일정 정보가 없습니다.");
+      devError("[handleConsentCompleted] 일정 정보가 없습니다.");
       return;
     }
 
     if (!selectedAccount) {
-      showError("계좌 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.");
+      setErrorModal({
+        isOpen: true,
+        message: "계좌 정보를 찾을 수 없습니다.\n처음부터 다시 진행해주세요."
+      });
       setStep("account");
       return;
     }
@@ -307,7 +314,10 @@ export default function Scenario12() {
       setStep("complete");
     } catch (error) {
       devError("[handleConsentCompleted] 자동이체 등록 실패:", error);
-      showError("자동이체 등록에 실패했습니다. 다시 시도해주세요.");
+      setErrorModal({
+        isOpen: true,
+        message: "자동이체 등록에 실패했습니다.\n다시 시도해주세요."
+      });
     }
   };
 
@@ -405,6 +415,15 @@ export default function Scenario12() {
           onClose={handlePasswordClose}
         />
       )}
+
+      {/* 에러 모달 */}
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+        title="오류"
+        description={errorModal.message}
+        confirmText="확인"
+      />
     </div>
   );
 }

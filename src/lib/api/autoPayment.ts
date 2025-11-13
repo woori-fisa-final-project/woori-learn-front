@@ -1,5 +1,5 @@
 import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
-import { devLog, logApiCall, logApiResponse, devError } from "@/lib/utils/logger";
+import { devLog, logApiCall, logApiResponse, devError } from "@/utils/logger";
 
 const BASE_URL = "/education/auto-payment";
 

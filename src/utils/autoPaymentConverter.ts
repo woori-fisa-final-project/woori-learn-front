@@ -1,9 +1,9 @@
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
-import type { Scenario18Detail } from "../components/Scenario18";
-import { formatAccountNumber } from "@/lib/utils/accountUtils";
-import { getBankName } from "@/lib/utils/bankUtils";
-import { getCurrentUserName } from "@/lib/utils/authUtils";
+import type { Scenario18Detail } from "@/app/automaticpayment-scenario/components/Scenario18";
+import { formatAccountNumber } from "@/utils/accountUtils";
+import { getBankName } from "@/utils/bankUtils";
+import { getCurrentUserName } from "@/utils/authUtils";
 
 /**
  * AutoPayment를 Scenario18Detail로 변환하는 공통 유틸리티 함수
