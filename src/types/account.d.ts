@@ -13,5 +13,6 @@ export interface EducationalAccount {
   balance: number;
   accountPassword: string;
   accountName: string;
+  bankName: string;
   userId: number;
 }
