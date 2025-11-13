@@ -32,6 +32,14 @@ export default function AutomaticPaymentCancelCompletePage() {
         }
 
         const autoPaymentId = parseInt(autoPaymentIdParam);
+
+        // NaN 체크 추가
+        if (isNaN(autoPaymentId)) {
+          console.error("유효하지 않은 autoPaymentId:", autoPaymentIdParam);
+          return;
+        }
+
+        // TODO: 프로덕션 배포 전 디버깅 로그 제거
         console.log("해지 완료 페이지 - autoPaymentId:", autoPaymentId);
 
         // API에서 최신 상태 조회

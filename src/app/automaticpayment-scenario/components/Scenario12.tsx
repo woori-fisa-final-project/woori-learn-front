@@ -25,6 +25,7 @@ import { createAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
 import type { EducationalAccount } from "@/types/account";
 import { getCurrentUserId } from "@/lib/utils/authUtils";
+import { parseNumber, parseTransferDay } from "@/lib/utils/numberUtils";
 
 // 자동이체 등록 플로우가 이동할 수 있는 단계 값을 정의한다.
 type Step =
@@ -279,24 +280,7 @@ export default function Scenario12() {
     }
 
     try {
-      // frequency와 transferDay에서 숫자만 추출
-      const parseNumber = (str?: string): number => {
-        if (!str) return 0;
-        const match = str.match(/\d+/);
-        return match ? parseInt(match[0]) : 0;
-      };
-
-      // "말일"을 처리하는 함수
-      const parseTransferDay = (str?: string): number => {
-        if (!str) return 1;
-        if (str.includes("말일")) {
-          // TODO: 백엔드 API 명세 확인 필요 (31, 0, -1, 99 등)
-          return 31; // 일반적으로 31이 말일을 의미
-        }
-        const match = str.match(/\d+/);
-        return match ? parseInt(match[0]) : 1;
-      };
-
+      // frequency와 transferDay에서 숫자 추출
       const transferCycle = parseNumber(scheduleSummary.frequency);
       const designatedDate = parseTransferDay(scheduleSummary.transferDay);
 
@@ -319,6 +303,8 @@ export default function Scenario12() {
       setStep("complete");
     } catch (error) {
       console.error("자동이체 등록 실패:", error);
+      // TODO: alert 대신 Toast/Modal 컴포넌트 사용 권장 (UX 개선)
+      // 현재는 빠른 피드백을 위해 alert 사용
       alert("자동이체 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };

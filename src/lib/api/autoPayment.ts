@@ -111,6 +111,9 @@ export async function cancelAutoPayment(
   queryParams.append("educationalAccountId", educationalAccountId.toString());
 
   const url = `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`;
+
+  // TODO: 프로덕션 배포 전 디버깅 로그 제거 또는 환경별 분기 처리
+  // if (process.env.NODE_ENV === "development") { ... }
   console.log("=== 자동이체 해지 API 요청 ===");
   console.log("URL:", url);
   console.log("Method: PUT");

@@ -3,7 +3,7 @@
 import Scenario11, {
   type AutoTransferInfo,
 } from "./components/Scenario11";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAutoPaymentList } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
@@ -55,14 +55,12 @@ export default function AutomaticPaymentScenarioPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("user_id");
 
-  const [account, setAccount] = useState<EducationalAccount | null>(null);
   const [accountSuffix, setAccountSuffix] = useState("0000");
   const [autoTransferList, setAutoTransferList] = useState<AutoTransferInfo[]>([]);
   const [hasAutoTransfer, setHasAutoTransfer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -80,7 +78,6 @@ export default function AutomaticPaymentScenarioPage() {
 
       // 2. 첫 번째 계좌(대표계좌) 선택
       const representativeAccount = accounts[0];
-      setAccount(representativeAccount);
 
       // 3. 계좌번호 뒷자리 4자리 추출
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
@@ -93,6 +90,7 @@ export default function AutomaticPaymentScenarioPage() {
 
       // 5. 모든 자동이체를 배열로 변환하여 표시
       if (payments && payments.length > 0) {
+        // TODO: 프로덕션 배포 전 디버깅 로그 제거
         console.log(`목록 페이지 - 자동이체 ${payments.length}건 조회`);
         const convertedList = payments.map(payment => {
           console.log(`- ID ${payment.id}: ${payment.processingStatus}`);
@@ -111,15 +109,17 @@ export default function AutomaticPaymentScenarioPage() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-    fetchData();
   }, [userId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침
   usePageFocusRefresh(() => {
+    // TODO: 프로덕션 배포 전 디버깅 로그 제거
     console.log("페이지 포커스 복귀 - 데이터 새로고침");
-    window.location.reload(); // 페이지 전체 새로고침으로 최신 데이터 보장
+    fetchData(); // 페이지 새로고침 없이 데이터만 다시 가져오기
   });
 
   if (isLoading) {
