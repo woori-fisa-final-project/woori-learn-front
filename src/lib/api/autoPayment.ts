@@ -37,7 +37,9 @@ export async function getAutoPaymentList(
   });
 
   if (!response.ok) {
-    throw new Error(`자동이체 목록 조회 실패: ${response.status}`);
+    const errorText = await response.text();
+    devError(`[getAutoPaymentList] 에러 응답 ${response.status}:`, errorText);
+    throw new Error(`자동이체 목록 조회 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment[]> = await response.json();
@@ -58,7 +60,9 @@ export async function getAutoPaymentDetail(
   });
 
   if (!response.ok) {
-    throw new Error(`자동이체 상세 조회 실패: ${response.status}`);
+    const errorText = await response.text();
+    devError(`[getAutoPaymentDetail] 에러 응답 ${response.status}:`, errorText);
+    throw new Error(`자동이체 상세 조회 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment> = await response.json();
@@ -94,7 +98,9 @@ export async function createAutoPayment(
   });
 
   if (!response.ok) {
-    throw new Error(`자동이체 등록 실패: ${response.status}`);
+    const errorText = await response.text();
+    devError(`[createAutoPayment] 에러 응답 ${response.status}:`, errorText);
+    throw new Error(`자동이체 등록 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment> = await response.json();

@@ -134,8 +134,8 @@ export default function Scenario12() {
   const [scheduleSummary, setScheduleSummary] = useState<ScheduleSummary | null>(null);
   // 비밀번호 바텀시트 열림 여부를 관리한다.
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState(false);
-  // 사용자가 입력한 계좌 비밀번호를 저장한다.
-  const [accountPassword, setAccountPassword] = useState<string>("");
+  // 사용자가 입력한 계좌 비밀번호를 저장한다 (보안: useRef 사용으로 DevTools 노출 방지)
+  const accountPasswordRef = useRef<string>("");
   // 뒤로가기 시 현재 단계를 안정적으로 참조하기 위해 ref를 사용한다.
   const stepRef = useRef(step);
   // 계좌 목록 관련 state
@@ -240,7 +240,7 @@ export default function Scenario12() {
 
   // 비밀번호 인증에 성공하면 입력된 비밀번호를 저장하고 확인 단계로 이동한다.
   const handlePasswordSuccess = (password: string) => {
-    setAccountPassword(password);
+    accountPasswordRef.current = password;
     setPasswordSheetOpen(false);
     setStep("confirm");
   };
@@ -307,10 +307,11 @@ export default function Scenario12() {
         designatedDate: designatedDate,
         startDate: scheduleSummary.startDate,
         expirationDate: scheduleSummary.endDate,
-        accountPassword: accountPassword, // 사용자가 입력한 비밀번호 사용
+        accountPassword: accountPasswordRef.current, // 사용자가 입력한 비밀번호 사용
       });
 
-      // 성공 시 완료 화면으로 이동
+      // 성공 시 비밀번호 초기화 (보안) 및 완료 화면으로 이동
+      accountPasswordRef.current = "";
       setStep("complete");
     } catch (error) {
       devError("[handleConsentCompleted] 자동이체 등록 실패:", error);
@@ -318,9 +319,7 @@ export default function Scenario12() {
         isOpen: true,
         message: "자동이체 등록에 실패했습니다.\n다시 시도해주세요."
       });
-    } finally {
-      // 보안: API 호출 후 즉시 비밀번호 초기화
-      setAccountPassword("");
+      // 실패 시 비밀번호를 초기화하지 않아 재시도 가능
     }
   };
 
