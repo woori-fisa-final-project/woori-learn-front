@@ -65,7 +65,7 @@ export default function ServiceCard({
         style={imageStyle}
       />
       <p
-        className={`text-[18px] ${textColor} font-semibold leading-tight whitespace-pre-line`}
+        className={`text-[18px] ${textColor} font-extrabold leading-tight whitespace-pre-line`}
       >
         {title}
       </p>

@@ -85,49 +85,49 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-12 w-full">
-        <p className="mb-6 text-[19px] font-medium leading-[1.38] tracking-[-0.76px] text-gray-700">계정 관리</p>
+        <p className="mb-6 text-[19px] font-semibold leading-[1.38] tracking-[-0.76px] text-gray-700">계정 관리</p>
 
         <div className="flex w-full flex-col gap-2">
           <button
             onClick={handleAccountOpen}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">계좌 개설하기</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">계좌 개설하기</p>
           </button>
 
           <button
             onClick={handlePointTransfer}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">포인트 관리</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">포인트 관리</p>
           </button>
 
           <button
             onClick={handleChangeName}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">이름 변경하기</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">이름 변경하기</p>
           </button>
 
           <button
             onClick={handleChangePassword}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">비밀번호 변경</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">비밀번호 변경</p>
           </button>
 
           <button
             onClick={handleSecessionClick}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">회원탈퇴</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">회원탈퇴</p>
           </button>
 
           <button
             onClick={handleLogout}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">로그아웃</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">로그아웃</p>
           </button>
         </div>
       </div>

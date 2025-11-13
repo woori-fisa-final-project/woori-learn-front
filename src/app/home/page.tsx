@@ -25,7 +25,7 @@ export default function HomePage() {
 
   const serviceCards = [ // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
     {
-      title: "계좌 조회 ·\n자동 이체",
+      title: "조회·이체",
       bgColor: "bg-[#2677CC]",
       borderColor: "border-[#6393D9]",
       textColor: "text-[#BBD2ED]",
@@ -109,7 +109,7 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[390px] px-5 pt-[60px] pb-0 sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="w-full max-w-[390px] px-5 pt-[30px] pb-0 sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
         {/* 상단 로고와 프로필 영역 */}
         <div className="flex w-full items-center justify-between">
           <div className="relative h-[58px] w-[100px]">

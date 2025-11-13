@@ -56,7 +56,7 @@ export default function SignupPage() {
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[min(100%,_430px)] px-[20px] pt-[60px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="w-full max-w-[min(100%,_430px)] px-[20px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
         {/* 상단 헤더: 뒤로가기 버튼과 페이지 제목을 보여줍니다. */}
         <div className="flex w-full items-center gap-2">
           <button

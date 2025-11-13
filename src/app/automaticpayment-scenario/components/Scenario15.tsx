@@ -83,7 +83,7 @@ export default function Scenario15({
       </section>
 
       {/* 사용자가 특정 정보를 다시 수정하거나 등록을 확정할 수 있는 버튼 영역이다. */}
-      <section className="mt-[40px] grid grid-cols-2 gap-[10px]">
+      <section className="mt-[40px] mb-[80px] grid grid-cols-2 gap-[10px]">
         <Button variant="secondary" size="sm" onClick={onEditAmount}>
           금액 재입력
         </Button>

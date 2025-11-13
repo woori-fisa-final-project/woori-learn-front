@@ -14,9 +14,9 @@ export default function ScenarioLayout({ children }: ScenarioLayoutProps) {
   return (
     <ScenarioHeaderProvider>
       {/* 시나리오 전체 화면을 고정 높이와 흰 배경으로 통일하여 유지합니다. */}
-      <div className="flex h-[100dvh] flex-col overflow-hidden bg-white font-sans pt-[60px]">
+      <div className="flex h-[100dvh] flex-col overflow-hidden bg-white font-sans">
         <ScenarioHeader /> {/* 상단 공통 헤더: 뒤로가기, 종료 모달 등의 행동을 포함합니다. */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">{children}</main> {/* 콘텐츠가 길어질 때만 자연스럽게 스크롤이 생깁니다. */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[60px]">{children}</main> {/* 콘텐츠가 길어질 때만 자연스럽게 스크롤이 생깁니다. */}
       </div>
     </ScenarioHeaderProvider>
   );
