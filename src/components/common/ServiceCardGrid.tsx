@@ -14,6 +14,9 @@ interface ServiceCardData {
   imageWidth?: string; // 이미지 폭 커스텀 값입니다.
   imageHeight?: string; // 이미지 높이 커스텀 값입니다.
   imageClassName?: string; // 이미지 추가 클래스입니다.
+  badgeSrc?: string; // 배지 이미지 경로입니다.
+  badgeAlt?: string; // 배지 대체 텍스트입니다.
+  badgePositionClassName?: string; // 배지 위치 조정 클래스입니다.
 }
 
 interface ServiceCardGridProps {
@@ -43,6 +46,9 @@ export default function ServiceCardGrid({
           imageWidth={card.imageWidth}
           imageHeight={card.imageHeight}
           imageClassName={card.imageClassName}
+          badgeSrc={card.badgeSrc}
+          badgeAlt={card.badgeAlt}
+          badgePositionClassName={card.badgePositionClassName}
         />
       ))}
     </div>

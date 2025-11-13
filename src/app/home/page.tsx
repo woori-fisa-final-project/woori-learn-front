@@ -25,23 +25,23 @@ export default function HomePage() {
 
   const serviceCards = [ // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
     {
-      title: "계좌 조회/\n이체",
-      bgColor: "bg-primary-500",
-      borderColor: "border-primary-300",
-      textColor: "text-primary-200",
+      title: "계좌 조회 ·\n자동 이체",
+      bgColor: "bg-[#2677CC]",
+      borderColor: "border-[#6393D9]",
+      textColor: "text-[#BBD2ED]",
       imageSrc: accountImage,
       imageAlt: "계좌 조회",
       height: "h-[109px]",
       rounded: "rounded-[10px]",
-      imageWidth: "66px",
-      imageHeight: "59px",
+      imageWidth: "56px",
+      imageHeight: "49px",
       onClick: handleAccountClick, // 클릭 시 계좌 관련 시나리오 진입으로 이동합니다.
     },
     {
       title: "공과금",
-      bgColor: "bg-primary-800",
-      borderColor: "border-primary-300",
-      textColor: "text-primary-100",
+      bgColor: "bg-[#35B9BF]",
+      borderColor: "border-[#35B9BF]",
+      textColor: "text-[#C6EAEC]",
       imageSrc: utilityImage,
       imageAlt: "공과금",
       height: "h-[108px]",
@@ -50,10 +50,10 @@ export default function HomePage() {
       imageHeight: "59px",
     },
     {
-      title: "예/적금",
-      bgColor: "bg-gray-50",
-      borderColor: "border-gray-200",
-      textColor: "text-gray-700",
+      title: "예금·적금",
+      bgColor: "bg-[#FADE96]",
+      borderColor: "border-[#FBE5AC]",
+      textColor: "text-[#605F55]",
       imageSrc: savingsImage,
       imageAlt: "예적금",
       height: "h-[108px]",
@@ -63,32 +63,49 @@ export default function HomePage() {
     },
     {
       title: "대출",
-      bgColor: "bg-primary-800",
-      borderColor: "border-primary-300",
-      textColor: "text-primary-200",
+      bgColor: "bg-[#1164C9]",
+      borderColor: "border-[#6393D9]",
+      textColor: "text-[#BDD1EE]",
       imageSrc: loanImage,
       imageAlt: "대출",
       height: "h-[108px]",
       rounded: "rounded-[8px]",
-      imageWidth: "66px",
-      imageHeight: "59px",
+      imageWidth: "61px",
+      imageHeight: "54px",
     },
   ];
 
-  const progressSteps = [ // 전체 진행도를 나타내는 5단계 프로그레스 바 구성입니다.
-    { label: "계좌이체", bgColor: "primary-700" as const, textColor: "gray-500" as const },
-    { label: "공과금", bgColor: "primary-700" as const, textColor: "gray-500" as const },
-    { label: "예/적금", bgColor: "primary-700" as const, textColor: "gray-500" as const },
-    { label: "대출", bgColor: "primary-700" as const, textColor: "gray-500" as const },
-    { label: "마무리퀴즈", bgColor: "green-500" as const, textColor: "green-500" as const },
+  const progressCards = [ // 각 교육 카테고리별 진행도 카드 데이터를 정의합니다.
+    { title: "거래내역 조회", progress: 100 },
+    { title: "공과금", progress: 100 },
+    { title: "예/적금", progress: 0 },
+    { title: "대출", progress: 0 },
   ];
 
-  const progressCards = [ // 각 교육 카테고리별 진행도 카드 데이터를 정의합니다.
-    { title: "거래내역 조회", progress: 50 },
-    { title: "공과금", progress: 100 },
-    { title: "예/적금", progress: 100 },
-    { title: "대출", progress: 100 },
-  ];
+  const scenarioCompletion = progressCards.map((card) => card.progress >= 100);
+  const allScenariosCompleted = scenarioCompletion.every(Boolean);
+
+  const stepLabels = ["계좌이체", "공과금", "예/적금", "대출"];
+  const progressSteps = stepLabels.map((label, index) => {
+    const completed = scenarioCompletion[index];
+    return {
+      label,
+      bgColor: completed ? "bg-[#2F6FE0]" : "bg-[#C3C3C3]",
+      textColor: "text-gray-500",
+      iconSrc: completed ? "/images/maincheck2.png" : "/images/maincheck.png",
+      iconAlt: completed ? `${label} 완료` : `${label} 진행 중`,
+      iconClassName: completed ? "bg-[#0043CE]" : "bg-[#C3C3C3]",
+    };
+  });
+
+  progressSteps.push({
+    label: "마무리 퀴즈",
+    bgColor: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
+    textColor: allScenariosCompleted ? "text-[#0B8A46]" : "text-gray-400",
+    iconSrc: allScenariosCompleted ? "/images/maincheck3.png" : "/images/maincheck.png",
+    iconAlt: allScenariosCompleted ? "마무리 퀴즈 완료" : "마무리 퀴즈 진행 예정",
+    iconClassName: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
+  });
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
@@ -116,12 +133,17 @@ export default function HomePage() {
         </div>
 
         {/* 진행률 바 */}
-        <div className="mt-3">
-          <ProgressBar steps={progressSteps} />
+        <div>
+          <ProgressBar
+            steps={progressSteps}
+            lineColorClassName="bg-[#376FDB]"
+            showEndCaps={false}
+            
+          />
         </div>
 
         {/* 교육별 진행도 카드 리스트 */}
-        <div className="mt-0 w-full">
+        <div className="mt-0 w-full pb-[35px]">
           <h2 className="mb-4 text-[18px] font-bold text-gray-600">교육별 진행도</h2>
           <div className="flex flex-col gap-[12px]">
             {progressCards.map((card) => (
