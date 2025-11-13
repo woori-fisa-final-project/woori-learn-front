@@ -6,38 +6,8 @@ import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import Scenario18, { type Scenario18Detail } from "../components/Scenario18";
 import { getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import type { AutoPayment } from "@/types/autoPayment";
-import { formatAccountNumber } from "@/lib/utils/accountUtils";
-import { getBankName } from "@/lib/utils/bankUtils";
-
-// AutoPayment를 Scenario18Detail로 변환
-function convertToScenario18Detail(payment: AutoPayment): Scenario18Detail {
-  const statusMap = {
-    ACTIVE: "정상",
-    CANCELLED: "해지",
-  };
-
-  // 날짜 범위 포맷팅
-  const formatDateRange = (startDate: string, expirationDate: string): string => {
-    return `${startDate} ~ ${expirationDate}`;
-  };
-
-  const bankName = getBankName(payment.depositBankCode);
-  const bankAccount = formatAccountNumber(payment.depositNumber);
-
-  return {
-    status: statusMap[payment.processingStatus] || payment.processingStatus,
-    title: payment.displayName || "자동이체",
-    amount: `${payment.amount.toLocaleString()}원`,
-    transferDay: `${payment.designatedDate}일`,
-    frequency: `${payment.transferCycle}개월`,
-    period: formatDateRange(payment.startDate, payment.expirationDate),
-    ownerName: "김우리", // 출금 계좌 소유자 (현재 API에 없음)
-    recipientName: payment.counterpartyName,
-    registerDate: payment.startDate, // 등록일 (현재 API에 없으므로 시작일 사용)
-    sourceAccount: "우리은행 · -", // 출금 계좌 (현재 API에 없음)
-    inboundAccount: `${bankName} · ${bankAccount}`,
-  };
-}
+import { convertToScenario18Detail } from "../utils/converter";
+import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 
 export default function AutomaticPaymentDetailPage() {
   const searchParams = useSearchParams();
@@ -48,14 +18,14 @@ export default function AutomaticPaymentDetailPage() {
   const [payment, setPayment] = useState<AutoPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [autoPaymentId, setAutoPaymentId] = useState<number | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     setTitle("자동이체");
     return () => setTitle("");
   }, [setTitle]);
 
-  const fetchDetail = async () => {
+  useEffect(() => {
+    async function fetchDetail() {
     try {
       setIsLoading(true);
 
@@ -78,26 +48,16 @@ export default function AutomaticPaymentDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  useEffect(() => {
     fetchDetail();
-  }, [searchParams, refreshKey]);
+  }, [searchParams]);
 
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log("상세 페이지 포커스 복귀 - 데이터 새로고침");
-        setRefreshKey(prev => prev + 1);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+  usePageFocusRefresh(() => {
+    console.log("상세 페이지 포커스 복귀 - 데이터 새로고침");
+    window.location.reload();
+  });
 
   if (isLoading) {
     return (

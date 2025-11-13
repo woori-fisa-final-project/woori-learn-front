@@ -5,39 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import Scenario19 from "../components/Scenario19";
 import { getAutoPaymentDetail } from "@/lib/api/autoPayment";
-import type { AutoPayment } from "@/types/autoPayment";
 import type { Scenario18Detail } from "../components/Scenario18";
-import { formatAccountNumber } from "@/lib/utils/accountUtils";
-import { getBankName } from "@/lib/utils/bankUtils";
-
-// AutoPayment를 Scenario18Detail로 변환
-function convertToScenario18Detail(payment: AutoPayment): Scenario18Detail {
-  const statusMap = {
-    ACTIVE: "정상",
-    CANCELLED: "해지",
-  };
-
-  const formatDateRange = (startDate: string, expirationDate: string): string => {
-    return `${startDate} ~ ${expirationDate}`;
-  };
-
-  const bankName = getBankName(payment.depositBankCode);
-  const bankAccount = formatAccountNumber(payment.depositNumber);
-
-  return {
-    status: statusMap[payment.processingStatus] || payment.processingStatus,
-    title: payment.displayName || "자동이체",
-    amount: `${payment.amount.toLocaleString()}원`,
-    transferDay: `${payment.designatedDate}일`,
-    frequency: `${payment.transferCycle}개월`,
-    period: formatDateRange(payment.startDate, payment.expirationDate),
-    ownerName: "김우리", // TODO: 실제 계좌 소유자 이름
-    recipientName: payment.counterpartyName,
-    registerDate: payment.startDate,
-    sourceAccount: "우리은행 · -", // TODO: 실제 출금 계좌 정보
-    inboundAccount: `${bankName} · ${bankAccount}`,
-  };
-}
+import { convertToScenario18Detail } from "../utils/converter";
 
 export default function AutomaticPaymentCancelCompletePage() {
   const searchParams = useSearchParams();

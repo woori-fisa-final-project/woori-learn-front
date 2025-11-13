@@ -12,6 +12,7 @@ import type { EducationalAccount } from "@/types/account";
 import { formatAccountNumber, getAccountSuffix } from "@/lib/utils/accountUtils";
 import { getBankName } from "@/lib/utils/bankUtils";
 import { getCurrentUserId } from "@/lib/utils/authUtils";
+import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 
 // AutoPayment를 AutoTransferInfo로 변환하는 함수
 function convertToAutoTransferInfo(
@@ -44,7 +45,7 @@ function convertToAutoTransferInfo(
     endDate: payment.expirationDate,
     ownerName: account.accountName, // API에서 제공되는 계좌명
     recipientName: payment.counterpartyName,
-    registerDate: null,
+    registerDate: payment.startDate, // 등록일 (API에 별도 필드가 없어 시작일 사용)
     sourceAccountBank: "우리은행", // 교육용 계좌는 모두 우리은행
     sourceAccountNumber: formatAccountNumber(account.accountNumber), // API에서 제공되는 계좌번호
   };
@@ -59,9 +60,9 @@ export default function AutomaticPaymentScenarioPage() {
   const [autoTransferList, setAutoTransferList] = useState<AutoTransferInfo[]>([]);
   const [hasAutoTransfer, setHasAutoTransfer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    async function fetchData() {
     try {
       setIsLoading(true);
 
@@ -110,26 +111,16 @@ export default function AutomaticPaymentScenarioPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  useEffect(() => {
     fetchData();
-  }, [userId, refreshKey]);
+  }, [userId]);
 
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log("페이지 포커스 복귀 - 데이터 새로고침");
-        setRefreshKey(prev => prev + 1);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+  usePageFocusRefresh(() => {
+    console.log("페이지 포커스 복귀 - 데이터 새로고침");
+    window.location.reload(); // 페이지 전체 새로고침으로 최신 데이터 보장
+  });
 
   if (isLoading) {
     return (

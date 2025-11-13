@@ -286,8 +286,19 @@ export default function Scenario12() {
         return match ? parseInt(match[0]) : 0;
       };
 
+      // "말일"을 처리하는 함수
+      const parseTransferDay = (str?: string): number => {
+        if (!str) return 1;
+        if (str.includes("말일")) {
+          // TODO: 백엔드 API 명세 확인 필요 (31, 0, -1, 99 등)
+          return 31; // 일반적으로 31이 말일을 의미
+        }
+        const match = str.match(/\d+/);
+        return match ? parseInt(match[0]) : 1;
+      };
+
       const transferCycle = parseNumber(scheduleSummary.frequency);
-      const designatedDate = parseNumber(scheduleSummary.transferDay);
+      const designatedDate = parseTransferDay(scheduleSummary.transferDay);
 
       // API 호출
       await createAutoPayment({
