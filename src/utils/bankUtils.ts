@@ -46,10 +46,10 @@ export function getBankName(code: string): string {
 /**
  * 은행명을 은행 코드로 변환
  * @param name 은행명 (예: "국민은행")
- * @returns 은행 코드 (예: "004"), 찾지 못하면 우리은행 코드 "020" 반환
+ * @returns 은행 코드 (예: "004"), 찾지 못하면 국민은행 코드 "004" 반환
  *
- * NOTE: 기본값으로 "020"(우리은행)을 반환하는 것은 의도된 동작입니다.
- * 이 앱은 우리은행 교육용 앱이며, 대부분의 자동이체가 우리은행 계좌에서 출금됩니다.
+ * NOTE: 기본값으로 "004"(국민은행)을 반환하는 것은 타행 자동이체 시나리오를 위한 설정입니다.
+ * 사용자가 타행(국민은행)으로 자동이체를 등록하는 교육 시나리오에 맞춰져 있습니다.
  *
  * TODO: 프로덕션 환경에서는 다음 중 하나를 선택
  * 1. undefined 반환하여 호출자가 명시적으로 에러 처리
@@ -61,8 +61,8 @@ export function getBankCode(name: string): string {
 
   // 개발 환경에서는 알 수 없는 은행명 경고
   if (!code && process.env.NODE_ENV === "development") {
-    console.warn(`[getBankCode] 알 수 없는 은행명: "${name}", 기본값 "020"(우리은행) 사용`);
+    console.warn(`[getBankCode] 알 수 없는 은행명: "${name}", 기본값 "004"(국민은행) 사용`);
   }
 
-  return code || "020"; // 기본값: 우리은행
+  return code || "004"; // 기본값: 국민은행 (타행 자동이체 시나리오)
 }

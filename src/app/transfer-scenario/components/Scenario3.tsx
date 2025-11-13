@@ -10,6 +10,22 @@ type Scenario3Props = {
 
 const TARGET_ACCOUNT = "110-123-456789"; // 시나리오에서 성공 조건으로 사용하는 기준 계좌번호입니다.
 
+// 은행명과 이미지 매핑
+const BANK_IMAGES: Record<string, string> = {
+  "우리은행": "/images/bank1.png",
+  "농협은행": "/images/bank2.png",
+  "국민은행": "/images/bank3.png",
+  "카카오뱅크": "/images/bank4.png",
+  "신한은행": "/images/bank5.png",
+  "하나은행": "/images/bank6.png",
+  "기업은행": "/images/bank7.png",
+  "토스뱅크": "/images/bank8.png",
+  "새마을금고": "/images/bank9.png",
+  "케이뱅크": "/images/bank10.png",
+  "iM뱅크": "/images/bank11.png",
+  "부산은행": "/images/bank12.png",
+};
+
 export default function Scenario3({ onNext, onBack }: Scenario3Props) {
   const {
     selectedBank,
@@ -18,6 +34,7 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
     setRecipientName,
   } = useTransferFlow(); // 컨텍스트에서 선택된 은행, 입력 계좌번호, 수취인 이름 설정 함수를 가져옵니다.
   const displayBank = selectedBank ?? "국민은행"; // 은행이 선택되지 않았다면 기본 은행명을 표시합니다.
+  const bankImage = BANK_IMAGES[displayBank] || "/images/bank3.png"; // 선택된 은행의 이미지, 없으면 기본값
 
   const cleanedInput = useMemo(
     () => accountNumber.replace(/[^0-9]/g, ""), // 입력된 문자열에서 숫자만 남깁니다.
@@ -70,7 +87,7 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
           <button type="button" className="flex w-full items-center justify-between text-left">
             <div className="flex items-center gap-[12px]">
               <img
-                src="/images/bank3.png"
+                src={bankImage}
                 alt={displayBank}
                 className="h-[24px] w-[24px]"
               />

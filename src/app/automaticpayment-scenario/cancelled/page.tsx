@@ -8,6 +8,9 @@ import { getAutoPaymentDetail } from "@/lib/api/autoPayment";
 import type { Scenario18Detail } from "../components/Scenario18";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import { devLog, devError } from "@/utils/logger";
+import { getAccountList } from "@/lib/api/account";
+import type { EducationalAccount } from "@/types/account";
+import { getCurrentUserId } from "@/utils/authUtils";
 
 export default function AutomaticPaymentCancelCompletePage() {
   const searchParams = useSearchParams();
@@ -46,7 +49,17 @@ export default function AutomaticPaymentCancelCompletePage() {
         const payment = await getAutoPaymentDetail(autoPaymentId);
         devLog(`[fetchDetail] 조회된 상태: ${payment.processingStatus}`);
 
-        const convertedDetail = convertToScenario18Detail(payment);
+        // 계좌 정보 조회 (출금 계좌번호 표시를 위해)
+        let sourceAccount: EducationalAccount | undefined;
+        try {
+          const accounts = await getAccountList(getCurrentUserId());
+          sourceAccount = accounts.find(acc => acc.id === payment.educationalAccountId);
+        } catch (accountError) {
+          devError("[fetchDetail] 계좌 정보 조회 실패:", accountError);
+          // 계좌 정보 조회 실패해도 자동이체 정보는 표시
+        }
+
+        const convertedDetail = convertToScenario18Detail(payment, sourceAccount);
         setDetail(convertedDetail);
       } catch (error) {
         devError("[fetchDetail] 자동이체 상세 조회 실패:", error);

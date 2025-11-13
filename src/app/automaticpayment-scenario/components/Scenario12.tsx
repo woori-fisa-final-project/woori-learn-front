@@ -318,6 +318,9 @@ export default function Scenario12() {
         isOpen: true,
         message: "자동이체 등록에 실패했습니다.\n다시 시도해주세요."
       });
+    } finally {
+      // 보안: API 호출 후 즉시 비밀번호 초기화
+      setAccountPassword("");
     }
   };
 

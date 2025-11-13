@@ -109,16 +109,11 @@ export default function Scenario11({
         {/* 상단 영역에서 계좌명과 등록된 자동이체 정보를 안내한다. */}
         <section className="mt-[26px] space-y-[16px]">
           <div className="flex items-start justify-between">
-            <button
-              type="button"
-              className="flex items-center gap-[6px] text-left"
-              aria-label="출금 계좌 선택"
-            >
+            <div className="flex items-center gap-[6px] text-left">
               <span className="text-[22px] font-semibold text-primary-600">
                 WON 통장({accountSuffix})
               </span>
-              <span className="text-[16px] text-primary-600">▼</span>
-            </button>
+            </div>
           </div>
 
           {/* 등록된 자동이체 건수와 안내 아이콘을 한 줄로 배치한다. */}

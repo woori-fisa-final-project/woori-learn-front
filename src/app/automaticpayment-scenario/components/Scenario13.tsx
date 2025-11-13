@@ -12,6 +12,22 @@ type Scenario13Props = {
   onNext: () => void;
 };
 
+// 은행명과 이미지 매핑
+const BANK_IMAGES: Record<string, string> = {
+  "우리은행": "/images/bank1.png",
+  "농협은행": "/images/bank2.png",
+  "국민은행": "/images/bank3.png",
+  "카카오뱅크": "/images/bank4.png",
+  "신한은행": "/images/bank5.png",
+  "하나은행": "/images/bank6.png",
+  "기업은행": "/images/bank7.png",
+  "토스뱅크": "/images/bank8.png",
+  "새마을금고": "/images/bank9.png",
+  "케이뱅크": "/images/bank10.png",
+  "iM뱅크": "/images/bank11.png",
+  "부산은행": "/images/bank12.png",
+};
+
 // 금액 확인 단계 화면을 렌더링하여 사용자가 정보를 검토하도록 돕는다.
 export default function Scenario13({
   sourceAccountName,
@@ -24,6 +40,7 @@ export default function Scenario13({
   // 화면에 보여줄 수 있도록 금액과 은행 정보를 보기 좋은 문자열로 변환한다.
   const displayAmount = amount ? `${amount.toLocaleString()}원` : "0원";
   const displayBank = selectedBank ?? "국민은행";
+  const bankImage = BANK_IMAGES[displayBank] || "/images/bank3.png"; // 선택된 은행의 이미지
   const displayAccount = accountNumber || "-";
   const displayRecipient = recipientName ? `${recipientName}님 계좌로` : "받는 분 계좌로";
 
@@ -50,7 +67,7 @@ export default function Scenario13({
 
         <div className="flex items-start gap-[12px]">
         <Image
-            src="/images/bank3.png"
+            src={bankImage}
             alt={displayBank}
             width={32}
             height={32}
