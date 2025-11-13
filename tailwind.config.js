@@ -57,10 +57,21 @@ module.exports = {
             opacity: "1",
           },
         },
+        fadeInUp: {
+          "0%": {
+            transform: "translateY(20px)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "translateY(0)",
+            opacity: "1",
+          },
+        },
       },
       animation: {
         slideDown: "slideDown 0.3s ease-out",
         slideUp: "slideUp 0.3s ease-out",
+        "fade-in-up": "fadeInUp 0.3s ease-out",
       },
       // spacing, borderRadius, boxShadow 등 그대로 유지
     },

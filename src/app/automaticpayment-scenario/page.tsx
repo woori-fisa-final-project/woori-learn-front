@@ -13,6 +13,7 @@ import { formatAccountNumber, getAccountSuffix } from "@/lib/utils/accountUtils"
 import { getBankName } from "@/lib/utils/bankUtils";
 import { getCurrentUserId } from "@/lib/utils/authUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
+import { devLog, devError } from "@/lib/utils/logger";
 
 // AutoPayment를 AutoTransferInfo로 변환하는 함수
 function convertToAutoTransferInfo(
@@ -71,7 +72,7 @@ export default function AutomaticPaymentScenarioPage() {
       const accounts = await getAccountList(currentUserId);
 
       if (!accounts || accounts.length === 0) {
-        console.error("계좌가 없습니다.");
+        devError("[fetchData] 계좌가 없습니다.");
         setIsLoading(false);
         return;
       }
@@ -90,10 +91,9 @@ export default function AutomaticPaymentScenarioPage() {
 
       // 5. 모든 자동이체를 배열로 변환하여 표시
       if (payments && payments.length > 0) {
-        // TODO: 프로덕션 배포 전 디버깅 로그 제거
-        console.log(`목록 페이지 - 자동이체 ${payments.length}건 조회`);
+        devLog(`[fetchData] 자동이체 ${payments.length}건 조회`);
         const convertedList = payments.map(payment => {
-          console.log(`- ID ${payment.id}: ${payment.processingStatus}`);
+          devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);
         });
         setAutoTransferList(convertedList);
@@ -103,7 +103,7 @@ export default function AutomaticPaymentScenarioPage() {
         setHasAutoTransfer(false);
       }
     } catch (error) {
-      console.error("데이터 조회 실패:", error);
+      devError("[fetchData] 데이터 조회 실패:", error);
       setAutoTransferList([]);
       setHasAutoTransfer(false);
     } finally {
@@ -117,9 +117,8 @@ export default function AutomaticPaymentScenarioPage() {
 
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침
   usePageFocusRefresh(() => {
-    // TODO: 프로덕션 배포 전 디버깅 로그 제거
-    console.log("페이지 포커스 복귀 - 데이터 새로고침");
-    fetchData(); // 페이지 새로고침 없이 데이터만 다시 가져오기
+    devLog("[usePageFocusRefresh] 페이지 포커스 복귀 - 데이터 새로고침");
+    fetchData();
   });
 
   if (isLoading) {

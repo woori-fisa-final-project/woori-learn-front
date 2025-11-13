@@ -26,6 +26,8 @@ import { getAccountList } from "@/lib/api/account";
 import type { EducationalAccount } from "@/types/account";
 import { getCurrentUserId } from "@/lib/utils/authUtils";
 import { parseNumber, parseTransferDay } from "@/lib/utils/numberUtils";
+import { devError } from "@/lib/utils/logger";
+import { useToast } from "@/lib/context/ToastContext";
 
 // 자동이체 등록 플로우가 이동할 수 있는 단계 값을 정의한다.
 type Step =
@@ -112,6 +114,7 @@ export default function Scenario12() {
   // 자동이체 등록 흐름 전체를 제어하는 메인 페이지 컴포넌트이다.
   const router = useRouter();
   const { setTitle, setOnBack } = useScenarioHeader();
+  const { showError } = useToast();
   const {
     setSelectedBank,
     resetFlow,
@@ -153,7 +156,8 @@ export default function Scenario12() {
         const accountList = await getAccountList(getCurrentUserId());
         setAccounts(accountList);
       } catch (error) {
-        console.error("계좌 목록 조회 실패:", error);
+        devError("[fetchAccounts] 계좌 목록 조회 실패:", error);
+        showError("계좌 목록을 불러오지 못했습니다.");
         setAccounts([]);
       } finally {
         setIsLoadingAccounts(false);
@@ -274,7 +278,7 @@ export default function Scenario12() {
     }
 
     if (!selectedAccount) {
-      alert("계좌 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.");
+      showError("계좌 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.");
       setStep("account");
       return;
     }
@@ -302,10 +306,8 @@ export default function Scenario12() {
       // 성공 시 완료 화면으로 이동
       setStep("complete");
     } catch (error) {
-      console.error("자동이체 등록 실패:", error);
-      // TODO: alert 대신 Toast/Modal 컴포넌트 사용 권장 (UX 개선)
-      // 현재는 빠른 피드백을 위해 alert 사용
-      alert("자동이체 등록에 실패했습니다. 다시 시도해주세요.");
+      devError("[handleConsentCompleted] 자동이체 등록 실패:", error);
+      showError("자동이체 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };
 

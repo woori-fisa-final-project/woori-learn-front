@@ -1,4 +1,5 @@
 import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
+import { devLog, logApiCall, logApiResponse, devError } from "@/lib/utils/logger";
 
 const BASE_URL = "/education/auto-payment";
 
@@ -112,31 +113,23 @@ export async function cancelAutoPayment(
 
   const url = `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`;
 
-  // TODO: 프로덕션 배포 전 디버깅 로그 제거 또는 환경별 분기 처리
-  // if (process.env.NODE_ENV === "development") { ... }
-  console.log("=== 자동이체 해지 API 요청 ===");
-  console.log("URL:", url);
-  console.log("Method: PUT");
-  console.log("autoPaymentId:", autoPaymentId);
-  console.log("educationalAccountId:", educationalAccountId);
+  logApiCall("PUT", url, { autoPaymentId, educationalAccountId });
 
   const response = await fetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({}), // 빈 객체라도 body 추가
+    body: JSON.stringify({}),
   });
-
-  console.log("응답 상태:", response.status, response.statusText);
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("에러 응답:", errorText);
+    devError(`[cancelAutoPayment] 에러 응답 ${response.status}:`, errorText);
     throw new Error(`자동이체 해지 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment> = await response.json();
-  console.log("해지 성공 응답:", result);
+  logApiResponse(response.status, url, result);
   return result.data;
 }

@@ -7,6 +7,7 @@ import Scenario19 from "../components/Scenario19";
 import { getAutoPaymentDetail } from "@/lib/api/autoPayment";
 import type { Scenario18Detail } from "../components/Scenario18";
 import { convertToScenario18Detail } from "../utils/converter";
+import { devLog, devError } from "@/lib/utils/logger";
 
 export default function AutomaticPaymentCancelCompletePage() {
   const searchParams = useSearchParams();
@@ -27,7 +28,7 @@ export default function AutomaticPaymentCancelCompletePage() {
         const autoPaymentIdParam = searchParams.get("autoPaymentId");
 
         if (!autoPaymentIdParam) {
-          console.error("autoPaymentId가 없습니다.");
+          devError("[fetchDetail] autoPaymentId가 없습니다.");
           return;
         }
 
@@ -35,21 +36,20 @@ export default function AutomaticPaymentCancelCompletePage() {
 
         // NaN 체크 추가
         if (isNaN(autoPaymentId)) {
-          console.error("유효하지 않은 autoPaymentId:", autoPaymentIdParam);
+          devError("[fetchDetail] 유효하지 않은 autoPaymentId:", autoPaymentIdParam);
           return;
         }
 
-        // TODO: 프로덕션 배포 전 디버깅 로그 제거
-        console.log("해지 완료 페이지 - autoPaymentId:", autoPaymentId);
+        devLog(`[fetchDetail] 해지 완료 페이지 - autoPaymentId: ${autoPaymentId}`);
 
         // API에서 최신 상태 조회
         const payment = await getAutoPaymentDetail(autoPaymentId);
-        console.log("해지 완료 페이지 - 조회된 상태:", payment.processingStatus);
+        devLog(`[fetchDetail] 조회된 상태: ${payment.processingStatus}`);
 
         const convertedDetail = convertToScenario18Detail(payment);
         setDetail(convertedDetail);
       } catch (error) {
-        console.error("자동이체 상세 조회 실패:", error);
+        devError("[fetchDetail] 자동이체 상세 조회 실패:", error);
       } finally {
         setIsLoading(false);
       }
