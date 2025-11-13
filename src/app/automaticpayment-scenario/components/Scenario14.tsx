@@ -74,7 +74,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
 
   // 입력된 일정 정보를 상위 컴포넌트로 전달해 다음 단계로 이동한다.
   const handleSubmit = () => {
-    if (!startDate || !transferDay) {
+    if (!startDate || !endDate || !transferDay) {
       return;
     }
     onComplete({ startDate, endDate, frequency, transferDay });
@@ -215,7 +215,9 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[24px]">
         {/* 입력이 완료되면 다음 단계로 이동하기 위한 버튼이다. */}
-        <Button onClick={handleSubmit}>다음</Button>
+        <Button onClick={handleSubmit} disabled={!startDate || !endDate || !transferDay}>
+          다음
+        </Button>
       </div>
     </div>
   );

@@ -6,36 +6,14 @@ import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import Scenario18, { type Scenario18Detail } from "../components/Scenario18";
 import { getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import type { AutoPayment } from "@/types/autoPayment";
+import { formatAccountNumber } from "@/lib/utils/accountUtils";
+import { getBankName } from "@/lib/utils/bankUtils";
 
 // AutoPayment를 Scenario18Detail로 변환
 function convertToScenario18Detail(payment: AutoPayment): Scenario18Detail {
   const statusMap = {
     ACTIVE: "정상",
     CANCELLED: "해지",
-  };
-
-  // 은행 코드를 은행명으로 변환
-  const getBankName = (code: string): string => {
-    const bankMap: Record<string, string> = {
-      "001": "한국은행",
-      "002": "산업은행",
-      "003": "기업은행",
-      "004": "국민은행",
-      "020": "우리은행",
-      "088": "신한은행",
-      "089": "케이뱅크",
-      "090": "카카오뱅크",
-    };
-    return bankMap[code] || "기타은행";
-  };
-
-  // 계좌번호 포맷팅
-  const formatAccountNumber = (accountNumber?: string | null): string => {
-    if (!accountNumber) return "-";
-    const numbers = accountNumber.replace(/[^0-9]/g, "");
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
   };
 
   // 날짜 범위 포맷팅
@@ -70,39 +48,56 @@ export default function AutomaticPaymentDetailPage() {
   const [payment, setPayment] = useState<AutoPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [autoPaymentId, setAutoPaymentId] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     setTitle("자동이체");
     return () => setTitle("");
   }, [setTitle]);
 
-  useEffect(() => {
-    async function fetchDetail() {
-      try {
-        setIsLoading(true);
+  const fetchDetail = async () => {
+    try {
+      setIsLoading(true);
 
-        const idParam = searchParams.get("autoPaymentId");
-        if (!idParam) {
-          console.error("autoPaymentId가 없습니다.");
-          return;
-        }
-
-        const id = parseInt(idParam);
-        setAutoPaymentId(id);
-
-        const fetchedPayment = await getAutoPaymentDetail(id);
-        setPayment(fetchedPayment);
-        const convertedDetail = convertToScenario18Detail(fetchedPayment);
-        setDetail(convertedDetail);
-      } catch (error) {
-        console.error("자동이체 상세 조회 실패:", error);
-      } finally {
-        setIsLoading(false);
+      const idParam = searchParams.get("autoPaymentId");
+      if (!idParam) {
+        console.error("autoPaymentId가 없습니다.");
+        return;
       }
-    }
 
+      const id = parseInt(idParam);
+      setAutoPaymentId(id);
+
+      const fetchedPayment = await getAutoPaymentDetail(id);
+      console.log("상세 페이지 - 자동이체 상태:", fetchedPayment.processingStatus);
+      setPayment(fetchedPayment);
+      const convertedDetail = convertToScenario18Detail(fetchedPayment);
+      setDetail(convertedDetail);
+    } catch (error) {
+      console.error("자동이체 상세 조회 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDetail();
-  }, [searchParams]);
+  }, [searchParams, refreshKey]);
+
+  // 페이지가 다시 포커스를 받을 때 데이터 새로고침
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log("상세 페이지 포커스 복귀 - 데이터 새로고침");
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -123,12 +118,18 @@ export default function AutomaticPaymentDetailPage() {
   const handleCancelAutoPayment = async () => {
     if (!autoPaymentId || !payment) {
       console.error("autoPaymentId 또는 payment 정보가 없습니다.");
+      alert("자동이체 정보를 찾을 수 없습니다.");
       return;
     }
 
+    console.log("=== 자동이체 해지 시작 ===");
+    console.log("autoPaymentId:", autoPaymentId);
+    console.log("educationalAccountId:", payment.educationalAccountId);
+
     try {
       // 해지 API 호출
-      await cancelAutoPayment(autoPaymentId, payment.educationalAccountId);
+      const result = await cancelAutoPayment(autoPaymentId, payment.educationalAccountId);
+      console.log("해지 API 응답:", result);
 
       // 해지 완료 페이지로 이동
       router.push(`/automaticpayment-scenario/cancelled?autoPaymentId=${autoPaymentId}`);

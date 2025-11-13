@@ -34,14 +34,14 @@ export type AutoTransferInfo = {
 type Scenario11Props = {
   accountSuffix: string;
   hasAutoTransfer: boolean;
-  autoTransferInfo?: AutoTransferInfo;
+  autoTransferList?: AutoTransferInfo[];
 };
 
 // 자동이체 메인 페이지를 구성하는 최상위 컴포넌트로, 계좌 정보와 등록 상태를 표시한다.
 export default function Scenario11({
   accountSuffix,
   hasAutoTransfer,
-  autoTransferInfo,
+  autoTransferList = [],
 }: Scenario11Props) {
   // 페이지 이동과 세부 플로우 전환을 처리하기 위해 라우터 인스턴스를 가져온다.
   const router = useRouter();
@@ -71,7 +71,7 @@ export default function Scenario11({
   };
 
   // 실제 등록 여부에 따라 화면에 표시할 등록 건수를 계산한다.
-  const registeredCount = hasAutoTransfer ? 1 : 0;
+  const registeredCount = autoTransferList.length;
 
   // 바텀시트 닫기 이벤트를 처리하여 열림 상태를 해제한다.
   const handleCloseSheet = () => {
@@ -97,10 +97,9 @@ export default function Scenario11({
     setFxInfoModalOpen(false);
   };
 
-  const handleOpenDetail = () => {
-    if (!autoTransferInfo) return;
+  const handleOpenDetail = (id: number) => {
     // ID만 전달하고 상세 페이지에서 API 호출
-    router.push(`/automaticpayment-scenario/detail?autoPaymentId=${autoTransferInfo.id}`);
+    router.push(`/automaticpayment-scenario/detail?autoPaymentId=${id}`);
   };
 
   // 자동이체 메인 화면의 전체 레이아웃을 렌더링한다.
@@ -151,7 +150,15 @@ export default function Scenario11({
             {!hasAutoTransfer ? (
               <EmptyState />
             ) : (
-              <AutoTransferCard info={autoTransferInfo} onSelect={handleOpenDetail} />
+              <div className="w-full space-y-[16px]">
+                {autoTransferList.map((info) => (
+                  <AutoTransferCard
+                    key={info.id}
+                    info={info}
+                    onSelect={() => handleOpenDetail(info.id)}
+                  />
+                ))}
+              </div>
             )}
           </div>
           {/* 화면 하단의 고정 버튼으로 새로운 자동이체 등록 플로우를 시작한다. */}
@@ -219,18 +226,14 @@ function AutoTransferCard({
   info,
   onSelect,
 }: {
-  info?: AutoTransferInfo;
+  info: AutoTransferInfo;
   onSelect: () => void;
 }) {
-  if (!info) {
-    return null;
-  }
-
   return (
     <button
       type="button"
       onClick={onSelect}
-      className="mt-[40px] w-full text-left transition hover:scale-[1.01]"
+      className="w-full text-left transition hover:scale-[1.01]"
     >
       <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px] shadow-[0_4px_16px_rgba(34,58,124,0.08)]">
         <div className="flex items-start justify-between">

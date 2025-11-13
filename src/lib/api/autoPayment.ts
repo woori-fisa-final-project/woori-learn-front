@@ -110,20 +110,30 @@ export async function cancelAutoPayment(
   const queryParams = new URLSearchParams();
   queryParams.append("educationalAccountId", educationalAccountId.toString());
 
-  const response = await fetch(
-    `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const url = `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`;
+  console.log("=== 자동이체 해지 API 요청 ===");
+  console.log("URL:", url);
+  console.log("Method: PUT");
+  console.log("autoPaymentId:", autoPaymentId);
+  console.log("educationalAccountId:", educationalAccountId);
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({}), // 빈 객체라도 body 추가
+  });
+
+  console.log("응답 상태:", response.status, response.statusText);
 
   if (!response.ok) {
-    throw new Error(`자동이체 해지 실패: ${response.status}`);
+    const errorText = await response.text();
+    console.error("에러 응답:", errorText);
+    throw new Error(`자동이체 해지 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment> = await response.json();
+  console.log("해지 성공 응답:", result);
   return result.data;
 }
