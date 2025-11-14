@@ -1,4 +1,22 @@
 /**
+ * 은행명과 이미지 경로 매핑
+ */
+export const BANK_IMAGES: Record<string, string> = {
+  "우리은행": "/images/bank1.png",
+  "농협은행": "/images/bank2.png",
+  "국민은행": "/images/bank3.png",
+  "카카오뱅크": "/images/bank4.png",
+  "신한은행": "/images/bank5.png",
+  "하나은행": "/images/bank6.png",
+  "기업은행": "/images/bank7.png",
+  "토스뱅크": "/images/bank8.png",
+  "새마을금고": "/images/bank9.png",
+  "케이뱅크": "/images/bank10.png",
+  "iM뱅크": "/images/bank11.png",
+  "부산은행": "/images/bank12.png",
+};
+
+/**
  * 은행 코드와 은행명 매핑
  */
 export const BANK_CODE_MAP: Record<string, string> = {

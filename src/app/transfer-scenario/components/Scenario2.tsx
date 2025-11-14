@@ -21,7 +21,13 @@ const BANK_ITEMS = [ // 화면에 보여줄 은행 목록과 사용 가능 여�
   { name: "부산은행", image: "/images/bank12.png", disabled: true },
 ];
 
-export default function Scenario2({ onSelect, onClose }: Scenario2Props) {
+export default function Scenario2({ onSelect, onClose, allowedBanks }: Scenario2Props) {
+  // allowedBanks가 지정된 경우 해당 은행만 활성화
+  const bankItems = BANK_ITEMS.map(bank => ({
+    ...bank,
+    disabled: allowedBanks ? !allowedBanks.includes(bank.name) : bank.disabled,
+  }));
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
@@ -45,20 +51,20 @@ export default function Scenario2({ onSelect, onClose }: Scenario2Props) {
         </header>
         <div className="max-h-[540px] overflow-y-auto px-[20px] pb-[32px]">
           <div className="grid grid-cols-3 gap-x-[20px] gap-y-[20px]">
-            {BANK_ITEMS.map((bank) => (
+            {bankItems.map((bank) => (
               <button
                 key={bank.name}
                 type="button"
                 disabled={bank.disabled}
                 onClick={() => !bank.disabled && onSelect(bank.name)} // 사용 가능할 때만 선택 콜백을 실행합니다.
-                className={`flex h-[85px] w-[108px] flex-col items-center justify-center rounded-[20px]  bg-gray-50 text-[13px] font-medium text-gray-600 transition ${
-                  !bank.disabled ? "hover:border-[#2F6FD9] hover:text-[#2F6FD9]" : ""
+                className={`flex h-[85px] w-[108px] flex-col items-center justify-center rounded-[20px]  bg-gray-50 text-[13px] font-medium transition ${
+                  bank.disabled ? "text-gray-300 cursor-not-allowed" : "text-gray-600 hover:border-[#2F6FD9] hover:text-[#2F6FD9]"
                 }`}
               >
                 <img
                   src={bank.image}
                   alt={bank.name}
-                  className="mb-[10px] h-[32px] w-[32px]"
+                  className={`mb-[10px] h-[32px] w-[32px] ${bank.disabled ? "opacity-30" : ""}`}
                 />
                 {bank.name}
               </button>

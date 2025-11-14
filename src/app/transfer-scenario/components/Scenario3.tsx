@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react"; // 입력값 가공과 사이드 이펙트를 위해 React 훅을 사용합니다.
 import Button from "@/components/common/Button"; // 하단의 다음 버튼 UI를 담당합니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 시나리오 전반에서 공유하는 이체 상태를 불러옵니다.
+import { BANK_IMAGES } from "@/utils/bankUtils"; // 공통 은행 이미지 매핑
 import Modal from "@/components/common/Modal"; // 은행 선택 오류 안내용 모달
 
 type Scenario3Props = {
@@ -10,22 +11,6 @@ type Scenario3Props = {
 };
 
 const TARGET_ACCOUNT = "110-123-456789"; // 시나리오에서 성공 조건으로 사용하는 기준 계좌번호입니다.
-
-// 은행명과 이미지 매핑
-const BANK_IMAGES: Record<string, string> = {
-  "우리은행": "/images/bank1.png",
-  "농협은행": "/images/bank2.png",
-  "국민은행": "/images/bank3.png",
-  "카카오뱅크": "/images/bank4.png",
-  "신한은행": "/images/bank5.png",
-  "하나은행": "/images/bank6.png",
-  "기업은행": "/images/bank7.png",
-  "토스뱅크": "/images/bank8.png",
-  "새마을금고": "/images/bank9.png",
-  "케이뱅크": "/images/bank10.png",
-  "iM뱅크": "/images/bank11.png",
-  "부산은행": "/images/bank12.png",
-};
 
 export default function Scenario3({ onNext, onBack }: Scenario3Props) {
   const {

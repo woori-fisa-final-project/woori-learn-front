@@ -91,18 +91,12 @@ function AutomaticPaymentScenarioContent() {
     try {
       setIsLoading(true);
 
-      // userId가 없으면 현재 로그인된 사용자 ID 사용
-      let currentUserId: number;
-      if (userId) {
-        const parsedUserId = parseInt(userId);
-        if (isNaN(parsedUserId)) {
-          devError("[fetchData] 유효하지 않은 userId:", userId);
-          currentUserId = getCurrentUserId();
-        } else {
-          currentUserId = parsedUserId;
-        }
-      } else {
-        currentUserId = getCurrentUserId();
+      // userId 파싱 (유효하지 않으면 현재 로그인 사용자 ID 사용)
+      const parsedUserId = userId ? parseInt(userId) : NaN;
+      const currentUserId = !isNaN(parsedUserId) ? parsedUserId : getCurrentUserId();
+
+      if (userId && isNaN(parsedUserId)) {
+        devError("[fetchData] 유효하지 않은 userId:", userId);
       }
 
       // 1. 계좌 목록 조회
