@@ -14,6 +14,7 @@ export type QuizContent = {
   title: string;
   prompt: string;
   options: QuizOption[];
+  correctAnswerId: string;
 };
 
 type QuizScreenProps = {

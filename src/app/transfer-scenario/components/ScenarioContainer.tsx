@@ -163,7 +163,8 @@ export default function ScenarioContainer() {
       {/* 비밀번호 입력 시트 */}
       {isPasswordSheetOpen && clampedStep === 5 && (
         <Scenario5
-          onSuccess={() => {
+          onSuccess={(password) => {
+            // 일반 이체에서는 비밀번호를 별도로 저장하지 않고 검증만 수행합니다.
             setPasswordSheetOpen(false);
             goToStep(6);
           }}

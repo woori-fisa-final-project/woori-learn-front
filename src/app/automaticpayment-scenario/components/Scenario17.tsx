@@ -4,8 +4,8 @@
 import Image from "next/image";
 import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
-import { formatDate } from "@/lib/utils/formatDate";
-import { formatDateRange } from "@/lib/utils/formatDateRange";
+import { formatDate } from "@/utils/formatDate";
+import { formatDateRange } from "@/utils/formatDateRange";
 import type { ScheduleSummary } from "./types";
 
 // 완료 화면에 필요한 모든 정보를 상위에서 전달받는다.

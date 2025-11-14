@@ -4,8 +4,8 @@
 import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
-import { formatDate } from "@/lib/utils/formatDate";
-import { formatDateRange } from "@/lib/utils/formatDateRange";
+import { formatDate } from "@/utils/formatDate";
+import { formatDateRange } from "@/utils/formatDateRange";
 import { useMemo } from "react";
 import type { ScheduleSummary } from "./types";
 
