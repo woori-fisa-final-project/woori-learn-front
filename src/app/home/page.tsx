@@ -113,12 +113,12 @@ export default function HomePage() {
         {/* 상단 로고와 프로필 영역 */}
         <div className="flex w-full items-center justify-between">
           <div className="relative h-[58px] w-[100px]">
-            <img alt="로고" className="h-full w-full object-contain" src={logoImage} />
+            <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={100} height={58} />
           </div>
 
           <button onClick={handleProfileClick} className="flex cursor-pointer flex-col items-center gap-1">
             <div className="relative h-7 w-7">
-              <img alt="프로필" className="h-full w-full object-contain" src={profileIcon} />
+              <Image alt="프로필" className="h-full w-full object-contain" src={profileIcon} width={28} height={28} />
             </div>
             <p className="text-[12px] text-gray-400">내 정보</p>
           </button>

@@ -1,5 +1,7 @@
 "use client"; // 체크 아이콘은 주로 사용자의 상호작용 결과를 렌더링하므로 클라이언트에서 사용됩니다.
 
+import Image from "next/image";
+
 interface CheckIconProps {
   size?: "sm" | "md" | "lg"; // 아이콘 크기를 선택하는 옵션입니다.
   // color?: "primary" | "green" | "white";
@@ -52,10 +54,12 @@ CheckIconProps) {
     <div
       className={`${bgClass} rounded-full ${sizeClasses[size]} flex items-center justify-center p-0.5 transition-colors ${className}`}
     >
-      <img
+      <Image
         alt={iconAlt}
         className="h-full w-full object-contain"
         src={iconSrc} // 투명 배경 PNG 아이콘을 그대로 렌더링합니다.
+        width={sizeClasses[size].includes("w-4") ? 16 : sizeClasses[size].includes("w-8") ? 32 : 40}
+        height={sizeClasses[size].includes("h-4") ? 16 : sizeClasses[size].includes("h-8") ? 32 : 40}
       />
     </div>
   );

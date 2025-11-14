@@ -1,5 +1,7 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 바텀 시트 상호작용을 처리합니다.
 
+import Image from "next/image";
+
 type Scenario2Props = {
   onSelect: (bankName: string) => void; // 은행을 선택했을 때 상위 단계로 전달하는 콜백입니다.
   onClose: () => void; // 바텀 시트를 닫을 때 호출되는 콜백입니다.
@@ -61,10 +63,12 @@ export default function Scenario2({ onSelect, onClose, allowedBanks }: Scenario2
                   bank.disabled ? "text-gray-300 cursor-not-allowed" : "text-gray-600 hover:border-[#2F6FD9] hover:text-[#2F6FD9]"
                 }`}
               >
-                <img
+                <Image
                   src={bank.image}
                   alt={bank.name}
                   className={`mb-[10px] h-[32px] w-[32px] ${bank.disabled ? "opacity-30" : ""}`}
+                  width={32}
+                  height={32}
                 />
                 {bank.name}
               </button>

@@ -4,6 +4,7 @@ import Button from "@/components/common/Button"; // 하단의 다음 버튼 UI�
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 시나리오 전반에서 공유하는 이체 상태를 불러옵니다.
 import { BANK_IMAGES } from "@/utils/bankUtils"; // 공통 은행 이미지 매핑
 import Modal from "@/components/common/Modal"; // 은행 선택 오류 안내용 모달
+import Image from "next/image";
 
 type Scenario3Props = {
   onNext: () => void; // 계좌 입력이 유효할 때 다음 단계로 이동하는 콜백입니다.
@@ -80,10 +81,12 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
 
           <button type="button" className="flex w-full items-center justify-between text-left">
             <div className="flex items-center gap-[12px]">
-              <img
+              <Image
                 src={bankImage}
                 alt={displayBank}
                 className="h-[24px] w-[24px]"
+                width={24}
+                height={24}
               />
               <span className="text-[15px] font-semibold text-gray-800">
                 {displayBank}

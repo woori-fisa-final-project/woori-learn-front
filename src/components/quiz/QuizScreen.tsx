@@ -3,6 +3,7 @@
 
 // 옵션 배열을 순회하면서 색상 팔레트를 계산하기 위해 React 훅을 사용합니다.
 import { useMemo, useState } from "react";
+import Image from "next/image";
 
 export type QuizOption = {
   id: string;
@@ -48,7 +49,7 @@ export default function QuizScreen({ quiz, onSelectOption }: QuizScreenProps) {
         <div className="absolute left-1/2 top-[26px] h-[10px] w-[48px] -translate-x-1/2 rounded-full bg-[#B8ADA0] shadow-[0px_4px_8px_rgba(0,0,0,0.15)]" /> {/* 집게의 클립 부분을 나타냅니다. */}
         <div className="relative mt-[44px] rounded-[16px] bg-white px-[20px] pb-[40px] pt-[48px] text-center shadow-[0px_4px_20px_rgba(0,0,0,0.05)]"> {/* 실제 퀴즈 내용을 담는 흰색 카드입니다. */}
           <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2"> {/* 집게 아래에 아이콘을 부착합니다. */}
-            <img src="/images/quiz.png" alt="Quiz" className="h-[42px] w-auto drop-shadow" /> {/* 퀴즈 상단 장식 이미지를 표시합니다. */}
+            <Image src="/images/quiz.png" alt="Quiz" className="h-[42px] w-auto drop-shadow" width={42} height={42} /> {/* 퀴즈 상단 장식 이미지를 표시합니다. */}
           </div>
           <h2 className="mt-[12px] text-[22px] font-bold text-gray-900">{quiz.title}</h2> {/* 퀴즈 제목을 강조해 보여줍니다. */}
           <p className="mt-[16px] text-[15px] font-medium text-gray-700">{quiz.prompt}</p> {/* 문제 지문을 안내 문장으로 보여줍니다. */}

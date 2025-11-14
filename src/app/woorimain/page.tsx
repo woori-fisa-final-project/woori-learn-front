@@ -85,10 +85,12 @@ function AccountCard({
   return (
     <section className="rounded-[16px] bg-white p-5 shadow-sm">
       <div className="flex items-center gap-[10px]">
-        <img
+        <Image
           src="/images/woorilogo.png"
           alt="Woori Bank"
           className="h-[20px] w-auto"
+          width={80}
+          height={20}
         />
         <p className="text-[18px] font-semibold text-gray-900">WON 통장</p>
       </div>

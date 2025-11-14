@@ -1,5 +1,7 @@
 "use client"; // 클라이언트 컴포넌트로 렌더링하여 상태와 이벤트를 활용합니다.
 
+import Image from "next/image";
+
 type Scenario1Props = {
   onOpenBankSheet: () => void; // 계좌번호 입력 바텀 시트를 여는 콜백입니다.
   onContactTransfer: () => void; // 연락처 이체 버튼 클릭 시 실행할 콜백입니다.
@@ -36,7 +38,7 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
         >
           <div className="flex items-center justify-between">
             <span className="text-[18px] font-semibold text-gray-300">계좌번호입력</span>
-            <img src="/images/camera.png" alt="카메라" className="h-[18px] w-[22px]" />
+            <Image src="/images/camera.png" alt="카메라" className="h-[18px] w-[22px]" width={22} height={18} />
           </div>
           <div className="mt-[12px] h-[1px] w-full bg-gray-200" />
         </button>
@@ -67,7 +69,7 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
 
       {/* 최근 이체 내역이 없을 때 빈 상태 안내를 보여줍니다. */}
       <section className="mt-[20px] flex flex-1 flex-col items-center justify-center  ">
-          <img src="/images/file.png" alt="파일 아이콘" className="h-[66px] w-[54px]" />
+          <Image src="/images/file.png" alt="파일 아이콘" className="h-[66px] w-[54px]" width={54} height={66} />
 
         <p className="mt-[16px] text-[16px] font-semibold text-gray-400">최근 이체 내역이 없어요</p>
       </section>

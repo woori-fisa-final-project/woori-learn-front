@@ -1,5 +1,7 @@
 "use client"; // 이 컴포넌트가 입력 이벤트 등 클라이언트 전용 기능을 사용함을 명시합니다.
 
+import Image from "next/image";
+
 interface AccountInfoBlockProps {
   bankName: string; // 표시할 은행 이름입니다.
   bankLogo: string; // 은행 로고 이미지 경로입니다.
@@ -26,10 +28,12 @@ export default function AccountInfoBlock({
 
       {/* 은행명 표시 칸 */}
       <div className="flex items-center gap-[6px] w-fit border border-gray-200 rounded-[15px] px-[10px] py-[6px] mb-3 bg-white">
-        <img
+        <Image
           src={bankLogo}
           alt={bankName}
           className="w-[15px] h-[15px] object-contain"
+          width={15}
+          height={15}
         />
         <span className="text-[15px] text-gray-700 font-medium">
           {bankName}
