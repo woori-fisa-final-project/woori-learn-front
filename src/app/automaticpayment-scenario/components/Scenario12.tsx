@@ -159,7 +159,10 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 계좌 선택 단계에서 사용자가 특정 계좌를 고를 때 상태를 갱신한다.
   const handleSelectAccount = (accountId: number) => {
     const account = selectAccount(accountId);
-    if (!account) return;
+    if (!account) {
+      console.warn(`[Scenario12] Account not found for id: ${accountId}`);
+      return;
+    }
     setSourceAccountNumber(account.accountNumber);
     setBankSheetOpen(true);
   };
