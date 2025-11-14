@@ -3,21 +3,22 @@
 type Scenario2Props = {
   onSelect: (bankName: string) => void; // 은행을 선택했을 때 상위 단계로 전달하는 콜백입니다.
   onClose: () => void; // 바텀 시트를 닫을 때 호출되는 콜백입니다.
+  allowedBanks?: string[];
 };
 
 const BANK_ITEMS = [ // 화면에 보여줄 은행 목록과 사용 가능 여부를 정적 데이터로 정의합니다.
-  { name: "우리은행", image: "/images/bank1.png", disabled: false },
-  { name: "농협은행", image: "/images/bank2.png", disabled: false },
+  { name: "우리은행", image: "/images/bank1.png", disabled: true },
+  { name: "농협은행", image: "/images/bank2.png", disabled: true },
   { name: "국민은행", image: "/images/bank3.png", disabled: false },
-  { name: "카카오뱅크", image: "/images/bank4.png", disabled: false },
-  { name: "신한은행", image: "/images/bank5.png", disabled: false },
-  { name: "하나은행", image: "/images/bank6.png", disabled: false },
-  { name: "기업은행", image: "/images/bank7.png", disabled: false },
-  { name: "토스뱅크", image: "/images/bank8.png", disabled: false },
-  { name: "새마을금고", image: "/images/bank9.png", disabled: false },
-  { name: "케이뱅크", image: "/images/bank10.png", disabled: false },
-  { name: "iM뱅크", image: "/images/bank11.png", disabled: false },
-  { name: "부산은행", image: "/images/bank12.png", disabled: false },
+  { name: "카카오뱅크", image: "/images/bank4.png", disabled: true },
+  { name: "신한은행", image: "/images/bank5.png", disabled: true },
+  { name: "하나은행", image: "/images/bank6.png", disabled: true },
+  { name: "기업은행", image: "/images/bank7.png", disabled: true },
+  { name: "토스뱅크", image: "/images/bank8.png", disabled: true },
+  { name: "새마을금고", image: "/images/bank9.png", disabled: true },
+  { name: "케이뱅크", image: "/images/bank10.png", disabled: true },
+  { name: "iM뱅크", image: "/images/bank11.png", disabled: true },
+  { name: "부산은행", image: "/images/bank12.png", disabled: true },
 ];
 
 export default function Scenario2({ onSelect, onClose }: Scenario2Props) {

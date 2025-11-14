@@ -78,6 +78,7 @@ function AutomaticPaymentScenarioContent() {
 
   // 상세/해지 화면 데이터
   const [detailData, setDetailData] = useState<Scenario18Detail | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<AutoPayment | null>(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   // 에러 모달
@@ -179,6 +180,9 @@ function AutomaticPaymentScenarioContent() {
       // 자동이체 상세 정보 조회
       const payment = await getAutoPaymentDetail(autoPaymentId);
 
+      // payment 객체 전체를 상태에 저장 (해지 시 재사용)
+      setSelectedPayment(payment);
+
       // 계좌 정보 조회
       let sourceAccount: EducationalAccount | undefined;
       try {
@@ -201,24 +205,25 @@ function AutomaticPaymentScenarioContent() {
 
   // 자동이체 해지
   const handleCancelAutoPayment = async () => {
-    if (!selectedAutoPaymentId || !detailData) {
-      devError("[handleCancelAutoPayment] autoPaymentId 또는 detail 정보가 없습니다.");
+    if (!selectedAutoPaymentId || !selectedPayment) {
+      devError("[handleCancelAutoPayment] autoPaymentId 또는 payment 정보가 없습니다.");
       setErrorModal({ isOpen: true, message: "자동이체 정보를 찾을 수 없습니다." });
       return;
     }
 
     try {
-      // educationalAccountId 추출 (detailData에서)
-      const accounts = await getAccountList(getCurrentUserId());
-      const payment = await getAutoPaymentDetail(selectedAutoPaymentId);
-
-      await cancelAutoPayment(selectedAutoPaymentId, payment.educationalAccountId);
+      // 저장된 payment에서 educationalAccountId 사용 (중복 API 호출 제거)
+      await cancelAutoPayment(selectedAutoPaymentId, selectedPayment.educationalAccountId);
       devLog("[handleCancelAutoPayment] 해지 완료");
 
       // 해지 후 최신 정보 다시 조회
       const updatedPayment = await getAutoPaymentDetail(selectedAutoPaymentId);
+      setSelectedPayment(updatedPayment);
+
+      // 계좌 정보 조회
       let sourceAccount: EducationalAccount | undefined;
       try {
+        const accounts = await getAccountList(getCurrentUserId());
         sourceAccount = accounts.find(acc => acc.id === updatedPayment.educationalAccountId);
       } catch (accountError) {
         devError("[handleCancelAutoPayment] 계좌 정보 조회 실패:", accountError);
@@ -237,6 +242,7 @@ function AutomaticPaymentScenarioContent() {
   const handleBackToList = () => {
     setCurrentScreen("list");
     setSelectedAutoPaymentId(null);
+    setSelectedPayment(null);
     setDetailData(null);
     fetchData(); // 목록 새로고침
   };
