@@ -110,7 +110,12 @@ function AccountSelectStep({
   );
 }
 
-export default function Scenario12() {
+type Scenario12Props = {
+  onComplete?: () => void;
+  onCancel?: () => void;
+};
+
+export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 자동이체 등록 흐름 전체를 제어하는 메인 페이지 컴포넌트이다.
   const router = useRouter();
   const { setTitle, setOnBack } = useScenarioHeader();
@@ -187,7 +192,12 @@ export default function Scenario12() {
       if (prevStep) {
         setStep(prevStep);
       } else if (current === "account") {
-        router.back();
+        // 첫 단계에서 뒤로가기 시 등록 취소
+        if (onCancel) {
+          onCancel();
+        } else {
+          router.back();
+        }
       }
     };
 
@@ -196,7 +206,7 @@ export default function Scenario12() {
     return () => {
       setOnBack(null);
     };
-  }, [router, setOnBack]);
+  }, [router, setOnBack, onCancel]);
 
   // 컴포넌트가 사라질 때 자동이체 흐름과 선택 상태를 초기화한다.
   useEffect(() => {
@@ -325,8 +335,8 @@ export default function Scenario12() {
 
   // 완료 화면에서 확인을 누르면 메인 자동이체 페이지로 돌아간다.
   const handleSuccessConfirm = () => {
-    // 메인 페이지에서 API로 목록을 다시 조회할 것이므로 파라미터 없이 이동
-    router.push("/automaticpayment-scenario");
+    // 메인 페이지에서 API로 목록을 다시 조회할 것이므로 콜백 호출
+    onComplete?.();
   };
 
   return (

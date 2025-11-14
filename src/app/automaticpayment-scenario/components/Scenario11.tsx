@@ -35,6 +35,8 @@ type Scenario11Props = {
   accountSuffix: string;
   hasAutoTransfer: boolean;
   autoTransferList?: AutoTransferInfo[];
+  onNavigateToRegister?: () => void;
+  onNavigateToDetail?: (id: number) => void;
 };
 
 // 자동이체 메인 페이지를 구성하는 최상위 컴포넌트로, 계좌 정보와 등록 상태를 표시한다.
@@ -42,6 +44,8 @@ export default function Scenario11({
   accountSuffix,
   hasAutoTransfer,
   autoTransferList = [],
+  onNavigateToRegister,
+  onNavigateToDetail,
 }: Scenario11Props) {
   // 페이지 이동과 세부 플로우 전환을 처리하기 위해 라우터 인스턴스를 가져온다.
   const router = useRouter();
@@ -82,7 +86,7 @@ export default function Scenario11({
   const handleSelectOption = (type: "krw" | "fx") => {
     // 원화를 선택하면 자동이체 등록 플로우로 이동한다.
     if (type === "krw") {
-      router.push("/automaticpayment-scenario/register");
+      onNavigateToRegister?.();
     } else {
       setFxInfoModalOpen(true);
     }
@@ -98,8 +102,8 @@ export default function Scenario11({
   };
 
   const handleOpenDetail = (id: number) => {
-    // ID만 전달하고 상세 페이지에서 API 호출
-    router.push(`/automaticpayment-scenario/detail?autoPaymentId=${id}`);
+    // 상위 컴포넌트로 ID를 전달하여 상세 화면으로 전환
+    onNavigateToDetail?.(id);
   };
 
   // 자동이체 메인 화면의 전체 레이아웃을 렌더링한다.

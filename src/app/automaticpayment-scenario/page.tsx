@@ -3,9 +3,12 @@
 import Scenario11, {
   type AutoTransferInfo,
 } from "./components/Scenario11";
-import { useEffect, useState, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
-import { getAutoPaymentList } from "@/lib/api/autoPayment";
+import Scenario12 from "./components/Scenario12";
+import Scenario18, { type Scenario18Detail } from "./components/Scenario18";
+import Scenario19 from "./components/Scenario19";
+import { useEffect, useState, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
@@ -14,6 +17,12 @@ import { getBankName } from "@/utils/bankUtils";
 import { getCurrentUserId } from "@/utils/authUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 import { devLog, devError } from "@/utils/logger";
+import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
+import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
+import Modal from "@/components/common/Modal";
+
+// 화면 타입 정의
+type Screen = "list" | "register" | "detail" | "cancelled";
 
 // AutoPayment를 AutoTransferInfo로 변환하는 함수
 function convertToAutoTransferInfo(
@@ -52,14 +61,30 @@ function convertToAutoTransferInfo(
   };
 }
 
-export default function AutomaticPaymentScenarioPage() {
+function AutomaticPaymentScenarioContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const userId = searchParams.get("user_id");
 
+  // 화면 상태 관리
+  const [currentScreen, setCurrentScreen] = useState<Screen>("list");
+  const [selectedAutoPaymentId, setSelectedAutoPaymentId] = useState<number | null>(null);
+
+  // 목록 화면 데이터
   const [accountSuffix, setAccountSuffix] = useState("0000");
   const [autoTransferList, setAutoTransferList] = useState<AutoTransferInfo[]>([]);
   const [hasAutoTransfer, setHasAutoTransfer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 상세/해지 화면 데이터
+  const [detailData, setDetailData] = useState<Scenario18Detail | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+
+  // 에러 모달
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
 
   const fetchData = useCallback(async () => {
     try {
@@ -129,8 +154,92 @@ export default function AutomaticPaymentScenarioPage() {
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침
   usePageFocusRefresh(() => {
     devLog("[usePageFocusRefresh] 페이지 포커스 복귀 - 데이터 새로고침");
-    fetchData();
+    if (currentScreen === "list") {
+      fetchData();
+    }
   });
+
+  // 등록하기 버튼 클릭
+  const handleNavigateToRegister = () => {
+    setCurrentScreen("register");
+  };
+
+  // 등록 완료 후 목록으로 돌아가기
+  const handleRegisterComplete = () => {
+    setCurrentScreen("list");
+    fetchData(); // 목록 새로고침
+  };
+
+  // 상세 화면으로 이동
+  const handleNavigateToDetail = async (autoPaymentId: number) => {
+    try {
+      setIsDetailLoading(true);
+      setSelectedAutoPaymentId(autoPaymentId);
+
+      // 자동이체 상세 정보 조회
+      const payment = await getAutoPaymentDetail(autoPaymentId);
+
+      // 계좌 정보 조회
+      let sourceAccount: EducationalAccount | undefined;
+      try {
+        const accounts = await getAccountList(getCurrentUserId());
+        sourceAccount = accounts.find(acc => acc.id === payment.educationalAccountId);
+      } catch (accountError) {
+        devError("[handleNavigateToDetail] 계좌 정보 조회 실패:", accountError);
+      }
+
+      const convertedDetail = convertToScenario18Detail(payment, sourceAccount);
+      setDetailData(convertedDetail);
+      setCurrentScreen("detail");
+    } catch (error) {
+      devError("[handleNavigateToDetail] 자동이체 상세 조회 실패:", error);
+      setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
+  // 자동이체 해지
+  const handleCancelAutoPayment = async () => {
+    if (!selectedAutoPaymentId || !detailData) {
+      devError("[handleCancelAutoPayment] autoPaymentId 또는 detail 정보가 없습니다.");
+      setErrorModal({ isOpen: true, message: "자동이체 정보를 찾을 수 없습니다." });
+      return;
+    }
+
+    try {
+      // educationalAccountId 추출 (detailData에서)
+      const accounts = await getAccountList(getCurrentUserId());
+      const payment = await getAutoPaymentDetail(selectedAutoPaymentId);
+
+      await cancelAutoPayment(selectedAutoPaymentId, payment.educationalAccountId);
+      devLog("[handleCancelAutoPayment] 해지 완료");
+
+      // 해지 후 최신 정보 다시 조회
+      const updatedPayment = await getAutoPaymentDetail(selectedAutoPaymentId);
+      let sourceAccount: EducationalAccount | undefined;
+      try {
+        sourceAccount = accounts.find(acc => acc.id === updatedPayment.educationalAccountId);
+      } catch (accountError) {
+        devError("[handleCancelAutoPayment] 계좌 정보 조회 실패:", accountError);
+      }
+
+      const convertedDetail = convertToScenario18Detail(updatedPayment, sourceAccount);
+      setDetailData(convertedDetail);
+      setCurrentScreen("cancelled");
+    } catch (error) {
+      devError("[handleCancelAutoPayment] 자동이체 해지 실패:", error);
+      setErrorModal({ isOpen: true, message: "자동이체 해지에 실패했습니다.\n다시 시도해주세요." });
+    }
+  };
+
+  // 해지 완료 화면에서 목록으로
+  const handleBackToList = () => {
+    setCurrentScreen("list");
+    setSelectedAutoPaymentId(null);
+    setDetailData(null);
+    fetchData(); // 목록 새로고침
+  };
 
   if (isLoading) {
     return (
@@ -140,12 +249,70 @@ export default function AutomaticPaymentScenarioPage() {
     );
   }
 
+  // 화면별 렌더링
   return (
-    <Scenario11
-      accountSuffix={accountSuffix}
-      hasAutoTransfer={hasAutoTransfer}
-      autoTransferList={autoTransferList}
-    />
+    <>
+      {currentScreen === "list" && (
+        <Scenario11
+          accountSuffix={accountSuffix}
+          hasAutoTransfer={hasAutoTransfer}
+          autoTransferList={autoTransferList}
+          onNavigateToRegister={handleNavigateToRegister}
+          onNavigateToDetail={handleNavigateToDetail}
+        />
+      )}
+
+      {currentScreen === "register" && (
+        <TransferFlowProvider>
+          <Scenario12
+            onComplete={handleRegisterComplete}
+            onCancel={handleBackToList}
+          />
+        </TransferFlowProvider>
+      )}
+
+      {currentScreen === "detail" && detailData && (
+        <>
+          {isDetailLoading ? (
+            <div className="flex h-screen items-center justify-center">
+              <p className="text-gray-500">로딩 중...</p>
+            </div>
+          ) : (
+            <Scenario18
+              detail={detailData}
+              onBack={handleBackToList}
+              onNavigateToCancelComplete={handleCancelAutoPayment}
+            />
+          )}
+        </>
+      )}
+
+      {currentScreen === "cancelled" && detailData && (
+        <Scenario19
+          detail={detailData}
+          onNavigateToQuiz={() => router.push("/quiz?id=2")}
+        />
+      )}
+
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+        title="오류"
+        description={errorModal.message}
+        confirmText="확인"
+      />
+    </>
   );
 }
 
+export default function AutomaticPaymentScenarioPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500">로딩 중...</p>
+      </div>
+    }>
+      <AutomaticPaymentScenarioContent />
+    </Suspense>
+  );
+}
