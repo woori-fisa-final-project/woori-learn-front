@@ -34,8 +34,10 @@ function QuizContent() {
         }
 
         const data = await response.json();
-        const foundQuiz = data.quizzes.find((q: QuizContent) => q.id === quizId);
-
+        const foundQuiz = Array.isArray(data?.quizzes)
+          ? data.quizzes.find((q: QuizContent) => q.id === quizId)
+          : undefined;
+          
         if (!foundQuiz) {
           throw new Error(`퀴즈 ID ${quizId}를 찾을 수 없습니다.`);
         }
