@@ -31,8 +31,6 @@ export async function getAutoPaymentList(
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      // JWT 토큰이 필요한 경우 여기에 추가
-      // "Authorization": `Bearer ${token}`,
     },
   });
 
