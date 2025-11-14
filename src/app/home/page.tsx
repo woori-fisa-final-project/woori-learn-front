@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"; // 페이지 전환을 위해 Next.
 import ServiceCardGrid from "@/components/common/ServiceCardGrid"; // 서비스 카드 목록을 그리드 형태로 보여주는 공통 컴포넌트입니다.
 import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도를 단계별로 나타내는 프로그레스 바입니다.
 import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
+import Image from "next/image";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 import PasswordToggleIcon from "@/components/common/PasswordToggleIcon";
+import Image from "next/image";
 
 const logoImage = "/images/logo1.png";
 
@@ -53,7 +54,7 @@ export default function LoginPage() {
       <div className="w-full max-w-[min(100%,_430px)] px-[20px] pt-[60px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
         {/* 상단 로고 영역으로 서비스 브랜드 아이덴티티를 강조합니다. */}
         <div className="relative mx-auto mt-[58px] h-[86px] w-[150px]">
-          <img alt="로고" className="h-full w-full object-contain" src={logoImage} />
+          <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={150} height={86} />
         </div>
 
         {/* 로그인 입력 필드 묶음 영역입니다. */}

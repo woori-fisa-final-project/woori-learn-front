@@ -44,8 +44,8 @@ export default function Scenario11({
   accountSuffix,
   hasAutoTransfer,
   autoTransferList = [],
-  onNavigateToRegister,
-  onNavigateToDetail,
+  onNavigateToRegister = () => console.warn("[Scenario11] onNavigateToRegister not provided"),
+  onNavigateToDetail = (id) => console.warn("[Scenario11] onNavigateToDetail not provided: ", id),
 }: Scenario11Props) {
   // 페이지 이동과 세부 플로우 전환을 처리하기 위해 라우터 인스턴스를 가져온다.
   const router = useRouter();
@@ -71,6 +71,7 @@ export default function Scenario11({
 
   // 등록하기 버튼을 눌렀을 때 바텀시트를 열어 자동이체 유형을 고르게 한다.
   const handleRegister = () => {
+    if (isSheetOpen) return;  // <-- 중복 열림 방지
     setSheetOpen(true);
   };
 
