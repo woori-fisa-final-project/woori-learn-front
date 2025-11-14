@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 import PasswordToggleIcon from "@/components/common/PasswordToggleIcon";
+import { loginUser } from "./login";
 
 const logoImage = "/images/logo1.png";
 
@@ -34,7 +35,7 @@ export default function LoginPage() {
     setShowPassword((prev) => !prev);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // 브라우저 환경에서만 아이디 저장 로직이 동작하도록 보장합니다.
     if (typeof window !== "undefined") {
       if (rememberId) {
@@ -45,7 +46,15 @@ export default function LoginPage() {
         localStorage.removeItem("rememberedId");
       }
     }
-    // TODO: 로그인 로직 추가 예정
+    try{
+      // 로그인 시도
+      await loginUser(id, password);
+      // 로그인 성공 후 홈 화면으로 이동
+      window.location.href = "/home";
+      } catch (error) {
+      console.error("로그인 요청 오류:", error);
+      alert("로그인에 실패했습니다.");
+    }
   };
 
   return (

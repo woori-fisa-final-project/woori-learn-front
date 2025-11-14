@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
+import { signup, checkDuplicateId } from "./signup";
 
 const backIcon = "/images/backicon.png"; // 뒤로가기 버튼에서 사용할 아이콘 경로입니다.
 
@@ -32,7 +33,7 @@ export default function SignupPage() {
     router.push("/login"); // 뒤로가기 클릭 시 로그인 페이지로 이동합니다.
   };
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (password !== confirmPassword) {
       setError("비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 경고 메시지를 표시합니다.
       return;
@@ -40,15 +41,32 @@ export default function SignupPage() {
 
     setError(""); // 모든 검증을 통과했으므로 에러 메시지를 초기화합니다.
     if (isAllFieldsFilled) {
-      // NOTE: 실제 가입 처리는 서버에서 수행되어야 하며, 성공 시 아래 라우팅 수행.
-      router.push("/login"); // 모든 입력이 유효하면 로그인 페이지로 이동합니다.
+      const success = await signup({
+        userId: id,
+        password,
+        nickname: name,
+      });
+
+      if (success) {
+        router.push("/login");
+      } else {
+        setError("회원가입에 실패했습니다. 다시 시도해주세요.");
+      }
     }
   };
 
-  const handleDuplicateCheck = () => {
+  const handleDuplicateCheck = async () => {
     if (id.trim() !== "") {
-      // NOTE: Replace with secure server-side availability check.
-      console.warn("Duplicate ID check should call a secure API endpoint.");
+      const available = await checkDuplicateId(id);
+      if(available){
+        setId(id);
+        alert("사용 가능한 아이디입니다.");
+        setError("");
+      }
+      else{
+        setId("");
+        setError("이미 사용 중인 아이디입니다.");
+      }
     }
   };
 
@@ -56,15 +74,15 @@ export default function SignupPage() {
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[min(100%,_430px)] px-[20px] pt-[60px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="w-full max-w-[min(100%, 430px)] px-5 pt-[60px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-3xl">
         {/* 상단 헤더: 뒤로가기 버튼과 페이지 제목을 보여줍니다. */}
         <div className="flex w-full items-center gap-2">
           <button
             onClick={handleBack}
-            className="h-[7px] w-[14px] flex items-center justify-center -rotate-90"
+            className="h-[7px] w-3.5 flex items-center justify-center -rotate-90"
             aria-label="뒤로가기"
           >
-            <img alt="뒤로가기" className="h-[7px] w-[14px] object-contain" src={backIcon} />
+            <img alt="뒤로가기" className="h-[7px] w-3.5 object-contain" src={backIcon} />
           </button>
           <h1 className="text-[20px] font-medium leading-[1.38] tracking-[-0.6px] text-gray-700">
             회원가<span className="tracking-[-0.8px]">입</span>
@@ -83,7 +101,7 @@ export default function SignupPage() {
         />
 
         {/* 아이디 입력과 중복 확인 버튼 영역입니다. */}
-        <div className="mt-[48px] flex w-full flex-col gap-[8px]">
+        <div className="mt-12 flex w-full flex-col gap-2">
           <label className="text-[16px] font-medium leading-[25px] text-gray-600">아이디</label>
           <div className="flex w-full items-center gap-2">
             <div className="flex-1">
@@ -116,7 +134,7 @@ export default function SignupPage() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           showEyeIcon
-          className="mt-[20px]"
+          className="mt-5"
         />
 
         {/* 비밀번호 확인 필드: confirmPassword 상태를 갱신합니다. */}
@@ -127,30 +145,30 @@ export default function SignupPage() {
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}
           showEyeIcon
-          className="mt-[20px]"
+          className="mt-5"
         />
 
         {/* 비밀번호 불일치 등 검증 실패 시 에러 메시지를 노출합니다. */}
         {error && (
-          <p className="mt-[12px] text-[14px] font-medium text-red-500" role="alert">
+          <p className="mt-3 text-[14px] font-medium text-red-500" role="alert">
             {error}
           </p>
         )}
 
         {/* 모든 입력이 유효할 때만 활성화되는 가입 버튼입니다. */}
-        <div className="mt-[20px]">
+        <div className="mt-5">
           <Button onClick={handleSignup} disabled={!isAllFieldsFilled}>
             회원가입
           </Button>
         </div>
 
         {/* 기존 계정 보유자를 위한 로그인 링크 안내입니다. */}
-        <div className="mt-[20px] text-center">
+        <div className="mt-5 text-center">
           <p className="text-[16px] leading-[25px] tracking-[0.08px]">
             <span className="text-gray-400">이미 계정이 있으신가요? </span>
             <Link
               href="/login"
-              className="font-semibold text-[#648ddb] underline decoration-solid underline-offset-2 hover:text-[#2677cc]"
+              className="font-semibold text-primary-400 underline decoration-solid underline-offset-2 hover:text-[#2677cc]"
             >
               로그인하기
             </Link>
