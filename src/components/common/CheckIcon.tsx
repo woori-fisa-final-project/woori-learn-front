@@ -6,6 +6,8 @@ interface CheckIconProps {
   active?: boolean; // 향후 확장을 위한 활성화 상태 값입니다.
   className?: string; // 추가 스타일을 전달할 수 있는 클래스입니다.
   bgColor?: "primary-700" | "green-500" | string; // 배경색을 Tailwind 클래스 또는 커스텀 색상으로 지정합니다.
+  iconSrc?: string; // 아이콘 이미지를 커스텀할 수 있습니다.
+  iconAlt?: string; // 커스텀 아이콘 대체 텍스트입니다.
   // hoverColor?: string;
   // activeColor?: string;
 }
@@ -14,8 +16,8 @@ const checkIconPath = "/images/maincheck.png"; // 체크 마크 이미지를 재
 
 const sizeClasses = {
   sm: "w-4 h-4",
-  md: "w-5 h-5",
-  lg: "w-6 h-6",
+  md: "w-8 h-8",
+  lg: "w-10 h-10",
 };
 
 const bgColorClasses = {
@@ -28,14 +30,17 @@ export default function CheckIcon({
   // color = "white",
   active = true,
   className = "",
-  bgColor = "primary-700",
+  bgColor = "",
+  iconSrc = checkIconPath,
+  iconAlt = "체크",
 }: // hoverColor,
 // activeColor,
 CheckIconProps) {
-  const bgClass =
-    bgColor in bgColorClasses
+  const bgClass = bgColor
+    ? bgColor in bgColorClasses
       ? bgColorClasses[bgColor as keyof typeof bgColorClasses]
-      : bgColor; // 정의된 키가 아니면 그대로 클래스 이름으로 사용합니다.
+      : bgColor
+    : ""; // 정의된 키가 아니면 그대로 클래스 이름으로 사용합니다.
 
   // const hoverClass = hoverColor ? `hover:${hoverColor}` : "";
   // const activeClass = activeColor && active ? `active:${activeColor}` : "";
@@ -48,9 +53,9 @@ CheckIconProps) {
       className={`${bgClass} rounded-full ${sizeClasses[size]} flex items-center justify-center p-0.5 transition-colors ${className}`}
     >
       <img
-        alt="체크"
-        className="w-full h-full object-contain"
-        src={checkIconPath} // 투명 배경 PNG 아이콘을 그대로 렌더링합니다.
+        alt={iconAlt}
+        className="h-full w-full object-contain"
+        src={iconSrc} // 투명 배경 PNG 아이콘을 그대로 렌더링합니다.
       />
     </div>
   );
