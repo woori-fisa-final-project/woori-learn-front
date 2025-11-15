@@ -58,7 +58,7 @@ export default function ProgressBar({
               className={`relative ${step.iconClassName ?? ""}`}
             />
             <p
-              className={`mt-2 text-[12px] font-medium text-center leading-tight ${
+              className={`mt-2 text-[12px] font-bold text-center leading-tight ${
                 step.textColor || "text-gray-500"
               }`}
             >

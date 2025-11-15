@@ -14,11 +14,11 @@ export default function PageContainer({
 }: PageContainerProps) {
   // 모바일 중심으로 설계된 페이지 레이아웃을 일관되게 적용합니다.
   return (
-    <main className="flex justify-center items-start min-h-[100dvh] bg-white overflow-x-hidden overflow-y-hidden">
+    <main className="flex justify-center items-start min-h-[100dvh] bg-white overflow-x-hidden overflow-y-hidden pb-[30px]">
       <div
         className={`w-full max-w-[390px] sm:max-w-[430px] md:max-w-[560px] lg:max-w-[768px] ${
           noPadding ? "" : "px-5 sm:px-[20px]"
-        } pt-[60px] pb-0 flex flex-col min-h-[100dvh] ${className}`}
+        } pt-[30px] pb-0 flex flex-col min-h-[100dvh] ${className}`}
         style={{
           paddingBottom: "env(safe-area-inset-bottom, 0px)", // 노치가 있는 디바이스에서도 하단 콘텐츠가 잘리지 않도록 여백을 확보합니다.
         }}
