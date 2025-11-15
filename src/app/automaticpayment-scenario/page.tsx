@@ -56,7 +56,7 @@ function convertToAutoTransferInfo(
     ownerName: account.accountName, // API에서 제공되는 계좌명
     recipientName: payment.counterpartyName,
     registerDate: payment.startDate, // 등록일 (API에 별도 필드가 없어 시작일 사용)
-    sourceAccountBank: "우리은행", // 교육용 계좌는 모두 우리은행
+    sourceAccountBank: account.bankName, // 계좌의 은행명 (동적 값)
     sourceAccountNumber: formatAccountNumber(account.accountNumber), // API에서 제공되는 계좌번호
   };
 }
@@ -187,6 +187,18 @@ function AutomaticPaymentScenarioContent() {
       let sourceAccount: EducationalAccount | undefined;
       if (accountsResult.status === "fulfilled") {
         sourceAccount = accountsResult.value.find(acc => acc.id === payment.value.educationalAccountId);
+
+        // 계좌를 찾지 못한 경우 (데이터 불일치)
+        if (!sourceAccount) {
+          devError(
+            "[handleNavigateToDetail] 출금 계좌를 찾을 수 없음:",
+            `educationalAccountId=${payment.value.educationalAccountId}, 조회된 계좌 수=${accountsResult.value.length}`
+          );
+          setErrorModal({
+            isOpen: true,
+            message: "자동이체에 연결된 출금 계좌를 찾을 수 없습니다.\n계좌 정보가 일치하지 않습니다."
+          });
+        }
       } else {
         devError("[handleNavigateToDetail] 계좌 정보 조회 실패:", accountsResult.reason);
         setErrorModal({ isOpen: true, message: "계좌 정보를 불러오지 못했습니다.\n출금 계좌 정보가 표시되지 않을 수 있습니다." });
@@ -235,6 +247,18 @@ function AutomaticPaymentScenarioContent() {
       let sourceAccount: EducationalAccount | undefined;
       if (accountsResult.status === "fulfilled") {
         sourceAccount = accountsResult.value.find(acc => acc.id === updatedPayment.value.educationalAccountId);
+
+        // 계좌를 찾지 못한 경우 (데이터 불일치)
+        if (!sourceAccount) {
+          devError(
+            "[handleCancelAutoPayment] 출금 계좌를 찾을 수 없음:",
+            `educationalAccountId=${updatedPayment.value.educationalAccountId}, 조회된 계좌 수=${accountsResult.value.length}`
+          );
+          setErrorModal({
+            isOpen: true,
+            message: "자동이체에 연결된 출금 계좌를 찾을 수 없습니다.\n계좌 정보가 일치하지 않습니다."
+          });
+        }
       } else {
         devError("[handleCancelAutoPayment] 계좌 정보 조회 실패:", accountsResult.reason);
         setErrorModal({ isOpen: true, message: "계좌 정보를 불러오지 못했습니다.\n출금 계좌 정보가 표시되지 않을 수 있습니다." });

@@ -9,18 +9,19 @@ import Image from "next/image";
 type Scenario3Props = {
   onNext: () => void; // 계좌 입력이 유효할 때 다음 단계로 이동하는 콜백입니다.
   onBack: () => void; // 뒤로가기 버튼 클릭 시 상위 단계에 알리기 위한 콜백입니다.
+  allowedBankName?: string; // 허용된 은행명 (지정하지 않으면 모든 은행 허용)
 };
 
 const TARGET_ACCOUNT = "110-123-456789"; // 시나리오에서 성공 조건으로 사용하는 기준 계좌번호입니다.
 
-export default function Scenario3({ onNext, onBack }: Scenario3Props) {
+export default function Scenario3({ onNext, onBack, allowedBankName = "국민은행" }: Scenario3Props) {
   const {
     selectedBank,
     accountNumber,
     updateAccountNumber,
     setRecipientName,
   } = useTransferFlow(); // 컨텍스트에서 선택된 은행, 입력 계좌번호, 수취인 이름 설정 함수를 가져옵니다.
-  const displayBank = selectedBank ?? "국민은행"; // 은행이 선택되지 않았다면 기본 은행명을 표시합니다.
+  const displayBank = selectedBank ?? allowedBankName; // 은행이 선택되지 않았다면 허용된 은행명을 표시합니다.
   const bankImage = BANK_IMAGES[displayBank] || "/images/bank3.png"; // 선택된 은행의 이미지, 없으면 기본값
   const [isBankErrorModalOpen, setBankErrorModalOpen] = useState(false); // 은행 선택 오류 모달 상태
 
@@ -53,8 +54,8 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
   const handleNext = () => {
     if (!isValid) return; // 유효한 계좌번호가 아니면 진행을 막습니다.
 
-    // 국민은행이 아니면 오류 모달 표시
-    if (displayBank !== "국민은행") {
+    // 허용된 은행이 아니면 오류 모달 표시
+    if (displayBank !== allowedBankName) {
       setBankErrorModalOpen(true);
       return;
     }
@@ -120,7 +121,7 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
         isOpen={isBankErrorModalOpen}
         onClose={() => setBankErrorModalOpen(false)}
         title="은행 선택 오류"
-        description={`타행 자동이체는 국민은행만 가능합니다.\n국민은행을 선택해주세요.`}
+        description={`타행 자동이체는 ${allowedBankName}만 가능합니다.\n${allowedBankName}을(를) 선택해주세요.`}
         confirmText="확인"
         onConfirm={() => setBankErrorModalOpen(false)}
       />
