@@ -129,7 +129,7 @@ function QuickMenuList() {
         {QUICK_MENU.map((item) => (
           <div
             key={item.label}
-            className="flex items-center gap-[12px] text-[15px] font-medium text-gray-800"
+            className="flex items-center gap-[12px] text-[15px] font-semibold text-gray-800"
           >
             <span className="text-[18px]" role="img" aria-hidden>
               {item.icon}
@@ -172,7 +172,7 @@ function ServiceGrid() {
         {SERVICES.map((service) => (
           <div
             key={service.label}
-            className="flex h-[118px] flex-col items-center justify-center rounded-[16px] bg-white p-4 text-[13px] font-medium text-gray-700 shadow-sm"
+            className="flex h-[118px] flex-col items-center justify-center rounded-[16px] bg-white p-4 text-[13px] font-semibold text-gray-700 shadow-sm"
           >
             <span className="mb-[10px] text-[26px]" role="img" aria-hidden>
               {service.icon}
@@ -208,7 +208,7 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
               {item.icon}
             </span>
             <span
-              className={`text-[11px] font-medium ${
+              className={`text-[11px] font-semibold ${
                 item.active ? "text-[#2482C5]" : "text-gray-400"
               }`}
             >
@@ -261,10 +261,10 @@ export default function WooriMainPage() {
     <div className="min-h-[100dvh] bg-[#F5F7FB]">
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col">
         {/* 사용자 인사 헤더 */}
-        <div className="px-[20px] pt-[60px]">
+        <div className="px-[20px] pt-[30px]">
           <HeaderUserBar userName={userName} onOpenMenu={handleOpenMenu} />
         </div>
-        <main className="flex-1 overflow-y-auto px-[20px] pb-[140px]">
+        <main className="flex-1 overflow-y-auto px-[20px] pb-[100px]">
           <div className="space-y-[24px] pb-[24px]">
             {/* 대표 계좌 카드 */}
             <AccountCard

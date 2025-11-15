@@ -13,6 +13,7 @@ interface ModalProps {
   onConfirm?: () => void; // 확인 버튼 클릭 시 실행할 콜백입니다.
   zIndex?: "z-40" | "z-50" | "z-[100]"; // 필요 시 다른 레이어보다 위에 올리기 위한 z-index
   children?: React.ReactNode; // 커스텀 콘텐츠를 렌더링하고 싶을 때 사용할 슬롯입니다.
+  showCancelButton?: boolean; // 취소 버튼 표시 여부입니다. 기본값은 true입니다.
 }
 
 export default function Modal({
@@ -25,6 +26,7 @@ export default function Modal({
   onConfirm,
   zIndex,
   children,
+  showCancelButton = true,
 }: ModalProps) {
   const handleConfirm = onConfirm ?? onClose;
   // 오버레이로 감싼 기본 모달 레이아웃을 제공하며, children이 주어지면 그대로 렌더링합니다.
@@ -41,15 +43,27 @@ export default function Modal({
               </h2>
             )}
             {description && (
-              <p className="text-[16px] text-gray-600 text-center mb-8 w-full whitespace-pre-line">
+              <p className="text-[16px] text-gray-600 text-center font-semibold mb-8 w-full whitespace-pre-line">
                 {description}
               </p>
             )}
-            <div className="flex gap-3 w-full">
-              <Button variant="secondary" onClick={onClose} size="sm">
-                {cancelText}
-              </Button>
-              <Button variant="primary" onClick={handleConfirm} size="sm">
+            <div className={`flex w-full ${showCancelButton ? "gap-3" : "justify-center"}`}>
+              {showCancelButton && (
+                <Button
+                  variant="secondary"
+                  onClick={onClose}
+                  size="sm"
+                  className="font-semibold"
+                >
+                  {cancelText}
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={handleConfirm}
+                size="sm"
+                className="font-semibold"
+              >
                 {confirmText}
               </Button>
             </div>
