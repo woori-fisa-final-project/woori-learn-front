@@ -144,9 +144,9 @@ export default function Scenario11({
           </button>
         </section>
 
-        <div className="flex h-full flex-col justify-between py-[36px]">
+        <div className="flex flex-1 flex-col py-[36px]">
           {/* 등록된 자동이체가 없으면 빈 상태, 있으면 카드 형태로 정보를 보여준다. */}
-          <div className="flex h-full flex-col items-center text-center gap-[16px]">
+          <div className="flex-1 overflow-y-auto">
             {!hasAutoTransfer ? (
               <EmptyState />
             ) : (
@@ -162,9 +162,11 @@ export default function Scenario11({
             )}
           </div>
           {/* 화면 하단의 고정 버튼으로 새로운 자동이체 등록 플로우를 시작한다. */}
-          <Button size="md" onClick={handleRegister} fullWidth className="mt-auto">
-            자동이체 등록하기
-          </Button>
+          <div className="mt-[24px] flex-shrink-0">
+            <Button size="md" onClick={handleRegister} fullWidth>
+              자동이체 등록하기
+            </Button>
+          </div>
         </div>
       </main>
 

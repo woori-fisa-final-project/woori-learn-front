@@ -17,14 +17,6 @@ export function convertToScenario18Detail(
   payment: AutoPayment,
   sourceAccount?: EducationalAccount
 ): Scenario18Detail {
-  // API 응답 검증 (개발 환경)
-  if (sourceAccount && !sourceAccount.bankName) {
-    devError(
-      "[convertToScenario18Detail] API 응답에 bankName이 없음:",
-      `accountId=${sourceAccount.id}, 기본값 '우리은행' 사용`
-    );
-  }
-
   const statusMap = {
     ACTIVE: "정상",
     CANCELLED: "해지",

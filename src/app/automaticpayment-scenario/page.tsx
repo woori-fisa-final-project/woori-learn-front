@@ -29,14 +29,6 @@ function convertToAutoTransferInfo(
   payment: AutoPayment,
   account: EducationalAccount
 ): AutoTransferInfo {
-  // API 응답 검증 (개발 환경)
-  if (!account.bankName) {
-    devError(
-      "[convertToAutoTransferInfo] API 응답에 bankName이 없음:",
-      `accountId=${account.id}, 기본값 '우리은행' 사용`
-    );
-  }
-
   // 상태 한글 변환
   const statusMap = {
     ACTIVE: "정상",
