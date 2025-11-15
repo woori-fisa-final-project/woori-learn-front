@@ -1,40 +1,132 @@
-// 퀴즈 화면에서 상태와 헤더를 제어하기 위해 클라이언트 컴포넌트로 선언합니다.
-"use client"; // 퀴즈 데이터 선택과 헤더 설정을 위해 클라이언트 컴포넌트를 사용합니다.
+"use client";
 
-// 헤더 제목을 조절하기 위해 useEffect 훅을 사용합니다.
-import { useEffect } from "react";
-// 재사용 가능한 퀴즈 화면 컴포넌트와 타입을 불러옵니다.
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import QuizScreen, { type QuizContent } from "@/components/quiz/QuizScreen";
-// 시나리오 헤더 컨텍스트를 통해 중앙 제목을 설정합니다.
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
+import { devLog, devError } from "@/utils/logger";
 
-// 실제로는 API나 DB에서 주입될 퀴즈 데이터를 임시로 하드코딩합니다.
-const mockQuiz: QuizContent = {
-  id: "quiz-1",
-  title: "Quiz 1",
-  prompt: "설명 중 옳은 것을 고르시오.",
-  options: [
-    { id: "option-1", text: "계좌이체는 ATM이 아닌 다양한 채널에서도 이용할 수 있다." },
-    { id: "option-2", text: "계좌이체는 계좌별 수수료와 이체 한도를 확인하고 이용해야 한다." },
-    { id: "option-3", text: "계좌 내역조회는 타인의 계좌까지 열람할 수 있다." },
-    { id: "option-4", text: "실수 거래 내역은 앱에서 직접 확인하고 정정할 수 있다." },
-  ],
-};
+/**
+ * 외부 데이터가 QuizContent 타입인지 검증하는 타입 가드
+ * @param data 검증할 데이터
+ * @returns QuizContent 타입 여부
+ */
+function isQuizContent(data: unknown): data is QuizContent {
+  if (!data || typeof data !== "object") return false;
 
-export default function QuizPage() {
+  const quiz = data as Record<string, unknown>;
+
+  // 필수 필드 검증
+  if (typeof quiz.id !== "string") return false;
+  if (typeof quiz.title !== "string") return false;
+  if (typeof quiz.prompt !== "string") return false;
+  if (typeof quiz.correctAnswerId !== "string") return false;
+
+  // options 배열 검증
+  if (!Array.isArray(quiz.options)) return false;
+
+  // 각 옵션의 구조 검증
+  return quiz.options.every((option: unknown) => {
+    if (!option || typeof option !== "object") return false;
+    const opt = option as Record<string, unknown>;
+    return typeof opt.id === "string" && typeof opt.text === "string";
+  });
+}
+
+function QuizContent() {
   const { setTitle } = useScenarioHeader();
+  const searchParams = useSearchParams();
+  const quizId = searchParams.get("id") || "1"; // 기본값 1
+
+  const [quiz, setQuiz] = useState<QuizContent | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setTitle("Quiz"); // 페이지에 진입하면 헤더 중앙에 타이틀을 표시합니다.
-    return () => setTitle(""); // 페이지를 벗어날 때는 제목을 초기화합니다.
+    setTitle("Quiz");
+    return () => setTitle("");
   }, [setTitle]);
 
-  // TODO: 추후 DB 혹은 API에서 퀴즈 콘텐츠를 불러와 내려줄 예정입니다.
+  useEffect(() => {
+    async function loadQuiz() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // JSON 파일에서 퀴즈 데이터 로드
+        const response = await fetch("/data/quizzes.json");
+
+        if (!response.ok) {
+          throw new Error(`퀴즈 데이터 로드 실패: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // 데이터 구조 검증
+        if (!data || typeof data !== "object" || !Array.isArray(data.quizzes)) {
+          throw new Error("퀴즈 데이터 형식이 올바르지 않습니다.");
+        }
+
+        // ID로 퀴즈 찾기 (타입 단언 없이)
+        const foundQuiz = data.quizzes.find((q: unknown) => {
+          return q && typeof q === "object" && "id" in q && q.id === quizId;
+        });
+
+        if (!foundQuiz) {
+          throw new Error(`퀴즈 ID ${quizId}를 찾을 수 없습니다.`);
+        }
+
+        // 타입 가드로 검증
+        if (!isQuizContent(foundQuiz)) {
+          devError("[QuizPage] 퀴즈 데이터 구조가 올바르지 않음:", foundQuiz);
+          throw new Error("퀴즈 데이터 구조가 올바르지 않습니다.");
+        }
+
+        devLog(`[QuizPage] 퀴즈 ${quizId} 로드 완료`);
+        setQuiz(foundQuiz);
+      } catch (err) {
+        devError("[QuizPage] 퀴즈 로드 실패:", err);
+        setError(err instanceof Error ? err.message : "퀴즈를 불러올 수 없습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadQuiz();
+  }, [quizId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500">퀴즈를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (error || !quiz) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500">{error || "퀴즈를 불러올 수 없습니다."}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-[24px] px-[20px] py-[32px]"> {/* 페이지 공통 여백을 설정합니다. */}
-      <QuizScreen quiz={mockQuiz} /> {/* 재사용 가능한 퀴즈 화면 컴포넌트에 데이터를 전달합니다. */}
+    <div className="flex flex-col gap-[24px] px-[20px] py-[32px]">
+      <QuizScreen quiz={quiz} />
     </div>
+  );
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500">퀴즈를 불러오는 중...</p>
+      </div>
+    }>
+      <QuizContent />
+    </Suspense>
   );
 }
 

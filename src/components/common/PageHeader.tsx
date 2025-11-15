@@ -1,5 +1,6 @@
 "use client"; // 헤더의 뒤로가기 버튼 등 상호작용을 처리하기 위해 클라이언트 전용으로 선언합니다.
 import { ReactNode } from "react"; // 우측 커스텀 요소를 받기 위해 ReactNode 타입을 사용합니다.
+import Image from "next/image";
 
 interface PageHeaderProps {
   title: string; // 헤더 중앙에 표시할 제목입니다.
@@ -33,10 +34,12 @@ export default function PageHeader({
             className="w-[14px] h-[7px] flex items-center justify-center -rotate-90 shrink-0"
             aria-label="뒤로가기"
           >
-            <img
+            <Image
               alt="뒤로가기"
               className="w-[14px] h-[7px] object-contain"
               src={backIcon} // 공통 뒤로가기 아이콘 이미지를 사용합니다.
+              width={14}
+              height={7}
             />
           </button>
         )}

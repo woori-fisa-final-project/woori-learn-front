@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
+import Image from "next/image";
 
 const backIcon = "/images/backicon.png"; // 뒤로가기 버튼에서 사용할 아이콘 경로입니다.
 
@@ -64,7 +65,7 @@ export default function SignupPage() {
             className="h-[7px] w-[14px] flex items-center justify-center -rotate-90"
             aria-label="뒤로가기"
           >
-            <img alt="뒤로가기" className="h-[7px] w-[14px] object-contain" src={backIcon} />
+            <Image alt="뒤로가기" className="h-[7px] w-[14px] object-contain" src={backIcon} width={14} height={7} />
           </button>
           <h1 className="text-[20px] font-medium leading-[1.38] tracking-[-0.6px] text-gray-700">
             회원가<span className="tracking-[-0.8px]">입</span>

@@ -1,7 +1,7 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 상태와 브라우저 API를 사용할 수 있도록 합니다.
 
 import { useRouter } from "next/navigation"; // 페이지 이동을 위해 Next.js 라우터 훅을 사용합니다.
-import { useState } from "react"; // 입력값과 상태를 관리하기 위해 React 상태 훅을 사용합니다.
+import { useState, useRef, useEffect } from "react"; // 입력값과 상태를 관리하기 위해 React 상태 훅을 사용합니다.
 import Input from "@/components/common/Input"; // 공통 입력 컴포넌트를 가져옵니다.
 import Button from "@/components/common/Button"; // 제출 버튼에 사용할 공통 버튼입니다.
 import PageHeader from "@/components/common/PageHeader"; // 페이지 상단 헤더를 표시합니다.
@@ -19,6 +19,16 @@ export default function PointExchangePage() {
   const { availablePoints } = useUserData(); // 현재 사용자의 보유 포인트를 가져옵니다.
   const [errors, setErrors] = useState<{ withdrawalAmount?: string; accountNumber?: string }>({}); // 각 입력 필드의 에러 메시지를 관리합니다.
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle"); // 제출 결과 상태를 표시하기 위한 값입니다.
+  const timerRef = useRef<NodeJS.Timeout | null>(null); // setTimeout 타이머를 저장하여 cleanup 시 정리합니다.
+
+  // 컴포넌트 언마운트 시 타이머 정리 (메모리 누수 방지)
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const handleBack = () => {
     router.push("/mypage"); // 뒤로가기 시 마이페이지로 이동합니다.
@@ -125,7 +135,11 @@ export default function PointExchangePage() {
         });
 
         setSubmitStatus("success");
-        setTimeout(() => {
+        // 이전 타이머가 있으면 정리
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
+        timerRef.current = setTimeout(() => {
           router.push("/mypage");
         }, 1500);
       } catch (error) {

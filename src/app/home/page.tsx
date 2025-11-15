@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"; // 페이지 전환을 위해 Next.
 import ServiceCardGrid from "@/components/common/ServiceCardGrid"; // 서비스 카드 목록을 그리드 형태로 보여주는 공통 컴포넌트입니다.
 import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도를 단계별로 나타내는 프로그레스 바입니다.
 import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
-import Modal from "@/components/common/Modal"; // 모달 컴포넌트를 사용합니다.
+import Modal from "@/components/common/Modal"; // 준비 중 서비스 안내 모달 컴포넌트입니다.
+import Image from "next/image";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -127,12 +128,12 @@ export default function HomePage() {
         {/* 상단 로고와 프로필 영역 */}
         <div className="flex w-full items-center justify-between">
           <div className="relative h-[58px] w-[100px]">
-            <img alt="로고" className="h-full w-full object-contain" src={logoImage} />
+            <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={100} height={58} />
           </div>
 
           <button onClick={handleProfileClick} className="flex cursor-pointer flex-col items-center gap-1">
             <div className="relative h-7 w-7">
-              <img alt="프로필" className="h-full w-full object-contain" src={profileIcon} />
+              <Image alt="프로필" className="h-full w-full object-contain" src={profileIcon} width={28} height={28} />
             </div>
             <p className="text-[12px] text-gray-400">내 정보</p>
           </button>

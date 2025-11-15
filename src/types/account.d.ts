@@ -1,17 +1,18 @@
 export interface Account {
   id: number;
-  user_id: number;
-  account_number: string;
-  bank_code: string;
-  account_name: string;
-  created_at: string;
+  userId: number;
+  accountNumber: string;
+  bankCode: string;
+  accountName: string;
+  createdAt: string;
 }
 
 export interface EducationalAccount {
   id: number;
-  account_number: string;
+  accountNumber: string;
   balance: number;
-  account_password: string;
-  account_name: string;
-  user_id: number;
+  accountPassword: string;
+  accountName: string;
+  bankName?: string; // API가 간헐적으로 생략할 수 있으므로 선택적 필드로 변경
+  userId: number;
 }

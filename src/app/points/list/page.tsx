@@ -6,6 +6,7 @@ import PageHeader from "@/components/common/PageHeader"; // 상단 헤더 UI를 
 import PageContainer from "@/components/common/PageContainer"; // 전체 페이지 레이아웃을 감싸는 컨테이너입니다.
 import PointHistoryCard from "@/components/common/PointHistoryCard"; // 포인트 내역 하나를 표시하는 카드 컴포넌트입니다.
 import FilterBottomSheet from "@/components/common/FilterBottomSheet"; // 필터 조건을 선택할 수 있는 바텀 시트입니다.
+import Image from "next/image";
 
 const searchIcon = "/images/search.png"; // 조회 조건 버튼에 사용할 검색 아이콘입니다.
 
@@ -160,10 +161,12 @@ export default function PointListPage() {
                 className="flex h-6 w-6 items-center justify-center transition-opacity hover:opacity-70"
                 aria-label="조회조건선택"
               >
-                <img
+                <Image
                   alt="조회"
                   src={searchIcon}
                   className="h-full w-full object-contain"
+                  width={24}
+                  height={24}
                 />
               </button>
             </div>

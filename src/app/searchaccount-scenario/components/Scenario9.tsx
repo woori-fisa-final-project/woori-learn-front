@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext"; // 뒤로가기 동작을 시나리오별로 제어하기 위해 컨텍스트를 사용합니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 시나리오 8에서 선택한 계좌 정보를 이어받기 위해 컨텍스트를 사용합니다.
+import Image from "next/image";
 
 type SortOrder = "최신순" | "과거순";
 type TransactionType = "전체" | "입금" | "출금";
@@ -258,10 +259,12 @@ export default function Scenario9() {
         {/* 계좌 요약 헤더 */}
         <section className="mt-[20px]">
           <div className="flex items-center gap-[12px]">
-            <img
+            <Image
               src="/images/bank1.png"
               alt="우리은행 로고"
               className="h-[40px] w-[40px]"
+              width={40}
+              height={40}
             />
             <div>
               <p className="text-[14px] text-gray-500">WON통장</p>
@@ -303,10 +306,12 @@ export default function Scenario9() {
                 className="inline-flex items-center justify-center bg-transparent p-0 text-gray-600 align-middle"
                 aria-label="조회 조건 열기"
               >
-                <img
+                <Image
                   src="/images/search.png"
                   alt="조회"
                   className="h-[18px] w-[18px] object-contain grayscale"
+                  width={18}
+                  height={18}
                 />
               </button>
             </div>
