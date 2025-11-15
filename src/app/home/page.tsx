@@ -92,8 +92,8 @@ export default function HomePage() {
   const progressCards = [ // 각 교육 카테고리별 진행도 카드 데이터를 정의합니다.
     { title: "거래내역 조회", progress: 100 },
     { title: "공과금", progress: 100 },
-    { title: "예/적금", progress: 0 },
-    { title: "대출", progress: 0 },
+    { title: "예/적금", progress: 100 },
+    { title: "대출", progress: 10 },
   ];
 
   const scenarioCompletion = progressCards.map((card) => card.progress >= 100);
@@ -174,6 +174,7 @@ export default function HomePage() {
         description="준비 중인 서비스입니다. 다음에 만나요!"
         confirmText="확인"
         onConfirm={handleModalClose}
+        showCancelButton={false}   // 이거 추가해야 버튼 1개
       />
     </main>
   );
