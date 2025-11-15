@@ -73,7 +73,6 @@ function AutomaticPaymentScenarioContent() {
   // 목록 화면 데이터
   const [accountSuffix, setAccountSuffix] = useState("0000");
   const [autoTransferList, setAutoTransferList] = useState<AutoTransferInfo[]>([]);
-  const [hasAutoTransfer, setHasAutoTransfer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // 상세/해지 화면 데이터
@@ -128,15 +127,12 @@ function AutomaticPaymentScenarioContent() {
           return convertToAutoTransferInfo(payment, representativeAccount);
         });
         setAutoTransferList(convertedList);
-        setHasAutoTransfer(true);
       } else {
         setAutoTransferList([]);
-        setHasAutoTransfer(false);
       }
     } catch (error) {
       devError("[fetchData] 데이터 조회 실패:", error);
       setAutoTransferList([]);
-      setHasAutoTransfer(false);
     } finally {
       setIsLoading(false);
     }
@@ -171,26 +167,36 @@ function AutomaticPaymentScenarioContent() {
       setIsDetailLoading(true);
       setSelectedAutoPaymentId(autoPaymentId);
 
-      // 자동이체 상세 정보 조회
-      const payment = await getAutoPaymentDetail(autoPaymentId);
+      // 자동이체 상세 정보와 계좌 정보를 병렬로 조회 (성능 개선)
+      const [payment, accountsResult] = await Promise.allSettled([
+        getAutoPaymentDetail(autoPaymentId),
+        getAccountList(getCurrentUserId()),
+      ]);
 
-      // payment 객체 전체를 상태에 저장 (해지 시 재사용)
-      setSelectedPayment(payment);
-
-      // 계좌 정보 조회
-      let sourceAccount: EducationalAccount | undefined;
-      try {
-        const accounts = await getAccountList(getCurrentUserId());
-        sourceAccount = accounts.find(acc => acc.id === payment.educationalAccountId);
-      } catch (accountError) {
-        devError("[handleNavigateToDetail] 계좌 정보 조회 실패:", accountError);
+      // payment 조회 실패 시 에러 처리
+      if (payment.status === "rejected") {
+        devError("[handleNavigateToDetail] 자동이체 상세 조회 실패:", payment.reason);
+        setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
+        return;
       }
 
-      const convertedDetail = convertToScenario18Detail(payment, sourceAccount);
+      // payment 객체 전체를 상태에 저장 (해지 시 재사용)
+      setSelectedPayment(payment.value);
+
+      // 계좌 정보 조회 결과 처리
+      let sourceAccount: EducationalAccount | undefined;
+      if (accountsResult.status === "fulfilled") {
+        sourceAccount = accountsResult.value.find(acc => acc.id === payment.value.educationalAccountId);
+      } else {
+        devError("[handleNavigateToDetail] 계좌 정보 조회 실패:", accountsResult.reason);
+        setErrorModal({ isOpen: true, message: "계좌 정보를 불러오지 못했습니다.\n출금 계좌 정보가 표시되지 않을 수 있습니다." });
+      }
+
+      const convertedDetail = convertToScenario18Detail(payment.value, sourceAccount);
       setDetailData(convertedDetail);
       setCurrentScreen("detail");
     } catch (error) {
-      devError("[handleNavigateToDetail] 자동이체 상세 조회 실패:", error);
+      devError("[handleNavigateToDetail] 예상치 못한 오류:", error);
       setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
     } finally {
       setIsDetailLoading(false);
@@ -210,20 +216,31 @@ function AutomaticPaymentScenarioContent() {
       await cancelAutoPayment(selectedAutoPaymentId, selectedPayment.educationalAccountId);
       devLog("[handleCancelAutoPayment] 해지 완료");
 
-      // 해지 후 최신 정보 다시 조회
-      const updatedPayment = await getAutoPaymentDetail(selectedAutoPaymentId);
-      setSelectedPayment(updatedPayment);
+      // 해지 후 최신 정보와 계좌 정보를 병렬로 조회 (성능 개선)
+      const [updatedPayment, accountsResult] = await Promise.allSettled([
+        getAutoPaymentDetail(selectedAutoPaymentId),
+        getAccountList(getCurrentUserId()),
+      ]);
 
-      // 계좌 정보 조회
-      let sourceAccount: EducationalAccount | undefined;
-      try {
-        const accounts = await getAccountList(getCurrentUserId());
-        sourceAccount = accounts.find(acc => acc.id === updatedPayment.educationalAccountId);
-      } catch (accountError) {
-        devError("[handleCancelAutoPayment] 계좌 정보 조회 실패:", accountError);
+      // 업데이트된 payment 조회 실패 시 에러 처리
+      if (updatedPayment.status === "rejected") {
+        devError("[handleCancelAutoPayment] 해지 후 정보 조회 실패:", updatedPayment.reason);
+        setErrorModal({ isOpen: true, message: "해지된 자동이체 정보를 불러오지 못했습니다." });
+        return;
       }
 
-      const convertedDetail = convertToScenario18Detail(updatedPayment, sourceAccount);
+      setSelectedPayment(updatedPayment.value);
+
+      // 계좌 정보 조회 결과 처리
+      let sourceAccount: EducationalAccount | undefined;
+      if (accountsResult.status === "fulfilled") {
+        sourceAccount = accountsResult.value.find(acc => acc.id === updatedPayment.value.educationalAccountId);
+      } else {
+        devError("[handleCancelAutoPayment] 계좌 정보 조회 실패:", accountsResult.reason);
+        setErrorModal({ isOpen: true, message: "계좌 정보를 불러오지 못했습니다.\n출금 계좌 정보가 표시되지 않을 수 있습니다." });
+      }
+
+      const convertedDetail = convertToScenario18Detail(updatedPayment.value, sourceAccount);
       setDetailData(convertedDetail);
       setCurrentScreen("cancelled");
     } catch (error) {
@@ -255,7 +272,7 @@ function AutomaticPaymentScenarioContent() {
       {currentScreen === "list" && (
         <Scenario11
           accountSuffix={accountSuffix}
-          hasAutoTransfer={hasAutoTransfer}
+          hasAutoTransfer={autoTransferList.length > 0}
           autoTransferList={autoTransferList}
           onNavigateToRegister={handleNavigateToRegister}
           onNavigateToDetail={handleNavigateToDetail}
