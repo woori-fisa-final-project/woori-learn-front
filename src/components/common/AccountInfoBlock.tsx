@@ -42,7 +42,7 @@ export default function AccountInfoBlock({
         placeholder="계좌 번호를 적어주세요."
         value={accountNumber}
         onChange={onAccountNumberChange}
-        className="w-full border border-gray-200 rounded-[10px] text-[15px] px-[14px] py-[12px] outline-none focus:ring-0 focus:border-primary-400"
+        className="w-full border border-gray-200 rounded-[10px] text-[15px] px-[14px] py-[12px] outline-none focus:ring-0 text-gray-800 font-medium"
         aria-invalid={!!error}
         aria-describedby={error ? "account-number-error" : undefined}
       />

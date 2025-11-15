@@ -1,9 +1,11 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 상태/라우터 등 브라우저 기능을 사용합니다.
 
+import { useState } from "react"; // 모달 상태 관리를 위해 useState를 사용합니다.
 import { useRouter } from "next/navigation"; // 페이지 전환을 위해 Next.js 라우터를 사용합니다.
 import ServiceCardGrid from "@/components/common/ServiceCardGrid"; // 서비스 카드 목록을 그리드 형태로 보여주는 공통 컴포넌트입니다.
 import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도를 단계별로 나타내는 프로그레스 바입니다.
 import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
+import Modal from "@/components/common/Modal"; // 모달 컴포넌트를 사용합니다.
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -14,6 +16,7 @@ const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용�
 
 export default function HomePage() {
   const router = useRouter(); // 페이지 이동 처리를 위해 라우터 인스턴스를 가져옵니다.
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림 상태를 관리합니다.
 
   const handleProfileClick = () => {
     router.push("/mypage"); // 프로필 버튼 클릭 시 마이페이지로 이동합니다.
@@ -23,9 +26,17 @@ export default function HomePage() {
     router.push("/woorimain"); // 계좌 조회/이체 서비스 카드를 눌렀을 때 우리 메인 화면으로 이동합니다.
   };
 
+  const handleModalOpen = () => {
+    setIsModalOpen(true); // 모달을 엽니다.
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false); // 모달을 닫습니다.
+  };
+
   const serviceCards = [ // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
     {
-      title: "계좌 조회 ·\n자동 이체",
+      title: "조회·이체",
       bgColor: "bg-[#2677CC]",
       borderColor: "border-[#6393D9]",
       textColor: "text-[#BBD2ED]",
@@ -48,6 +59,7 @@ export default function HomePage() {
       rounded: "rounded-[8px]",
       imageWidth: "66px",
       imageHeight: "59px",
+      onClick: handleModalOpen, // 공과금 카드 클릭 시 모달을 엽니다.
     },
     {
       title: "예금·적금",
@@ -60,6 +72,7 @@ export default function HomePage() {
       rounded: "rounded-[10px]",
       imageWidth: "66px",
       imageHeight: "59px",
+      onClick: handleModalOpen, // 예금·적금 카드 클릭 시 모달을 엽니다.
     },
     {
       title: "대출",
@@ -72,14 +85,15 @@ export default function HomePage() {
       rounded: "rounded-[8px]",
       imageWidth: "61px",
       imageHeight: "54px",
+      onClick: handleModalOpen, // 대출 카드 클릭 시 모달을 엽니다.
     },
   ];
 
   const progressCards = [ // 각 교육 카테고리별 진행도 카드 데이터를 정의합니다.
     { title: "거래내역 조회", progress: 100 },
     { title: "공과금", progress: 100 },
-    { title: "예/적금", progress: 0 },
-    { title: "대출", progress: 0 },
+    { title: "예/적금", progress: 100 },
+    { title: "대출", progress: 10 },
   ];
 
   const scenarioCompletion = progressCards.map((card) => card.progress >= 100);
@@ -109,7 +123,7 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[390px] px-5 pt-[60px] pb-0 sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="w-full max-w-[390px] px-5 pt-[30px] pb-0 sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
         {/* 상단 로고와 프로필 영역 */}
         <div className="flex w-full items-center justify-between">
           <div className="relative h-[58px] w-[100px]">
@@ -152,6 +166,16 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* 모달 컴포넌트 */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        description="준비 중인 서비스입니다. 다음에 만나요!"
+        confirmText="확인"
+        onConfirm={handleModalClose}
+        showCancelButton={false}
+      />
     </main>
   );
 }

@@ -8,7 +8,6 @@ interface InputProps {
   placeholder?: string; // 입력 안내 문구입니다.
   value: string; // 현재 입력값입니다.
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; // 값 변경 시 호출할 핸들러입니다.
-  height?: "sm" | "md"; // sm: 58px, md: 64px
   showEyeIcon?: boolean; // 비밀번호 표시/숨김 아이콘을 보여줄지 여부입니다.
   className?: string; // 외부에서 감싸는 div에 추가할 클래스입니다.
   wrapperClassName?: string; // 입력 필드 wrapper에 추가할 클래스입니다.
@@ -24,7 +23,6 @@ export default function Input({
   placeholder,
   value,
   onChange,
-  height = "md",
   showEyeIcon = false,
   className = "",
   wrapperClassName = "",
@@ -35,7 +33,6 @@ export default function Input({
 }: InputProps) {
   const [showPassword, setShowPassword] = useState(false); // 비밀번호 가시성 상태를 추적합니다.
   const inputType = type === "password" && showPassword ? "text" : type; // 패스워드 입력 시 토글 상태에 따라 타입을 변경합니다.
-  const heightClass = height === "sm" ? "h-[58px]" : "h-[64px]"; // 주어진 옵션에 따른 높이 클래스를 계산합니다.
 
   const handleEyeClick = () => {
     if (type === "password") {
@@ -51,7 +48,7 @@ export default function Input({
         </label>
       )}
       <div
-        className={`border border-gray-300 rounded-[15px] ${heightClass} ${wrapperClassName || 'w-full'} flex items-center ${
+        className={`border border-gray-300 rounded-[15px] h-[58px] ${wrapperClassName || 'w-full'} flex items-center ${
           showEyeIcon ? "justify-between" : ""
         } px-5 focus-within:border-gray-300`}
       >

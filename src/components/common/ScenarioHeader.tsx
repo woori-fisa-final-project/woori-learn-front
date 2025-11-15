@@ -42,7 +42,7 @@ export default function ScenarioHeader({ className = "" }: ScenarioHeaderProps) 
   return (
     <>
       <header
-        className={`sticky top-0 z-40 flex items-center bg-white px-[20px] py-[16px] font-sans ${className}`}
+        className={`sticky top-0 z-40 flex items-center bg-white px-[20px] pb-[16px] pt-[30px] font-sans ${className}`}
       >
         <div className="flex flex-1 justify-start">
           <button
