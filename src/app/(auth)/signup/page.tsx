@@ -100,7 +100,7 @@ export default function SignupPage() {
               disabled={!isIdFilled}
               size="sm"
               fullWidth={false}
-              className="h-[58px] !min-w-[70px] w-auto px-3 shrink-0 whitespace-nowrap"
+              className="!min-w-[70px] w-auto px-3 shrink-0 whitespace-nowrap"
             >
               중복 확인
             </Button>

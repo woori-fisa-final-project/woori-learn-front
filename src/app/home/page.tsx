@@ -174,7 +174,7 @@ export default function HomePage() {
         description="준비 중인 서비스입니다. 다음에 만나요!"
         confirmText="확인"
         onConfirm={handleModalClose}
-        showCancelButton={false}   // 이거 추가해야 버튼 1개
+        showCancelButton={false}// 이거 추가해야 버튼 1개
       />
     </main>
   );

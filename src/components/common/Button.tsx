@@ -24,7 +24,7 @@ export default function Button({
 }: ButtonProps) {
   // 크기 설정
   const sizeClasses = {
-    sm: "h-[50px] text-[14px] font-normal",
+    sm: "h-[58px] text-[14px] font-normal",
     md: "h-[55px] text-[16px]",
     lg: "h-[60px] text-[16px]",
   };
