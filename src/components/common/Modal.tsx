@@ -41,15 +41,15 @@ export default function Modal({
               </h2>
             )}
             {description && (
-              <p className="text-[16px] text-gray-600 text-center mb-8 w-full whitespace-pre-line">
+              <p className="text-[16px] text-gray-600 text-center font-semibold mb-8 w-full whitespace-pre-line">
                 {description}
               </p>
             )}
             <div className="flex gap-3 w-full">
-              <Button variant="secondary" onClick={onClose} size="sm">
+              <Button variant="secondary" onClick={onClose} size="sm" className="font-semibold">
                 {cancelText}
               </Button>
-              <Button variant="primary" onClick={handleConfirm} size="sm">
+              <Button variant="primary" onClick={handleConfirm} size="sm" className="font-semibold">
                 {confirmText}
               </Button>
             </div>
