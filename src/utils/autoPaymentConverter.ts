@@ -4,6 +4,7 @@ import type { Scenario18Detail } from "@/app/automaticpayment-scenario/component
 import { formatAccountNumber } from "@/utils/accountUtils";
 import { getBankName } from "@/utils/bankUtils";
 import { getCurrentUserName } from "@/utils/authUtils";
+import { devError } from "@/utils/logger";
 
 /**
  * AutoPayment를 Scenario18Detail로 변환하는 공통 유틸리티 함수
@@ -16,6 +17,14 @@ export function convertToScenario18Detail(
   payment: AutoPayment,
   sourceAccount?: EducationalAccount
 ): Scenario18Detail {
+  // API 응답 검증 (개발 환경)
+  if (sourceAccount && !sourceAccount.bankName) {
+    devError(
+      "[convertToScenario18Detail] API 응답에 bankName이 없음:",
+      `accountId=${sourceAccount.id}, 기본값 '우리은행' 사용`
+    );
+  }
+
   const statusMap = {
     ACTIVE: "정상",
     CANCELLED: "해지",
@@ -30,9 +39,10 @@ export function convertToScenario18Detail(
 
   // 출금 계좌 정보가 있으면 사용, 없으면 기본값
   const ownerName = sourceAccount?.accountName || getCurrentUserName();
+  const sourceBankName = sourceAccount?.bankName ?? "우리은행"; // API가 제공하지 않으면 기본값
   const sourceAccountInfo = sourceAccount
-    ? `우리은행 · ${formatAccountNumber(sourceAccount.accountNumber)}`
-    : "우리은행 · -";
+    ? `${sourceBankName} · ${formatAccountNumber(sourceAccount.accountNumber)}`
+    : `${sourceBankName} · -`;
 
   return {
     status: statusMap[payment.processingStatus] || payment.processingStatus,

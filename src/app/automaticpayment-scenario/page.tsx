@@ -29,6 +29,14 @@ function convertToAutoTransferInfo(
   payment: AutoPayment,
   account: EducationalAccount
 ): AutoTransferInfo {
+  // API 응답 검증 (개발 환경)
+  if (!account.bankName) {
+    devError(
+      "[convertToAutoTransferInfo] API 응답에 bankName이 없음:",
+      `accountId=${account.id}, 기본값 '우리은행' 사용`
+    );
+  }
+
   // 상태 한글 변환
   const statusMap = {
     ACTIVE: "정상",
@@ -56,7 +64,7 @@ function convertToAutoTransferInfo(
     ownerName: account.accountName, // API에서 제공되는 계좌명
     recipientName: payment.counterpartyName,
     registerDate: payment.startDate, // 등록일 (API에 별도 필드가 없어 시작일 사용)
-    sourceAccountBank: account.bankName, // 계좌의 은행명 (동적 값)
+    sourceAccountBank: account.bankName ?? "우리은행", // 계좌의 은행명 (API가 제공하지 않으면 기본값)
     sourceAccountNumber: formatAccountNumber(account.accountNumber), // API에서 제공되는 계좌번호
   };
 }
