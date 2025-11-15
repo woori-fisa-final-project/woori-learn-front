@@ -171,7 +171,7 @@ export default function HomePage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        description="To Be Continue"
+        description="준비 중인 서비스입니다. 다음에 만나요!"
         confirmText="확인"
         onConfirm={handleModalClose}
       />

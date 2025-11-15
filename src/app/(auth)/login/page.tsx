@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[min(100%,_430px)] px-[20px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="pt-[30px] w-full max-w-[min(100%,_430px)] px-[20px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
         {/* 상단 로고 영역으로 서비스 브랜드 아이덴티티를 강조합니다. */}
         <div className="relative mx-auto mt-[58px] h-[86px] w-[150px]">
           <img alt="로고" className="h-full w-full object-contain" src={logoImage} />
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="flex-1 min-w-0 text-[16px] font-medium text-gray-600 placeholder:text-gray-400 outline-none w-10px"
+                className="flex-1 text-[16px] font-medium text-gray-600 placeholder:text-gray-400 outline-none"
               />
               <PasswordToggleIcon showPassword={showPassword} onToggle={handleTogglePassword}/>
             </div>
