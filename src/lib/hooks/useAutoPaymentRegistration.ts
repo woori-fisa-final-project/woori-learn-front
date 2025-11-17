@@ -6,6 +6,8 @@ import { getBankCode } from "@/utils/bankUtils";
 import { parseNumber, parseTransferDay } from "@/utils/numberUtils";
 import { devError } from "@/utils/logger";
 
+const MAX_AMOUNT = 5000000; // 자동이체 최대 금액 (5백만원)
+
 /**
  * 자동이체 등록 관련 로직을 관리하는 커스텀 훅
  */
@@ -43,6 +45,12 @@ export function useAutoPaymentRegistration() {
 
     if (!selectedAccount) {
       setErrorMessage("계좌 정보를 찾을 수 없습니다.\n처음부터 다시 진행해주세요.");
+      return false;
+    }
+
+    // 5백만원 초과 체크
+    if (amount > MAX_AMOUNT) {
+      setErrorMessage(`자동이체는 최대 ${MAX_AMOUNT.toLocaleString()}원까지\n등록 가능합니다.`);
       return false;
     }
 

@@ -2,8 +2,9 @@
 
 import Button from "@/components/common/Button"; // 확인 버튼에 사용할 공통 컴포넌트입니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우 상태를 공유하는 커스텀 훅입니다.
-import { useMemo } from "react"; // 금액 표시에 사용할 메모이제이션을 위해 React 훅을 불러옵니다.
+import { useMemo, useState } from "react"; // 금액 표시에 사용할 메모이제이션을 위해 React 훅을 불러옵니다.
 import Image from "next/image";
+import Modal from "@/components/common/Modal";
 
 type Scenario4Props = {
   onNext: () => void; // 금액 입력 후 다음 단계로 전환할 콜백입니다.
@@ -36,6 +37,7 @@ const KEYPAD_KEYS = [
 ];
 
 const FULL_BALANCE_AMOUNT = 0; // 전액 버튼이 눌렸을 때 적용할 임시 잔액 값입니다.
+const MAX_AMOUNT = 5000000; // 자동이체 최대 금액 (5백만원)
 
 export default function Scenario4({ onNext, onBack }: Scenario4Props) {
   const {
@@ -46,6 +48,12 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     setAmount,
     sourceAccountNumber,
   } = useTransferFlow(); // 플로우 전반에서 공유되는 은행, 계좌, 금액 정보를 가져옵니다.
+
+  // 금액 초과 에러 모달
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
 
   const displayBank = selectedBank ?? "국민은행"; // 은행 선택이 없으면 기본값을 표시합니다.
   const displayRecipient = recipientName || "나누구"; // 수취인 이름이 비어 있으면 기본명을 사용합니다.
@@ -75,6 +83,16 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     const nextString = `${current}${digits}`.replace(/^0+(\d)/, "$1");
     const sanitized = nextString.replace(/^0+$/, "0");
     const numericValue = Number(sanitized || "0");
+
+    // 5백만원 초과 체크
+    if (numericValue > MAX_AMOUNT) {
+      setErrorModal({
+        isOpen: true,
+        message: `자동이체는 최대 ${MAX_AMOUNT.toLocaleString()}원까지\n등록 가능합니다.`,
+      });
+      return;
+    }
+
     setAmount(numericValue); // 계산된 숫자 값을 금액 상태에 저장합니다.
   };
 
@@ -93,7 +111,19 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
       setAmount(FULL_BALANCE_AMOUNT); // 전액 버튼은 미리 정의된 잔액 값으로 설정합니다.
       return;
     }
-    setAmount(amount + value); // 빠른 금액 버튼은 현재 금액에 해당 값을 더합니다.
+
+    const newAmount = amount + value;
+
+    // 5백만원 초과 체크
+    if (newAmount > MAX_AMOUNT) {
+      setErrorModal({
+        isOpen: true,
+        message: `자동이체는 최대 ${MAX_AMOUNT.toLocaleString()}원까지\n등록 가능합니다.`,
+      });
+      return;
+    }
+
+    setAmount(newAmount); // 빠른 금액 버튼은 현재 금액에 해당 값을 더합니다.
   };
 
   const handleConfirm = () => {
@@ -184,6 +214,15 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
           확인
         </Button>
       </div>
+
+      {/* 금액 초과 에러 모달 */}
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+        title="금액 제한"
+        description={errorModal.message}
+        confirmText="확인"
+      />
     </div>
   );
 }
