@@ -4,7 +4,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { formatAccountNumber } from "../utils/transactionFormatter";
+import { formatAccountNumber } from "../utils/accountFormatter";
 
 export interface AccountInfo {
   id: number;

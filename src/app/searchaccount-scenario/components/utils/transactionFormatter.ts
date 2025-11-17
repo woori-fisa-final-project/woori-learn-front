@@ -1,17 +1,9 @@
 import type { TransactionResponse } from "@/types";
 
-
-export function formatAccountNumber(raw: string) {
-  const d = raw.replace(/\D/g, "");
-  if (d.length === 10)
-    return `${d.slice(0, 4)}-${d.slice(4, 7)}-${d.slice(7)}`;
-  return raw;
-}
-
 export function transformApiTransaction(
   api: TransactionResponse,
   index: number,
-  accountId: number  // ★ 반드시 있어야 함!
+  accountId: number 
 ) {
   const dateObj = new Date(api.transactionDate);
 
@@ -25,7 +17,7 @@ export function transformApiTransaction(
 
   return {
     id: `tx-${index}-${dateObj.getTime()}`,
-    accountId,   // ★ 핵심 1
+    accountId,   
 
     date,
     time,

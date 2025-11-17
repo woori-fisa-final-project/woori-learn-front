@@ -1,3 +1,23 @@
+/*
+  1) 시나리오 9 → 사용자가 거래 1건 클릭
+      ↓
+  2) Scenario9에서 해당 거래의 기본 정보(basic transaction)를 sessionStorage에 저장
+      ↓
+  3) Scenario10 진입 후 → sessionStorage 에서 basic 정보(accountId, date, amount) 읽어옴
+      ↓
+  4) fetchTransactionDetail() 실행 → 백엔드에 거래내역 전체(period=1Y) 요청
+      ↓
+  5) 응답받은 거래목록 중에서
+      basic.date + basic.amount 와 일치하는 거래 1건을 찾아냄
+      ↓
+  6) 찾은 거래의 상세 정보(counterpartyName, description, displayName 등)를
+      기존 basic transaction에 합쳐서 transaction 상태로 저장
+      ↓
+  7) useMemo(detail) → 화면에 필요한 형태(금액포맷, 일자, 카테고리)로 가공
+      ↓
+  8) 거래 상세 UI 렌더링 (제목, 금액, 거래구분, 거래후잔액 등)
+*/
+
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -5,13 +25,6 @@ import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { TRANSACTION_STORAGE_KEY } from "./Scenario9";
 import type { Transaction } from "@/types";
-
-
-interface ApiResponse<T> {
-  code: number;
-  message: string;
-  data: T;
-}
 
 // 금액 포맷팅
 function formatAmount(amount: number) {
@@ -24,18 +37,19 @@ export default function Scenario10() {
   const { setOnBack, setTitle } = useScenarioHeader();
 
   const [transaction, setTransaction] = useState<Transaction | null>(null);
-  const [loading, setLoading] = useState(true);
 
+  /** 헤더 설정 */
   useEffect(() => {
     setTitle("거래내역상세");
     setOnBack(() => () => router.push("/searchaccount-scenario?step=9"));
+
     return () => {
       setOnBack(null);
       setTitle("");
     };
   }, []);
 
-  /** 1) 세션에서 기본 식별값(accountId, date, amount) 가져오기 */
+  /** 세션에서 거래 정보 가져오기 */
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -47,86 +61,31 @@ export default function Scenario10() {
     }
 
     try {
-      const basic = JSON.parse(stored) as Transaction;
-      setTransaction(basic);
-
-      // 상세 조회 시작
-      fetchTransactionDetail(basic);
+      const parsed = JSON.parse(stored) as Transaction;
+      setTransaction(parsed);
     } catch (e) {
+      console.error("Invalid stored transaction:", e);
       router.push("/searchaccount-scenario?step=9");
     }
   }, []);
 
-  /** 2) 백엔드 호출해서 상세 거래내역 찾기 */
-  async function fetchTransactionDetail(basic: Transaction) {
-    try {
-      setLoading(true);
-
-      const params = new URLSearchParams();
-      params.append("accountId", String(basic.accountId));
-      params.append("period", "1Y");
-      params.append("type", "ALL");
-
-      const response = await fetch(
-        `/education/accounts/transactions?${params.toString()}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      if (!response.ok) throw new Error("조회 실패");
-
-      const json: ApiResponse<any[]> = await response.json();
-
-      // 3) 동일 거래 찾기
-      const target = json.data.find((t) => {
-        const serverDate = t.transactionDate.slice(0, 10); // YYYY-MM-DD
-        const serverAmount = t.amount;
-        return (
-          serverDate === basic.date &&
-          Number(serverAmount) === Number(basic.amount)
-        );
-      });
-
-      if (target) {
-        // 기본 정보 + 서버 상세 합치기
-        setTransaction((prev) =>
-          prev
-            ? {
-                ...prev,
-                counterpartyName: target.counterpartyName,
-                description: target.description,
-                displayName: target.displayName,
-                transactionDate: target.transactionDate,
-              }
-            : null
-        );
-      }
-
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  }
-
+  /** 상세 화면용 데이터 변환 */
   const detail = useMemo(() => {
     if (!transaction) return null;
 
-    const dt = transaction.date.replace(/-/g, ".") + " " + transaction.time;
+    const dateTime = `${transaction.date.replace(/-/g, ".")} ${transaction.time}`;
 
     return {
       title: transaction.description,
       amountText: formatAmount(transaction.amount),
-      dateTime: dt,
+      dateTime,
       category: transaction.amount >= 0 ? "입금" : "출금",
       balance: transaction.runningBalance?.toLocaleString() ?? "0",
       keyword: transaction.description,
     };
   }, [transaction]);
 
-  if (loading || !detail) {
+  if (!detail) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         불러오는 중...
