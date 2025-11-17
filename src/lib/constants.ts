@@ -3,6 +3,7 @@
  */
 export const AUTO_PAYMENT = {
   MAX_AMOUNT: 5000000, // 자동이체 최대 금액 (5백만원)
+  PAGE_SIZE: 100, // 페이지네이션 시 한 번에 조회할 항목 수
 } as const;
 
 /**

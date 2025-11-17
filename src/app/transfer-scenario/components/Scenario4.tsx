@@ -81,6 +81,19 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     return true;
   };
 
+  /**
+   * 금액을 검증하고 유효하면 상태를 업데이트합니다.
+   * @param newAmount - 설정할 금액
+   * @returns 성공 여부
+   */
+  const trySetAmount = (newAmount: number): boolean => {
+    if (validateAndSetError(newAmount)) {
+      setAmount(newAmount);
+      return true;
+    }
+    return false;
+  };
+
   const handleDigit = (digit: string) => {
     if (digit === "←") {
       onDelete(); // 백스페이스 버튼은 마지막 자리를 삭제합니다.
@@ -102,9 +115,7 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     const numericValue = Number(sanitized || "0");
 
     // 금액 검증 후 설정
-    if (validateAndSetError(numericValue)) {
-      setAmount(numericValue); // 계산된 숫자 값을 금액 상태에 저장합니다.
-    }
+    trySetAmount(numericValue);
   };
 
   const onDelete = () => {
@@ -126,9 +137,7 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     const newAmount = amount + value;
 
     // 금액 검증 후 설정
-    if (validateAndSetError(newAmount)) {
-      setAmount(newAmount); // 빠른 금액 버튼은 현재 금액에 해당 값을 더합니다.
-    }
+    trySetAmount(newAmount);
   };
 
   const handleConfirm = () => {

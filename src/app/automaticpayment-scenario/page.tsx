@@ -20,6 +20,7 @@ import { devLog, devError } from "@/utils/logger";
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
+import { AUTO_PAYMENT } from "@/lib/constants";
 
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
@@ -115,15 +116,14 @@ function AutomaticPaymentScenarioContent() {
       setAccountSuffix(suffix);
 
       // 4. 해당 계좌의 자동이체 목록 조회 (페이지네이션 - 모든 페이지)
-      const pageSize = 100;
       const firstPage = await getAutoPaymentList({
         educationalAccountId: representativeAccount.id,
         page: 0,
-        size: pageSize,
+        size: AUTO_PAYMENT.PAGE_SIZE,
       });
 
       // 5. 전체 페이지 수 확인 후 나머지 페이지 병렬 조회
-      let allPayments = [...firstPage.content];
+      let allPayments = firstPage.content;
 
       if (firstPage.totalPages > 1) {
         devLog(`[fetchData] 총 ${firstPage.totalPages}페이지 중 첫 페이지 조회 완료, 나머지 페이지 조회 시작`);
@@ -135,15 +135,16 @@ function AutomaticPaymentScenarioContent() {
             getAutoPaymentList({
               educationalAccountId: representativeAccount.id,
               page: pageNum,
-              size: pageSize,
+              size: AUTO_PAYMENT.PAGE_SIZE,
             })
           )
         );
 
-        // 모든 페이지의 content를 하나로 합치기
-        remainingResults.forEach(result => {
-          allPayments = [...allPayments, ...result.content];
-        });
+        // 모든 페이지의 content를 하나로 합치기 (flatMap 사용으로 성능 개선)
+        allPayments = [
+          ...firstPage.content,
+          ...remainingResults.flatMap(result => result.content)
+        ];
       }
 
       // 6. 조회된 모든 자동이체를 화면용 데이터로 변환
