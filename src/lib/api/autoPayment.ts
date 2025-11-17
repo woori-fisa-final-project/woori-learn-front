@@ -10,6 +10,20 @@ interface ApiResponse<T> {
 }
 
 /**
+ * Spring Data Page 구조
+ */
+interface Page<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
+/**
  * API 에러를 사용자 친화적인 메시지로 변환하는 헬퍼 함수
  */
 async function handleApiError(response: Response, context: string): Promise<never> {
@@ -17,13 +31,14 @@ async function handleApiError(response: Response, context: string): Promise<neve
   let errorMessage = "";
   let backendMessage = "";
 
+  const clonedResponse = response.clone();
   try {
     const errorData = await response.json();
     backendMessage = errorData.message || "";
   } catch {
     // JSON 파싱 실패 시 텍스트로 읽기
     try {
-      backendMessage = await response.text();
+      backendMessage = await clonedResponse.text();
     } catch {
       backendMessage = "";
     }
@@ -38,10 +53,10 @@ async function handleApiError(response: Response, context: string): Promise<neve
       errorMessage = backendMessage || "인증에 실패했습니다.\n다시 로그인해주세요.";
       break;
     case 403:
-      errorMessage = "권한이 없습니다.\n접근 권한을 확인해주세요.";
+      errorMessage = backendMessage || "권한이 없습니다.\n접근 권한을 확인해주세요.";
       break;
     case 404:
-      errorMessage = "요청한 정보를 찾을 수 없습니다.";
+      errorMessage = backendMessage || "요청한 정보를 찾을 수 없습니다.";
       break;
     case 429:
       // Rate limiting 에러
@@ -73,14 +88,17 @@ async function handleApiError(response: Response, context: string): Promise<neve
 interface GetAutoPaymentListParams {
   educationalAccountId: number;
   status?: AutoPaymentStatus;
+  page?: number; // 페이지 번호 (0-based), 기본값: 0
+  size?: number; // 페이지 크기, 기본값: 20
+  sort?: string; // 정렬 옵션 (예: "createdAt,desc")
 }
 
 /**
- * 자동이체 목록 조회
+ * 자동이체 목록 조회 (페이지네이션)
  */
 export async function getAutoPaymentList(
   params: GetAutoPaymentListParams
-): Promise<AutoPayment[]> {
+): Promise<Page<AutoPayment>> {
   const queryParams = new URLSearchParams();
   queryParams.append("educationalAccountId", params.educationalAccountId.toString());
 
@@ -88,7 +106,15 @@ export async function getAutoPaymentList(
     queryParams.append("status", params.status);
   }
 
-  const response = await fetch(`${BASE_URL}/list?${queryParams.toString()}`, {
+  // 페이지네이션 파라미터
+  queryParams.append("page", (params.page ?? 0).toString());
+  queryParams.append("size", (params.size ?? 20).toString());
+
+  if (params.sort) {
+    queryParams.append("sort", params.sort);
+  }
+
+  const response = await fetch(`${BASE_URL}/list/paged?${queryParams.toString()}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -99,7 +125,7 @@ export async function getAutoPaymentList(
     await handleApiError(response, "getAutoPaymentList");
   }
 
-  const result: ApiResponse<AutoPayment[]> = await response.json();
+  const result: ApiResponse<Page<AutoPayment>> = await response.json();
   return result.data;
 }
 

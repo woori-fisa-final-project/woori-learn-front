@@ -5,6 +5,7 @@ import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로�
 import { useMemo, useState } from "react"; // 금액 표시에 사용할 메모이제이션을 위해 React 훅을 불러옵니다.
 import Image from "next/image";
 import Modal from "@/components/common/Modal";
+import { validateAutoPaymentAmount } from "@/utils/validationUtils";
 
 type Scenario4Props = {
   onNext: () => void; // 금액 입력 후 다음 단계로 전환할 콜백입니다.
@@ -37,7 +38,6 @@ const KEYPAD_KEYS = [
 ];
 
 const FULL_BALANCE_AMOUNT = 0; // 전액 버튼이 눌렸을 때 적용할 임시 잔액 값입니다.
-const MAX_AMOUNT = 5000000; // 자동이체 최대 금액 (5백만원)
 
 export default function Scenario4({ onNext, onBack }: Scenario4Props) {
   const {
@@ -84,11 +84,12 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     const sanitized = nextString.replace(/^0+$/, "0");
     const numericValue = Number(sanitized || "0");
 
-    // 5백만원 초과 체크
-    if (numericValue > MAX_AMOUNT) {
+    // 금액 검증
+    const validation = validateAutoPaymentAmount(numericValue);
+    if (!validation.isValid) {
       setErrorModal({
         isOpen: true,
-        message: `자동이체는 최대 ${MAX_AMOUNT.toLocaleString()}원까지\n등록 가능합니다.`,
+        message: validation.errorMessage || "",
       });
       return;
     }
@@ -114,11 +115,12 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
 
     const newAmount = amount + value;
 
-    // 5백만원 초과 체크
-    if (newAmount > MAX_AMOUNT) {
+    // 금액 검증
+    const validation = validateAutoPaymentAmount(newAmount);
+    if (!validation.isValid) {
       setErrorModal({
         isOpen: true,
-        message: `자동이체는 최대 ${MAX_AMOUNT.toLocaleString()}원까지\n등록 가능합니다.`,
+        message: validation.errorMessage || "",
       });
       return;
     }

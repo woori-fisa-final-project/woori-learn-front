@@ -114,14 +114,18 @@ function AutomaticPaymentScenarioContent() {
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 4. 해당 계좌의 자동이체 목록 조회
-      const payments = await getAutoPaymentList({
+      // 4. 해당 계좌의 자동이체 목록 조회 (페이지네이션)
+      const pagedResult = await getAutoPaymentList({
         educationalAccountId: representativeAccount.id,
+        page: 0,
+        size: 100, // 단일 라우팅이므로 충분한 크기로 조회
       });
 
-      // 5. 모든 자동이체를 배열로 변환하여 표시
+      // 5. 페이지 데이터에서 실제 자동이체 목록 추출
+      const payments = pagedResult.content;
+
       if (payments && payments.length > 0) {
-        devLog(`[fetchData] 자동이체 ${payments.length}건 조회`);
+        devLog(`[fetchData] 자동이체 ${payments.length}건 조회 (전체: ${pagedResult.totalElements}건)`);
         const convertedList = payments.map(payment => {
           devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);
