@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
+import Image from "next/image";
 
 const backIcon = "/images/backicon.png"; // 뒤로가기 버튼에서 사용할 아이콘 경로입니다.
 
@@ -55,8 +56,8 @@ export default function SignupPage() {
   const isIdFilled = id.trim() !== ""; // 아이디가 입력되었는지 여부를 저장해 버튼 활성화를 제어합니다.
 
   return (
-    <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[min(100%,_430px)] px-[20px] pt-[60px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+    <main className="pt-[30px] flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
+      <div className="w-full max-w-[min(100%,_430px)] px-[20px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
         {/* 상단 헤더: 뒤로가기 버튼과 페이지 제목을 보여줍니다. */}
         <div className="flex w-full items-center gap-2">
           <button
@@ -64,7 +65,7 @@ export default function SignupPage() {
             className="h-[7px] w-[14px] flex items-center justify-center -rotate-90"
             aria-label="뒤로가기"
           >
-            <img alt="뒤로가기" className="h-[7px] w-[14px] object-contain" src={backIcon} />
+            <Image alt="뒤로가기" className="h-[7px] w-[14px] object-contain" src={backIcon} width={14} height={7} />
           </button>
           <h1 className="text-[20px] font-medium leading-[1.38] tracking-[-0.6px] text-gray-700">
             회원가<span className="tracking-[-0.8px]">입</span>
@@ -78,15 +79,14 @@ export default function SignupPage() {
           placeholder="이름을 입력해주세요"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          height="sm"
           className="mt-[50px]"
         />
 
         {/* 아이디 입력과 중복 확인 버튼 영역입니다. */}
         <div className="mt-[48px] flex w-full flex-col gap-[8px]">
           <label className="text-[16px] font-medium leading-[25px] text-gray-600">아이디</label>
-          <div className="flex w-full items-center gap-2">
-            <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0">
               <Input
                 type="text"
                 placeholder="아이디를 입력해주세요"
@@ -101,7 +101,7 @@ export default function SignupPage() {
               disabled={!isIdFilled}
               size="sm"
               fullWidth={false}
-              className="h-[58px] w-[70px] shrink-0"
+              className="!min-w-[70px] w-auto px-3 shrink-0 whitespace-nowrap"
             >
               중복 확인
             </Button>

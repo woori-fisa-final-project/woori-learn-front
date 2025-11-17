@@ -20,7 +20,7 @@ export interface AutoPayment {
 // 목록 조회 파라미터
 export interface AutoPaymentListParams {
   educationalAccountId: number;
-  status?: string;  // "ACTIVE" | "CANCELLED" | "ALL"
+  status?: "ACTIVE" | "CANCELLED" | "ALL";
 }
 
 // 등록 요청

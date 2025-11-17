@@ -1,11 +1,16 @@
 "use client";
 
 // 자동이체 등록 플로우에서 필요한 React 훅과 유틸리티, 하위 시나리오 컴포넌트를 불러온다.
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 // 헤더 제어와 이체 흐름 상태 관리를 위해 내부 컨텍스트와 훅을 이용한다.
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import { useAccountSelection } from "@/lib/hooks/useAccountSelection";
+import { useAutoPaymentSteps } from "@/lib/hooks/useAutoPaymentSteps";
+import { useAutoPaymentRegistration } from "@/lib/hooks/useAutoPaymentRegistration";
+// 공통 유틸리티 함수를 불러온다.
+import { formatAccountNumber } from "@/utils/accountUtils";
 // 다른 시나리오 단계 컴포넌트를 순차적으로 사용하여 전체 플로우를 완성한다.
 import Scenario2 from "@/app/transfer-scenario/components/Scenario2";
 import Scenario3 from "@/app/transfer-scenario/components/Scenario3";
@@ -16,34 +21,9 @@ import Scenario14 from "./Scenario14";
 import Scenario15 from "./Scenario15";
 import Scenario16 from "./Scenario16";
 import Scenario17 from "./Scenario17";
-import type { ScheduleSummary } from "./types";
-import Image from "next/image";
-import { createAutoPayment } from "@/lib/api/autoPayment";
-import { getAccountList } from "@/lib/api/account";
 import type { EducationalAccount } from "@/types/account";
-
-const TEMP_USER_ID = 1; // 임시 사용자 ID
-
-// 자동이체 등록 플로우가 이동할 수 있는 단계 값을 정의한다.
-type Step =
-  | "account"
-  | "form"
-  | "amount"
-  | "review"
-  | "schedule"
-  | "confirm"
-  | "consent"
-  | "complete";
-
-const STEP_PREVIOUS_MAP: Partial<Record<Step, Step>> = {
-  form: "account",
-  amount: "form",
-  review: "amount",
-  schedule: "review",
-  confirm: "schedule",
-  consent: "confirm",
-  complete: "consent",
-};
+import Image from "next/image";
+import Modal from "@/components/common/Modal";
 
 function AccountSelectStep({
   accounts,
@@ -54,15 +34,6 @@ function AccountSelectStep({
   isLoading: boolean;
   onSelectAccount: (accountId: number) => void;
 }) {
-  // 계좌번호 포맷팅
-  const formatAccountNumber = (accountNumber?: string | null): string => {
-    if (!accountNumber) return "-";
-    const numbers = accountNumber.replace(/[^0-9]/g, "");
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
-  };
-
   return (
     <div className="flex flex-1 flex-col">
       <section className="mt-[32px] space-y-[16px]">
@@ -114,7 +85,12 @@ function AccountSelectStep({
   );
 }
 
-export default function Scenario12() {
+type Scenario12Props = {
+  onComplete?: () => void;
+  onCancel?: () => void;
+};
+
+export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 자동이체 등록 흐름 전체를 제어하는 메인 페이지 컴포넌트이다.
   const router = useRouter();
   const { setTitle, setOnBack } = useScenarioHeader();
@@ -128,44 +104,41 @@ export default function Scenario12() {
     amount,
     currentUserName,
   } = useTransferFlow();
-  // 현재 진행 중인 단계를 추적하여 다른 화면을 순차적으로 보여준다.
-  const [step, setStep] = useState<Step>("account");
+
+  // 커스텀 훅으로 로직 분리
+  const { accounts, selectedAccount, isLoadingAccounts, errorMessage: accountError, selectAccount } = useAccountSelection();
+  const { step, setStep } = useAutoPaymentSteps(setOnBack, onCancel);
+  const {
+    scheduleSummary,
+    isPasswordSheetOpen,
+    errorMessage: registrationError,
+    handleScheduleComplete,
+    handlePasswordSuccess: onPasswordSuccess,
+    handlePasswordClose: onPasswordClose,
+    registerAutoPayment,
+    setPasswordSheetOpen,
+  } = useAutoPaymentRegistration();
+
   // 은행 선택 바텀시트 노출 여부를 관리한다.
   const [isBankSheetOpen, setBankSheetOpen] = useState(false);
-  // 사용자가 고른 계좌 정보를 저장하여 다른 단계에서도 참조한다.
-  const [selectedAccount, setSelectedAccount] = useState<EducationalAccount | null>(null);
-  // 일정 요약 정보를 저장해 이후 단계에서 검증 및 표시한다.
-  const [scheduleSummary, setScheduleSummary] = useState<ScheduleSummary | null>(null);
-  // 비밀번호 바텀시트 열림 여부를 관리한다.
-  const [isPasswordSheetOpen, setPasswordSheetOpen] = useState(false);
-  // 뒤로가기 시 현재 단계를 안정적으로 참조하기 위해 ref를 사용한다.
-  const stepRef = useRef(step);
-  // 계좌 목록 관련 state
-  const [accounts, setAccounts] = useState<EducationalAccount[]>([]);
-  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+  // 에러 모달 상태
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
 
-  // step 상태가 변할 때마다 ref에 최신 값을 저장해 뒤로가기 처리에서 사용한다.
+  // 에러 메시지 동기화
   useEffect(() => {
-    stepRef.current = step;
-  }, [step]);
-
-  // 컴포넌트 마운트 시 계좌 목록 조회
-  useEffect(() => {
-    async function fetchAccounts() {
-      try {
-        setIsLoadingAccounts(true);
-        const accountList = await getAccountList(TEMP_USER_ID);
-        setAccounts(accountList);
-      } catch (error) {
-        console.error("계좌 목록 조회 실패:", error);
-        setAccounts([]);
-      } finally {
-        setIsLoadingAccounts(false);
-      }
+    if (accountError) {
+      setErrorModal({ isOpen: true, message: accountError });
     }
+  }, [accountError]);
 
-    fetchAccounts();
-  }, []);
+  useEffect(() => {
+    if (registrationError) {
+      setErrorModal({ isOpen: true, message: registrationError });
+    }
+  }, [registrationError]);
 
   // 화면이 나타날 때 헤더 제목을 설정하고 사라질 때 초기화한다.
   useEffect(() => {
@@ -175,40 +148,21 @@ export default function Scenario12() {
     };
   }, [setTitle]);
 
-  useEffect(() => {
-    const handleBack = () => {
-      const current = stepRef.current;
-      const prevStep = STEP_PREVIOUS_MAP[current];
-
-      if (prevStep) {
-        setStep(prevStep);
-      } else if (current === "account") {
-        router.back();
-      }
-    };
-
-    setOnBack(() => handleBack);
-
-    return () => {
-      setOnBack(null);
-    };
-  }, [router, setOnBack]);
-
   // 컴포넌트가 사라질 때 자동이체 흐름과 선택 상태를 초기화한다.
   useEffect(() => {
     return () => {
       resetFlow();
-      setSelectedAccount(null);
-      setScheduleSummary(null);
       setPasswordSheetOpen(false);
     };
-  }, [resetFlow]);
+  }, [resetFlow, setPasswordSheetOpen]);
 
   // 계좌 선택 단계에서 사용자가 특정 계좌를 고를 때 상태를 갱신한다.
   const handleSelectAccount = (accountId: number) => {
-    const account = accounts.find((item) => item.id === accountId);
-    if (!account) return;
-    setSelectedAccount(account);
+    const account = selectAccount(accountId);
+    if (!account) {
+      console.warn(`[Scenario12] Account not found for id: ${accountId}`);
+      return;
+    }
     setSourceAccountNumber(account.accountNumber);
     setBankSheetOpen(true);
   };
@@ -220,15 +174,6 @@ export default function Scenario12() {
     setStep("form");
   };
 
-  // 계좌번호 포맷팅
-  const formatAccountNumber = (accountNumber?: string | null): string => {
-    if (!accountNumber) return "-";
-    const numbers = accountNumber.replace(/[^0-9]/g, "");
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
-  };
-
   const displaySourceAccount = selectedAccount ? formatAccountNumber(selectedAccount.accountNumber) : "000-0000-000000";
   const displaySourceName = selectedAccount?.accountName ?? "우리은행계좌";
   const displaySourceBank = "우리은행";
@@ -237,21 +182,15 @@ export default function Scenario12() {
   const inboundName = recipientName || "받는 분";
   const ownerName = currentUserName ?? "김우리";
 
-  // 일정 설정 단계가 완료되면 요약 정보를 저장하고 비밀번호 인증 단계로 이동한다.
-  const handleScheduleComplete = (options: ScheduleSummary) => {
-    setScheduleSummary(options);
-    setPasswordSheetOpen(true);
-  };
-
-  // 비밀번호 인증에 성공하면 검토 단계 이후 약관 동의 단계로 이동한다.
-  const handlePasswordSuccess = () => {
-    setPasswordSheetOpen(false);
+  // 비밀번호 인증에 성공하면 확인 단계로 이동한다.
+  const handlePasswordSuccess = (password: string) => {
+    onPasswordSuccess(password);
     setStep("confirm");
   };
 
   // 비밀번호 입력을 취소하면 다시 일정 설정 단계로 돌아간다.
   const handlePasswordClose = () => {
-    setPasswordSheetOpen(false);
+    onPasswordClose();
     setStep("schedule");
   };
 
@@ -280,79 +219,25 @@ export default function Scenario12() {
 
   // 약관에 동의하고 확인을 누르면 API를 호출하고 완료 화면으로 진행한다.
   const handleConsentCompleted = async () => {
-    if (!scheduleSummary) {
-      console.error("일정 정보가 없습니다.");
-      return;
-    }
+    const success = await registerAutoPayment(
+      selectedAccount,
+      selectedBank,
+      accountNumber,
+      recipientName,
+      amount
+    );
 
-    try {
-      // 은행명을 은행 코드로 변환
-      const getBankCode = (bankName: string): string => {
-        const bankCodeMap: Record<string, string> = {
-          "한국은행": "001",
-          "산업은행": "002",
-          "기업은행": "003",
-          "국민은행": "004",
-          "수협은행": "007",
-          "농협은행": "011",
-          "우리은행": "020",
-          "SC제일은행": "023",
-          "한국씨티은행": "027",
-          "대구은행": "031",
-          "부산은행": "032",
-          "광주은행": "034",
-          "제주은행": "035",
-          "전북은행": "037",
-          "경남은행": "039",
-          "새마을금고": "045",
-          "신협": "048",
-          "상호저축은행": "050",
-          "우체국": "071",
-          "하나은행": "081",
-          "신한은행": "088",
-          "케이뱅크": "089",
-          "카카오뱅크": "090",
-        };
-        return bankCodeMap[bankName] || "020"; // 기본값: 우리은행
-      };
-
-      // frequency와 transferDay에서 숫자만 추출
-      const parseNumber = (str?: string): number => {
-        if (!str) return 0;
-        const match = str.match(/\d+/);
-        return match ? parseInt(match[0]) : 0;
-      };
-
-      const transferCycle = parseNumber(scheduleSummary.frequency);
-      const designatedDate = parseNumber(scheduleSummary.transferDay);
-
-      // API 호출
-      await createAutoPayment({
-        educationalAccountId: selectedAccount?.id || 1,
-        depositBankCode: getBankCode(selectedBank || "국민은행"),
-        depositNumber: accountNumber || "",
-        amount: amount,
-        counterpartyName: recipientName || "받는 분",
-        displayName: "타행자동이체",
-        transferCycle: transferCycle,
-        designatedDate: designatedDate,
-        startDate: scheduleSummary.startDate,
-        expirationDate: scheduleSummary.endDate,
-        accountPassword: "1234", // 임시 하드코딩 (실제로는 입력받은 비밀번호 사용)
-      });
-
-      // 성공 시 완료 화면으로 이동
+    if (success) {
       setStep("complete");
-    } catch (error) {
-      console.error("자동이체 등록 실패:", error);
-      alert("자동이체 등록에 실패했습니다. 다시 시도해주세요.");
+    } else if (!selectedAccount) {
+      setStep("account");
     }
   };
 
   // 완료 화면에서 확인을 누르면 메인 자동이체 페이지로 돌아간다.
   const handleSuccessConfirm = () => {
-    // 메인 페이지에서 API로 목록을 다시 조회할 것이므로 파라미터 없이 이동
-    router.push("/automaticpayment-scenario");
+    // 메인 페이지에서 API로 목록을 다시 조회할 것이므로 콜백 호출
+    onComplete?.();
   };
 
   return (
@@ -433,6 +318,7 @@ export default function Scenario12() {
         <Scenario2
           onClose={() => setBankSheetOpen(false)}
           onSelect={handleSelectBank}
+          allowedBanks={["국민은행"]}
         />
       )}
 
@@ -443,6 +329,15 @@ export default function Scenario12() {
           onClose={handlePasswordClose}
         />
       )}
+
+      {/* 에러 모달 */}
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+        title="오류"
+        description={errorModal.message}
+        confirmText="확인"
+      />
     </div>
   );
 }

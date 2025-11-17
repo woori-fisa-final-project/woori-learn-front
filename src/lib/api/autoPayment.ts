@@ -1,4 +1,5 @@
 import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
+import { devLog, logApiCall, logApiResponse, devError } from "@/utils/logger";
 
 const BASE_URL = "/education/auto-payment";
 
@@ -30,13 +31,13 @@ export async function getAutoPaymentList(
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      // JWT 토큰이 필요한 경우 여기에 추가
-      // "Authorization": `Bearer ${token}`,
     },
   });
 
   if (!response.ok) {
-    throw new Error(`자동이체 목록 조회 실패: ${response.status}`);
+    const errorText = await response.text();
+    devError(`[getAutoPaymentList] 에러 응답 ${response.status}:`, errorText);
+    throw new Error(`자동이체 목록 조회 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment[]> = await response.json();
@@ -57,7 +58,9 @@ export async function getAutoPaymentDetail(
   });
 
   if (!response.ok) {
-    throw new Error(`자동이체 상세 조회 실패: ${response.status}`);
+    const errorText = await response.text();
+    devError(`[getAutoPaymentDetail] 에러 응답 ${response.status}:`, errorText);
+    throw new Error(`자동이체 상세 조회 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment> = await response.json();
@@ -93,7 +96,9 @@ export async function createAutoPayment(
   });
 
   if (!response.ok) {
-    throw new Error(`자동이체 등록 실패: ${response.status}`);
+    const errorText = await response.text();
+    devError(`[createAutoPayment] 에러 응답 ${response.status}:`, errorText);
+    throw new Error(`자동이체 등록 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment> = await response.json();
@@ -110,20 +115,25 @@ export async function cancelAutoPayment(
   const queryParams = new URLSearchParams();
   queryParams.append("educationalAccountId", educationalAccountId.toString());
 
-  const response = await fetch(
-    `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const url = `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`;
+
+  logApiCall("POST", url, { autoPaymentId, educationalAccountId });
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({}),
+  });
 
   if (!response.ok) {
-    throw new Error(`자동이체 해지 실패: ${response.status}`);
+    const errorText = await response.text();
+    devError(`[cancelAutoPayment] 에러 응답 ${response.status}:`, errorText);
+    throw new Error(`자동이체 해지 실패: ${response.status} - ${errorText}`);
   }
 
   const result: ApiResponse<AutoPayment> = await response.json();
+  logApiResponse(response.status, url, result);
   return result.data;
 }

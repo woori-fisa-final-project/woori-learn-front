@@ -34,14 +34,18 @@ export type AutoTransferInfo = {
 type Scenario11Props = {
   accountSuffix: string;
   hasAutoTransfer: boolean;
-  autoTransferInfo?: AutoTransferInfo;
+  autoTransferList?: AutoTransferInfo[];
+  onNavigateToRegister?: () => void;
+  onNavigateToDetail?: (id: number) => void;
 };
 
 // 자동이체 메인 페이지를 구성하는 최상위 컴포넌트로, 계좌 정보와 등록 상태를 표시한다.
 export default function Scenario11({
   accountSuffix,
   hasAutoTransfer,
-  autoTransferInfo,
+  autoTransferList = [],
+  onNavigateToRegister = () => console.warn("[Scenario11] onNavigateToRegister not provided"),
+  onNavigateToDetail = (id) => console.warn("[Scenario11] onNavigateToDetail not provided: ", id),
 }: Scenario11Props) {
   // 페이지 이동과 세부 플로우 전환을 처리하기 위해 라우터 인스턴스를 가져온다.
   const router = useRouter();
@@ -67,11 +71,12 @@ export default function Scenario11({
 
   // 등록하기 버튼을 눌렀을 때 바텀시트를 열어 자동이체 유형을 고르게 한다.
   const handleRegister = () => {
+    if (isSheetOpen) return;  // <-- 중복 열림 방지
     setSheetOpen(true);
   };
 
   // 실제 등록 여부에 따라 화면에 표시할 등록 건수를 계산한다.
-  const registeredCount = hasAutoTransfer ? 1 : 0;
+  const registeredCount = autoTransferList.length;
 
   // 바텀시트 닫기 이벤트를 처리하여 열림 상태를 해제한다.
   const handleCloseSheet = () => {
@@ -82,7 +87,7 @@ export default function Scenario11({
   const handleSelectOption = (type: "krw" | "fx") => {
     // 원화를 선택하면 자동이체 등록 플로우로 이동한다.
     if (type === "krw") {
-      router.push("/automaticpayment-scenario/register");
+      onNavigateToRegister?.();
     } else {
       setFxInfoModalOpen(true);
     }
@@ -97,10 +102,9 @@ export default function Scenario11({
     setFxInfoModalOpen(false);
   };
 
-  const handleOpenDetail = () => {
-    if (!autoTransferInfo) return;
-    // ID만 전달하고 상세 페이지에서 API 호출
-    router.push(`/automaticpayment-scenario/detail?autoPaymentId=${autoTransferInfo.id}`);
+  const handleOpenDetail = (id: number) => {
+    // 상위 컴포넌트로 ID를 전달하여 상세 화면으로 전환
+    onNavigateToDetail?.(id);
   };
 
   // 자동이체 메인 화면의 전체 레이아웃을 렌더링한다.
@@ -110,16 +114,11 @@ export default function Scenario11({
         {/* 상단 영역에서 계좌명과 등록된 자동이체 정보를 안내한다. */}
         <section className="mt-[26px] space-y-[16px]">
           <div className="flex items-start justify-between">
-            <button
-              type="button"
-              className="flex items-center gap-[6px] text-left"
-              aria-label="출금 계좌 선택"
-            >
+            <div className="flex items-center gap-[6px] text-left">
               <span className="text-[22px] font-semibold text-primary-600">
                 WON 통장({accountSuffix})
               </span>
-              <span className="text-[16px] text-primary-600">▼</span>
-            </button>
+            </div>
           </div>
 
           {/* 등록된 자동이체 건수와 안내 아이콘을 한 줄로 배치한다. */}
@@ -145,19 +144,29 @@ export default function Scenario11({
           </button>
         </section>
 
-        <div className="flex h-full flex-col justify-between py-[36px]">
+        <div className="flex flex-1 flex-col py-[36px]">
           {/* 등록된 자동이체가 없으면 빈 상태, 있으면 카드 형태로 정보를 보여준다. */}
-          <div className="flex h-full flex-col items-center text-center gap-[16px]">
+          <div className="flex-1 overflow-y-auto">
             {!hasAutoTransfer ? (
               <EmptyState />
             ) : (
-              <AutoTransferCard info={autoTransferInfo} onSelect={handleOpenDetail} />
+              <div className="w-full space-y-[16px]">
+                {autoTransferList.map((info) => (
+                  <AutoTransferCard
+                    key={info.id}
+                    info={info}
+                    onSelect={() => handleOpenDetail(info.id)}
+                  />
+                ))}
+              </div>
             )}
           </div>
           {/* 화면 하단의 고정 버튼으로 새로운 자동이체 등록 플로우를 시작한다. */}
-          <Button size="md" onClick={handleRegister} fullWidth className="mt-auto">
-            자동이체 등록하기
-          </Button>
+          <div className="mt-[24px] flex-shrink-0">
+            <Button size="md" onClick={handleRegister} fullWidth>
+              자동이체 등록하기
+            </Button>
+          </div>
         </div>
       </main>
 
@@ -219,18 +228,14 @@ function AutoTransferCard({
   info,
   onSelect,
 }: {
-  info?: AutoTransferInfo;
+  info: AutoTransferInfo;
   onSelect: () => void;
 }) {
-  if (!info) {
-    return null;
-  }
-
   return (
     <button
       type="button"
       onClick={onSelect}
-      className="mt-[40px] w-full text-left transition hover:scale-[1.01]"
+      className="w-full text-left transition hover:scale-[1.01]"
     >
       <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px] shadow-[0_4px_16px_rgba(34,58,124,0.08)]">
         <div className="flex items-start justify-between">

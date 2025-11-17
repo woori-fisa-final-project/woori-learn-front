@@ -16,7 +16,7 @@ export default function Splash() { // 애플리케이션 최초 진입 시 보�
 
   return (
     <main className="bg-white min-h-screen flex flex-col items-center overflow-x-hidden"> {/* 스플래시 화면 전체 영역을 중앙 정렬된 흰 배경으로 구성합니다. */}
-      <div className="w-full max-w-[390px] mx-auto px-[20px] pt-[60px] flex items-center justify-center min-h-screen"> {/* 모바일 디바이스 폭에 맞춰 로딩 이미지를 가운데 배치합니다. */}
+      <div className="w-full max-w-[390px] mx-auto px-[20px] flex items-center justify-center min-h-screen"> {/* 모바일 디바이스 폭에 맞춰 로딩 이미지를 가운데 배치합니다. */}
       <Image
         src={loadingImage}
         alt="로딩 중"

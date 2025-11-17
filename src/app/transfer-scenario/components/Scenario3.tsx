@@ -1,23 +1,29 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 입력 상태와 이벤트를 처리합니다.
-import { useEffect, useMemo } from "react"; // 입력값 가공과 사이드 이펙트를 위해 React 훅을 사용합니다.
+import { useEffect, useMemo, useState } from "react"; // 입력값 가공과 사이드 이펙트를 위해 React 훅을 사용합니다.
 import Button from "@/components/common/Button"; // 하단의 다음 버튼 UI를 담당합니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 시나리오 전반에서 공유하는 이체 상태를 불러옵니다.
+import { BANK_IMAGES } from "@/utils/bankUtils"; // 공통 은행 이미지 매핑
+import Modal from "@/components/common/Modal"; // 은행 선택 오류 안내용 모달
+import Image from "next/image";
 
 type Scenario3Props = {
   onNext: () => void; // 계좌 입력이 유효할 때 다음 단계로 이동하는 콜백입니다.
   onBack: () => void; // 뒤로가기 버튼 클릭 시 상위 단계에 알리기 위한 콜백입니다.
+  allowedBankName?: string; // 허용된 은행명 (지정하지 않으면 모든 은행 허용)
 };
 
 const TARGET_ACCOUNT = "110-123-456789"; // 시나리오에서 성공 조건으로 사용하는 기준 계좌번호입니다.
 
-export default function Scenario3({ onNext, onBack }: Scenario3Props) {
+export default function Scenario3({ onNext, onBack, allowedBankName = "국민은행" }: Scenario3Props) {
   const {
     selectedBank,
     accountNumber,
     updateAccountNumber,
     setRecipientName,
   } = useTransferFlow(); // 컨텍스트에서 선택된 은행, 입력 계좌번호, 수취인 이름 설정 함수를 가져옵니다.
-  const displayBank = selectedBank ?? "국민은행"; // 은행이 선택되지 않았다면 기본 은행명을 표시합니다.
+  const displayBank = selectedBank ?? allowedBankName; // 은행이 선택되지 않았다면 허용된 은행명을 표시합니다.
+  const bankImage = BANK_IMAGES[displayBank] || "/images/bank3.png"; // 선택된 은행의 이미지, 없으면 기본값
+  const [isBankErrorModalOpen, setBankErrorModalOpen] = useState(false); // 은행 선택 오류 모달 상태
 
   const cleanedInput = useMemo(
     () => accountNumber.replace(/[^0-9]/g, ""), // 입력된 문자열에서 숫자만 남깁니다.
@@ -47,6 +53,13 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
 
   const handleNext = () => {
     if (!isValid) return; // 유효한 계좌번호가 아니면 진행을 막습니다.
+
+    // 허용된 은행이 아니면 오류 모달 표시
+    if (displayBank !== allowedBankName) {
+      setBankErrorModalOpen(true);
+      return;
+    }
+
     // recipientName is already managed in useEffect
     onNext(); // 다음 단계로 이동하는 콜백을 호출합니다.
   };
@@ -69,10 +82,12 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
 
           <button type="button" className="flex w-full items-center justify-between text-left">
             <div className="flex items-center gap-[12px]">
-              <img
-                src="/images/bank3.png"
+              <Image
+                src={bankImage}
                 alt={displayBank}
                 className="h-[24px] w-[24px]"
+                width={24}
+                height={24}
               />
               <span className="text-[15px] font-semibold text-gray-800">
                 {displayBank}
@@ -100,6 +115,16 @@ export default function Scenario3({ onNext, onBack }: Scenario3Props) {
           다음
         </Button>
       </div>
+
+      {/* 은행 선택 오류 안내 모달 */}
+      <Modal
+        isOpen={isBankErrorModalOpen}
+        onClose={() => setBankErrorModalOpen(false)}
+        title="은행 선택 오류"
+        description={`타행 자동이체는 ${allowedBankName}만 가능합니다.\n${allowedBankName}을(를) 선택해주세요.`}
+        confirmText="확인"
+        onConfirm={() => setBankErrorModalOpen(false)}
+      />
     </div>
   );
 }

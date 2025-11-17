@@ -1,13 +1,13 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 바텀 시트 상호작용을 처리합니다.
 
-import { useEffect, useState } from "react"; // 비밀번호 입력 상태와 실패 횟수를 관리하기 위해 React 훅을 사용합니다.
+import { useEffect, useState, useRef } from "react"; // 비밀번호 입력 상태와 실패 횟수를 관리하기 위해 React 훅을 사용합니다.
 import Button from "@/components/common/Button"; // 바텀 시트 하단의 확인 버튼을 렌더링합니다.
 import NumericKeypad from "@/components/common/NumericKeypad"; // 숫자 패드 UI를 제공하는 공통 컴포넌트입니다.
 
 const REQUIRED_PASSWORD = "1234"; // 시나리오에서 사용되는 고정 비밀번호 값입니다.
 
 type Scenario5Props = {
-  onSuccess: () => void; // 비밀번호 검증에 성공했을 때 호출되는 콜백입니다.
+  onSuccess: (password: string) => void; // 비밀번호 검증에 성공했을 때 호출되는 콜백입니다. 입력된 비밀번호를 전달합니다.
   onClose: () => void; // 바텀 시트를 닫을 때 실행되는 콜백입니다.
 };
 
@@ -15,11 +15,19 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
   const [password, setPassword] = useState(""); // 현재 입력 중인 비밀번호 값을 저장합니다.
   const [hasError, setHasError] = useState(false); // 마지막 입력에서 오류가 발생했는지 여부입니다.
   const [failureCount, setFailureCount] = useState(0); // 실패 횟수를 기록하여 사용자에게 노출합니다.
+  const timerRef = useRef<NodeJS.Timeout | null>(null); // setTimeout 타이머를 저장하여 cleanup 시 정리합니다.
 
   useEffect(() => {
     setPassword("");
     setHasError(false);
     setFailureCount(0); // 바텀 시트가 열릴 때마다 상태를 초기화합니다.
+
+    // 컴포넌트 언마운트 시 타이머 정리 (메모리 누수 방지)
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, []);
 
   const handleValueChange = (value: string) => {
@@ -32,9 +40,14 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
     if (value.length === 4) {
       if (value === REQUIRED_PASSWORD) {
         setFailureCount(0); // 성공하면 실패 횟수를 초기화합니다.
-        setTimeout(() => {
+        // 이전 타이머가 있으면 정리
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
+        timerRef.current = setTimeout(() => {
+          const enteredPassword = value;
           setPassword(""); // 비밀번호 입력을 비우고
-          onSuccess(); // 성공 콜백을 실행합니다.
+          onSuccess(enteredPassword); // 성공 콜백을 실행하며 입력된 비밀번호를 전달합니다.
         }, 120);
       } else {
         setHasError(true); // 오류 메시지를 표시합니다.
@@ -56,9 +69,10 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
       return;
     }
 
+    const enteredPassword = password;
     setFailureCount(0); // 성공 시 실패 횟수를 초기화하고
     setPassword(""); // 비밀번호 입력을 비웁니다.
-    onSuccess(); // 성공 콜백을 실행합니다.
+    onSuccess(enteredPassword); // 성공 콜백을 실행하며 입력된 비밀번호를 전달합니다.
   };
 
   const handleClose = () => {

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import ExitModal from "./ExitModal";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
+import Image from "next/image";
 
 type ScenarioHeaderProps = {
   className?: string; // 헤더 외부 스타일을 확장하기 위한 클래스입니다.
@@ -42,7 +43,7 @@ export default function ScenarioHeader({ className = "" }: ScenarioHeaderProps) 
   return (
     <>
       <header
-        className={`sticky top-0 z-40 flex items-center bg-white px-[20px] py-[16px] font-sans ${className}`}
+        className={`sticky top-0 z-40 flex items-center bg-white px-[20px] pb-[16px] pt-[30px] font-sans ${className}`}
       >
         <div className="flex flex-1 justify-start">
           <button
@@ -51,7 +52,7 @@ export default function ScenarioHeader({ className = "" }: ScenarioHeaderProps) 
             className="flex h-[24px] w-[24px] items-center justify-center"
             aria-label="뒤로가기"
           >
-            <img src="/images/backicon.png" alt="뒤로가기" className="h-[12px] w-[12px] -rotate-90 object-contain" />
+            <Image src="/images/backicon.png" alt="뒤로가기" className="h-[12px] w-[12px] -rotate-90 object-contain" width={12} height={12} />
           </button>
         </div>
 

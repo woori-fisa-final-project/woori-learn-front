@@ -6,6 +6,7 @@ import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext"; // 시�
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우에서 공유하는 상태(출금 계좌 번호 등)를 가져옵니다.
 import Modal from "@/components/common/Modal"; // 기존 alert 대신 안내 모달을 사용하기 위해 공통 모달 컴포넌트를 불러옵니다.
 import Button from "@/components/common/Button"; // 모달 내부에서 동일한 버튼 스타일을 재사용합니다.
+import Image from "next/image";
 
 const QUICK_FILTERS = [
   // 빠르게 필터를 토글할 수 있도록 라벨과 활성 여부를 정리한 배열입니다.
@@ -184,10 +185,12 @@ function CategoryBlock({
           >
             <div className="flex items-center justify-between gap-[10px]">
               <div className="flex items-center gap-[10px]">
-                <img
+                <Image
                   src="/images/bank1.png"
                   alt="우리은행"
                   className="h-[28px] w-[28px]"
+                  width={28}
+                  height={28}
                 />
                 <div>
                   <p className="text-[16px] font-semibold text-gray-900">
