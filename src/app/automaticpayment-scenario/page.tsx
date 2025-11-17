@@ -114,19 +114,42 @@ function AutomaticPaymentScenarioContent() {
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 4. 해당 계좌의 자동이체 목록 조회 (페이지네이션)
-      const pagedResult = await getAutoPaymentList({
+      // 4. 해당 계좌의 자동이체 목록 조회 (페이지네이션 - 모든 페이지)
+      const pageSize = 100;
+      const firstPage = await getAutoPaymentList({
         educationalAccountId: representativeAccount.id,
         page: 0,
-        size: 100, // 단일 라우팅이므로 충분한 크기로 조회
+        size: pageSize,
       });
 
-      // 5. 페이지 데이터에서 실제 자동이체 목록 추출
-      const payments = pagedResult.content;
+      // 5. 전체 페이지 수 확인 후 나머지 페이지 병렬 조회
+      let allPayments = [...firstPage.content];
 
-      if (payments && payments.length > 0) {
-        devLog(`[fetchData] 자동이체 ${payments.length}건 조회 (전체: ${pagedResult.totalElements}건)`);
-        const convertedList = payments.map(payment => {
+      if (firstPage.totalPages > 1) {
+        devLog(`[fetchData] 총 ${firstPage.totalPages}페이지 중 첫 페이지 조회 완료, 나머지 페이지 조회 시작`);
+
+        // 나머지 페이지들을 병렬로 조회
+        const remainingPages = Array.from({ length: firstPage.totalPages - 1 }, (_, i) => i + 1);
+        const remainingResults = await Promise.all(
+          remainingPages.map(pageNum =>
+            getAutoPaymentList({
+              educationalAccountId: representativeAccount.id,
+              page: pageNum,
+              size: pageSize,
+            })
+          )
+        );
+
+        // 모든 페이지의 content를 하나로 합치기
+        remainingResults.forEach(result => {
+          allPayments = [...allPayments, ...result.content];
+        });
+      }
+
+      // 6. 조회된 모든 자동이체를 화면용 데이터로 변환
+      if (allPayments && allPayments.length > 0) {
+        devLog(`[fetchData] 자동이체 ${allPayments.length}건 조회 완료 (전체: ${firstPage.totalElements}건)`);
+        const convertedList = allPayments.map(payment => {
           devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);
         });

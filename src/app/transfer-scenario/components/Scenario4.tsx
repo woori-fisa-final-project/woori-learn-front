@@ -64,6 +64,23 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     return amount.toLocaleString(); // 입력 금액을 천 단위 구분 기호가 포함된 문자열로 변환합니다.
   }, [amount]);
 
+  /**
+   * 금액을 검증하고 유효하지 않으면 에러 모달을 표시합니다.
+   * @param newAmount - 검증할 금액
+   * @returns 유효한 금액이면 true, 그렇지 않으면 false
+   */
+  const validateAndSetError = (newAmount: number): boolean => {
+    const validation = validateAutoPaymentAmount(newAmount);
+    if (!validation.isValid) {
+      setErrorModal({
+        isOpen: true,
+        message: validation.errorMessage || "",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleDigit = (digit: string) => {
     if (digit === "←") {
       onDelete(); // 백스페이스 버튼은 마지막 자리를 삭제합니다.
@@ -84,17 +101,10 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     const sanitized = nextString.replace(/^0+$/, "0");
     const numericValue = Number(sanitized || "0");
 
-    // 금액 검증
-    const validation = validateAutoPaymentAmount(numericValue);
-    if (!validation.isValid) {
-      setErrorModal({
-        isOpen: true,
-        message: validation.errorMessage || "",
-      });
-      return;
+    // 금액 검증 후 설정
+    if (validateAndSetError(numericValue)) {
+      setAmount(numericValue); // 계산된 숫자 값을 금액 상태에 저장합니다.
     }
-
-    setAmount(numericValue); // 계산된 숫자 값을 금액 상태에 저장합니다.
   };
 
   const onDelete = () => {
@@ -115,17 +125,10 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
 
     const newAmount = amount + value;
 
-    // 금액 검증
-    const validation = validateAutoPaymentAmount(newAmount);
-    if (!validation.isValid) {
-      setErrorModal({
-        isOpen: true,
-        message: validation.errorMessage || "",
-      });
-      return;
+    // 금액 검증 후 설정
+    if (validateAndSetError(newAmount)) {
+      setAmount(newAmount); // 빠른 금액 버튼은 현재 금액에 해당 값을 더합니다.
     }
-
-    setAmount(newAmount); // 빠른 금액 버튼은 현재 금액에 해당 값을 더합니다.
   };
 
   const handleConfirm = () => {

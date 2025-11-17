@@ -1,5 +1,6 @@
 import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
 import { devLog, logApiCall, logApiResponse, devError } from "@/utils/logger";
+import { ApiError } from "@/types/errors";
 
 const BASE_URL = "/education/auto-payment";
 
@@ -25,6 +26,7 @@ interface Page<T> {
 
 /**
  * API 에러를 사용자 친화적인 메시지로 변환하는 헬퍼 함수
+ * ApiError를 throw하므로 절대 반환하지 않습니다.
  */
 async function handleApiError(response: Response, context: string): Promise<never> {
   const status = response.status;
@@ -79,10 +81,7 @@ async function handleApiError(response: Response, context: string): Promise<neve
 
   devError(`[${context}] 에러 응답 ${status}:`, backendMessage || "No message");
 
-  const error = new Error(errorMessage);
-  (error as any).status = status;
-  (error as any).backendMessage = backendMessage;
-  throw error;
+  throw new ApiError(errorMessage, status, backendMessage);
 }
 
 interface GetAutoPaymentListParams {
