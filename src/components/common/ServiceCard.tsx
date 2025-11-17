@@ -1,6 +1,7 @@
 "use client"; // 서비스 카드 클릭을 처리하므로 클라이언트 전용으로 선언합니다.
 
 import type { CSSProperties } from "react";
+import Image from "next/image";
 
 interface ServiceCardProps {
   title: string; // 카드 내부에 표시할 제목입니다.
@@ -39,6 +40,8 @@ export default function ServiceCard({
   badgeAlt = "상태 아이콘",
   badgePositionClassName = "top-3 right-3",
 }: ServiceCardProps) {
+  const parsedImageWidth = imageWidth ? parseInt(imageWidth, 10) : undefined;
+  const parsedImageHeight = imageHeight ? parseInt(imageHeight, 10) : undefined;
   const imageStyle: CSSProperties = {
     width: imageWidth ?? "clamp(52px, 23vw, 82px)",
   }; // 이미지 크기를 커스텀할 때 사용할 인라인 스타일 객체입니다.
@@ -55,17 +58,19 @@ export default function ServiceCard({
         <div
           className={`absolute ${badgePositionClassName} flex h-7 w-7 items-center justify-center rounded-full bg-white`}
         >
-          <img alt={badgeAlt} className="h-4 w-4 object-contain" src={badgeSrc} />
+          <Image alt={badgeAlt} className="h-4 w-4 object-contain" src={badgeSrc} width={16} height={16} />
         </div>
       )}
-      <img
+      <Image
         alt={imageAlt}
         className={`absolute bottom-4 right-4 object-contain max-w-[calc(100%-1rem)] max-h-[80px] transition-transform duration-300 ease-out group-hover:scale-105 sm:max-h-[90px] ${imageClassName}`}
         src={imageSrc}
+        width={parsedImageWidth || 82}
+        height={parsedImageHeight || 82}
         style={imageStyle}
       />
       <p
-        className={`text-[18px] ${textColor} font-semibold leading-tight whitespace-pre-line`}
+        className={`text-[18px] ${textColor} font-extrabold leading-tight whitespace-pre-line`}
       >
         {title}
       </p>

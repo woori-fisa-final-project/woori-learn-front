@@ -1,5 +1,7 @@
 "use client"; // 버튼 클릭 시 상태를 변경하므로 클라이언트 전용으로 선언합니다.
 
+import Image from "next/image";
+
 interface AgreementAllButtonProps {
   title: string; // 버튼에 표시할 전체 동의 문구입니다.
   isAllAgreed: boolean; // 모든 약관이 동의된 상태인지 나타내는 플래그입니다.
@@ -19,11 +21,12 @@ export default function AgreementAllButton({
       onClick={onToggle}
       className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-[4px] hover:bg-gray-100 transition-colors h-[56px]"
     >
-      <img
+      <Image
         alt="체크"
         src={isAllAgreed ? termcheck2Icon : termcheckIcon}
         className="object-contain"
-        style={{ width: "24px", height: "24px" }}
+        width={24}
+        height={24}
       />
       <p className="text-[15px] text-gray-700 font-normal">{title}</p>
     </button>

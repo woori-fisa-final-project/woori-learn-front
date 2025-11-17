@@ -24,7 +24,7 @@ export default function Button({
 }: ButtonProps) {
   // 크기 설정
   const sizeClasses = {
-    sm: "h-[50px] text-[14px] font-normal",
+    sm: "h-[58px] text-[14px] font-normal",
     md: "h-[55px] text-[16px]",
     lg: "h-[60px] text-[16px]",
   };
@@ -38,9 +38,6 @@ export default function Button({
 
   // 인라인 스타일로 색상 적용
   const getInlineStyles = (): React.CSSProperties => {
-    const heightValue =
-      size === "sm" ? "50px" : size === "md" ? "55px" : "60px";
-
     const baseStyle: React.CSSProperties = { // 모든 변형에서 공통으로 사용하는 기본 스타일 속성입니다.
       display: "flex",
       alignItems: "center",
@@ -50,8 +47,6 @@ export default function Button({
       outline: "none",
       boxSizing: "border-box",
       cursor: disabled ? "not-allowed" : "pointer",
-      height: heightValue,
-      minHeight: heightValue,
       position: "relative",
       zIndex: 1,
     };

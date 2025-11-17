@@ -1,5 +1,7 @@
 "use client"; // 리스트 항목 클릭 시 토글 동작을 처리하므로 클라이언트 전용으로 선언합니다.
 
+import Image from "next/image";
+
 interface AgreementItemProps {
   id: string; // 항목을 구분하기 위한 고유 식별자입니다.
   title: string; // 약관 제목 또는 설명 텍스트입니다.
@@ -27,12 +29,14 @@ export default function AgreementItem({
         onClick={() => onToggle(id)}
         className="flex items-center gap-3 flex-1"
       >
-        <img
+        <Image
           alt="체크"
           src={termchecksIcon}
           className={`w-4 h-4 object-contain ${
             isAgreed ? "opacity-100" : "opacity-50"
           }`}
+          width={16}
+          height={16}
         />
         <div className="flex-1 text-left">
           <p className="text-[14px] text-gray-700 font-normal leading-[1.3]">

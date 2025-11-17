@@ -3,6 +3,7 @@
 import Button from "@/components/common/Button"; // 확인 버튼에 사용할 공통 컴포넌트입니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우 상태를 공유하는 커스텀 훅입니다.
 import { useMemo } from "react"; // 금액 표시에 사용할 메모이제이션을 위해 React 훅을 불러옵니다.
+import Image from "next/image";
 
 type Scenario4Props = {
   onNext: () => void; // 금액 입력 후 다음 단계로 전환할 콜백입니다.
@@ -105,10 +106,12 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
       {/* 보내는 계좌와 받는 계좌 정보를 보여주는 영역 */}
       <section className=" space-y-[20px]">
         <div className="flex items-center gap-[12px]">
-          <img
+          <Image
             src="/images/bank1.png"
             alt="우리은행"
             className="h-[32px] w-[32px]"
+            width={32}
+            height={32}
           />
           <div>
             <p className="text-[15px] font-semibold text-gray-900">우리은행계좌에서</p>
@@ -117,10 +120,12 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
         </div>
 
         <div className="flex items-center gap-[12px]">
-          <img
+          <Image
             src="/images/bank3.png"
             alt={displayBank}
             className="h-[32px] w-[32px]"
+            width={32}
+            height={32}
           />
           <div>
             <p className="text-[15px] font-semibold text-gray-900 whitespace-nowrap">

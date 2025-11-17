@@ -6,6 +6,7 @@ import Modal from "@/components/common/Modal"; // 탈퇴 확인 모달을 표시
 import PageHeader from "@/components/common/PageHeader"; // 페이지 상단의 헤더 UI를 담당합니다.
 import PageContainer from "@/components/common/PageContainer"; // 페이지 전반 레이아웃을 감싸는 컨테이너입니다.
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름, 포인트 등 마이페이지에 필요한 데이터를 제공하는 커스텀 훅입니다.
+import Image from "next/image";
 
 const profileImage = "/images/profileicon2.png"; // 프로필 영역에 표시할 이미지 경로입니다.
 const pointIcon = "/images/pointicon.png"; // 포인트 카드에 사용할 아이콘 이미지입니다.
@@ -61,7 +62,7 @@ export default function ProfilePage() {
 
       <div className="mt-12 flex w-full items-center gap-5">
         <div className="relative h-[56px] w-[56px] shrink-0">
-          <img alt="프로필" className="h-full w-full rounded-full object-cover" src={profileImage} />
+          <Image alt="프로필" className="h-full w-full rounded-full object-cover" src={profileImage} width={56} height={56} />
         </div>
         <p className="text-[16px] font-medium leading-[normal] tracking-[-0.64px] text-gray-800">{userName}</p>
       </div>
@@ -74,7 +75,7 @@ export default function ProfilePage() {
         >
           <div className="flex items-center gap-2">
             <div className="relative h-4 w-4 shrink-0">
-              <img alt="포인트 아이콘" className="h-full w-full object-contain" src={pointIcon} />
+              <Image alt="포인트 아이콘" className="h-full w-full object-contain" src={pointIcon} width={16} height={16} />
             </div>
             <p className="text-[14px] font-medium tracking-[-0.56px] text-gray-800">포인트</p>
           </div>
@@ -85,49 +86,49 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-12 w-full">
-        <p className="mb-6 text-[19px] font-medium leading-[1.38] tracking-[-0.76px] text-gray-700">계정 관리</p>
+        <p className="mb-6 text-[19px] font-semibold leading-[1.38] tracking-[-0.76px] text-gray-700">계정 관리</p>
 
         <div className="flex w-full flex-col gap-2">
           <button
             onClick={handleAccountOpen}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">계좌 개설하기</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">계좌 개설하기</p>
           </button>
 
           <button
             onClick={handlePointTransfer}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">포인트 관리</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">포인트 관리</p>
           </button>
 
           <button
             onClick={handleChangeName}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">이름 변경하기</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">이름 변경하기</p>
           </button>
 
           <button
             onClick={handleChangePassword}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">비밀번호 변경</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">비밀번호 변경</p>
           </button>
 
           <button
             onClick={handleSecessionClick}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">회원탈퇴</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">회원탈퇴</p>
           </button>
 
           <button
             onClick={handleLogout}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
           >
-            <p className="text-[16px] font-normal leading-[1.38] tracking-[-0.64px] text-gray-600">로그아웃</p>
+            <p className="text-[16px] font-medium leading-[1.38] tracking-[-0.64px] text-gray-600">로그아웃</p>
           </button>
         </div>
       </div>

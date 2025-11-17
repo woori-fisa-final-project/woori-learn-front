@@ -1,9 +1,9 @@
 export interface User {
   id: number;
-  user_id: string;
+  userId: string;
   password: string;
   nickname: string;
-  created_at: string;
-  updated_at?: string;
+  createdAt: string;
+  updatedAt?: string;
   points: number;
 }

@@ -3,6 +3,7 @@
 import Button from "@/components/common/Button";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { useMemo } from "react";
+import Image from "next/image";
 
 type Scenario6Props = {
   onConfirm: () => void; // 이체 확정 버튼 클릭 시 호출되는 콜백입니다.
@@ -35,15 +36,19 @@ export default function Scenario6({
       {/* 이체 요약 정보 영역 */}
       <section className="mt-[28px] space-y-[16px]">
         <div className="flex items-center gap-[12px]">
-          <img
+          <Image
             src="/images/bank1.png"
             alt="우리은행"
             className="h-[52px] w-[52px]"
+            width={52}
+            height={52}
           />
-          <img
+          <Image
             src="/images/bank3.png"
             alt={bankName}
             className="h-[52px] w-[52px]"
+            width={52}
+            height={52}
           />
         </div>
 

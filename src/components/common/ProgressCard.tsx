@@ -1,5 +1,7 @@
 "use client"; // 진행 상황을 클라이언트에서 렌더링하기 위해 선언합니다.
 
+import Image from "next/image";
+
 interface ProgressCardProps {
   title: string; // 카드 상단에 표시할 제목입니다.
   progress: number; // 0-100
@@ -35,10 +37,12 @@ export default function ProgressCard({
         <p className="mt-2 text-[12px] text-gray-500">{description}</p>
       )}
       {imageSrc && (
-        <img
+        <Image
           src={imageSrc}
           alt={title}
           className="mt-2 w-full h-auto object-contain"
+          width={400}
+          height={200}
         />
       )}
     </div>

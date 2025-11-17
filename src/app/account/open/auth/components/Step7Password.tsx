@@ -6,6 +6,7 @@ import PageContainer from "@/components/common/PageContainer";
 import PasswordBottomSheet from "@/components/common/PasswordBottomSheet";
 import { useAccountData } from "@/lib/hooks/useAccountData";
 import { useStepValidation } from "@/lib/hooks/useStepValidation";
+import Image from "next/image";
 
 interface Step7PasswordProps {
   onNext: () => void;
@@ -78,10 +79,12 @@ export default function Step7Password({
 
             {/* 비밀번호 배경 이미지 */}
             <div className="flex-1 flex items-center justify-center mt-8">
-              <img
+              <Image
                 src="/images/passwordbackimg.png"
                 alt="비밀번호"
                 className="w-full max-w-[300px] object-contain"
+                width={300}
+                height={300}
               />
             </div>
           </div>

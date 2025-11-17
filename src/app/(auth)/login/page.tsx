@@ -5,6 +5,7 @@ import Link from "next/link";
 import Button from "@/components/common/Button";
 import PasswordToggleIcon from "@/components/common/PasswordToggleIcon";
 import { loginUser } from "./login";
+import Image from "next/image";
 
 const logoImage = "/images/logo1.png";
 
@@ -59,10 +60,10 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[min(100%,_430px)] px-[20px] pt-[60px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="pt-[30px] w-full max-w-[min(100%,_430px)] px-[20px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
         {/* 상단 로고 영역으로 서비스 브랜드 아이덴티티를 강조합니다. */}
         <div className="relative mx-auto mt-[58px] h-[86px] w-[150px]">
-          <img alt="로고" className="h-full w-full object-contain" src={logoImage} />
+          <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={150} height={86} />
         </div>
 
         {/* 로그인 입력 필드 묶음 영역입니다. */}
@@ -82,7 +83,7 @@ export default function LoginPage() {
 
           {/* 비밀번호 입력 필드: 토글 아이콘으로 입력값을 숨기거나 표시할 수 있습니다. */}
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-end border-b border-gray-300 bg-white px-4 py-[18px]">
+            <div className="flex items-center border-b border-gray-300 bg-white px-4 py-[18px]">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
@@ -90,7 +91,7 @@ export default function LoginPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 className="flex-1 text-[16px] font-medium text-gray-600 placeholder:text-gray-400 outline-none"
               />
-              <PasswordToggleIcon showPassword={showPassword} onToggle={handleTogglePassword} />
+              <PasswordToggleIcon showPassword={showPassword} onToggle={handleTogglePassword}/>
             </div>
           </div>
 
