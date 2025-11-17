@@ -60,7 +60,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="pt-[30px] w-full max-w-[min(100%,_430px)] px-[20px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="pt-[30px] w-full max-w-[min(100%,430px)] px-5 sm:max-w-[480px] md:max-w-[560px] lg:max-w-3xl">
         {/* 상단 로고 영역으로 서비스 브랜드 아이덴티티를 강조합니다. */}
         <div className="relative mx-auto mt-[58px] h-[86px] w-[150px]">
           <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={150} height={86} />
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </div>
 
           {/* 아이디 기억하기 체크박스: 사용자의 선택을 rememberId 상태에 반영합니다. */}
-          <div className="mt-[32px] flex items-center gap-2">
+          <div className="mt-8 flex items-center gap-2">
             <input
               type="checkbox"
               id="remember-id"
@@ -111,17 +111,17 @@ export default function LoginPage() {
         </div>
 
         {/* 로그인 버튼 영역: 클릭 시 handleLogin 로직이 실행됩니다. */}
-        <div className="mt-[80px]">
+        <div className="mt-20">
           <Button variant="primary" onClick={handleLogin}>
             로그인
           </Button>
         </div>
 
         {/* 회원가입 유도 메시지와 링크를 노출해 신규 가입 경로를 안내합니다. */}
-        <div className="mt-[20px] text-center">
+        <div className="mt-5 text-center">
           <p className="text-[16px] text-gray-400">
             계정이 없으신가요?{" "}
-            <Link href="/signup" className="font-semibold text-[#648ddb] underline decoration-solid underline-offset-2 hover:text-[#2677cc]">
+            <Link href="/signup" className="font-semibold text-primary-400 underline decoration-solid underline-offset-2 hover:text-[#2677cc]">
               회원가입하기
             </Link>
           </p>

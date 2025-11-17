@@ -61,7 +61,7 @@ export default function ProfilePage() {
       <PageHeader title="내 정보" onBack={handleBack} titleSize="lg" /> {/* 상단 헤더: 뒤로가기 및 제목 */}
 
       <div className="mt-12 flex w-full items-center gap-5">
-        <div className="relative h-[56px] w-[56px] shrink-0">
+        <div className="relative h-14 w-14 shrink-0">
           <Image alt="프로필" className="h-full w-full rounded-full object-cover" src={profileImage} width={56} height={56} />
         </div>
         <p className="text-[16px] font-medium leading-[normal] tracking-[-0.64px] text-gray-800">{userName}</p>
@@ -70,7 +70,7 @@ export default function ProfilePage() {
       <div className="mt-8 w-full">
         <button
           onClick={() => router.push("/points")}
-          className="flex h-[49px] w-full items-center justify-between rounded-[12px] bg-gray-100 px-5 transition-all hover:bg-gray-200 hover:opacity-90"
+          className="flex h-[49px] w-full items-center justify-between rounded-xl bg-gray-100 px-5 transition-all hover:bg-gray-200 hover:opacity-90"
           aria-label="포인트 관리 페이지로 이동"
         >
           <div className="flex items-center gap-2">

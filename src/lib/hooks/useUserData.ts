@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"; // 사용자 이름과 포인트 정보를 상태로 관리하기 위해 React 훅을 사용합니다.
 import { getAvailablePoints } from "@/constants/points"; // 기본 포인트 값을 계산하기 위해 포인트 유틸 함수를 불러옵니다.
-import { fetchWithAuth } from "@/lib/hooks/fetchWithAuth";
+import axiosInstance from "@/utils/axiosInstance";
+import { ApiError } from "@/utils/apiError";
 
 export function useUserData() { // 사용자 이름과 보유 포인트를 제공하는 커스텀 훅입니다.
   const [userName, setUserName] = useState("아무개"); // 사용자 이름을 상태로 관리하며 기본값을 설정합니다.
@@ -10,17 +11,19 @@ export function useUserData() { // 사용자 이름과 보유 포인트를 제�
     if (typeof window === "undefined") return; // ✅ SSR 환경 안전 처리
 
     async function loadUserData() {
-      const response = await fetchWithAuth("http://localhost:8080/users/me");
+      try{
+        const response = await axiosInstance.get("/users/me");
+        const data = response.data.data;
 
-      if (!response.ok) {
-        console.error("사용자 정보를 불러오지 못했습니다.");
-        return;
+        setUserName(data.nickname);
+        setAvailablePoints(data.point);
+      }catch(error){
+        if (error instanceof ApiError) {
+          console.error("사용자 정보를 불러오는 중 오류:", error.message);
+        } else {
+          console.error("알 수 없는 오류 발생:", error);
+        }
       }
-
-      const data = await response.json();
-
-      setUserName(data.data.nickname);
-      setAvailablePoints(data.data.point);
     }
 
     loadUserData();

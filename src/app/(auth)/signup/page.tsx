@@ -75,7 +75,7 @@ export default function SignupPage() {
 
   return (
     <main className="pt-[30px] flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
-      <div className="w-full max-w-[min(100%,_430px)] px-[20px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
+      <div className="w-full max-w-[min(100%,430px)] px-5 sm:max-w-[480px] md:max-w-[560px] lg:max-w-3xl">
         {/* 상단 헤더: 뒤로가기 버튼과 페이지 제목을 보여줍니다. */}
         <div className="flex w-full items-center gap-2">
           <button
@@ -83,7 +83,7 @@ export default function SignupPage() {
             className="h-[7px] w-3.5 flex items-center justify-center -rotate-90"
             aria-label="뒤로가기"
           >
-            <Image alt="뒤로가기" className="h-[7px] w-[14px] object-contain" src={backIcon} width={14} height={7} />
+            <Image alt="뒤로가기" className="h-[7px] w-3.5 object-contain" src={backIcon} width={14} height={7} />
           </button>
           <h1 className="text-[20px] font-medium leading-[1.38] tracking-[-0.6px] text-gray-700">
             회원가<span className="tracking-[-0.8px]">입</span>
@@ -119,7 +119,7 @@ export default function SignupPage() {
               disabled={!isIdFilled}
               size="sm"
               fullWidth={false}
-              className="!min-w-[70px] w-auto px-3 shrink-0 whitespace-nowrap"
+              className="min-w-[70px]! w-auto px-3 shrink-0 whitespace-nowrap"
             >
               중복 확인
             </Button>
