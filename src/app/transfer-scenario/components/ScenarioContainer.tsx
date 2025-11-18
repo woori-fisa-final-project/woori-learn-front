@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import Scenario1 from "./Scenario1";
@@ -12,12 +12,29 @@ import Scenario5 from "./Scenario5";
 import Scenario6 from "./Scenario6";
 import Scenario7 from "./Scenario7";
 
-export default function ScenarioContainer() {
+type ScenarioContainerProps = {
+  onScenarioStepChange?: (stepId: number) => void; // 시나리오 step 변경 콜백
+  onScenarioStepChangeWithResume?: (stepId: number) => Promise<void>; // 시나리오를 먼저 로드한 후 step 변경
+};
+
+export default function ScenarioContainer({}: ScenarioContainerProps) {
   const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
-  const { selectedBank, setSelectedBank, resetFlow } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
+  const searchParams = useSearchParams(); // URL 쿼리 파라미터를 읽기 위해 사용합니다.
+  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
   const [step, setStep] = useState<number>(1); // 현재 진행 중인 단계(1~7)를 관리합니다.
   const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false); // 은행 선택 바텀 시트 열림 여부를 저장합니다.
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState<boolean>(false); // 비밀번호 입력 바텀 시트 열림 여부를 저장합니다.
+
+  // URL 쿼리에서 scenarioStep을 읽어와 초기 step 설정
+  useEffect(() => {
+    const scenarioStepParam = searchParams.get("scenarioStep");
+    if (scenarioStepParam) {
+      const scenarioStep = Number(scenarioStepParam);
+      if (!Number.isNaN(scenarioStep) && scenarioStep >= 1 && scenarioStep <= 7) {
+        setStep(scenarioStep);
+      }
+    }
+  }, [searchParams]);
 
   const clampedStep = useMemo(() => {
     return Math.min(Math.max(step, 1), 7);
@@ -115,11 +132,18 @@ export default function ScenarioContainer() {
           />
         )}
         {clampedStep === 3 && (
-          <Scenario3 onNext={() => goToStep(4)} onBack={() => goToStep(1)} />
+          <Scenario3
+            onNext={() => {
+              // 계좌 번호 입력 후 다음 버튼 클릭 시 다음 페이지로 이동
+              goToStep(4);
+            }}
+            onBack={() => goToStep(1)}
+          />
         )}
         {(clampedStep === 4 || (clampedStep === 5 && isPasswordSheetOpen)) && (
           <Scenario4
             onNext={() => {
+              // 금액 입력 후 확인 버튼 클릭 시 다음 페이지로 이동
               setPasswordSheetOpen(true);
               goToStep(5);
             }}
@@ -128,7 +152,51 @@ export default function ScenarioContainer() {
         )}
         {clampedStep === 6 && (
           <Scenario6
-            onConfirm={() => goToStep(7)}
+            onConfirm={async () => {
+              // 1019 스텝 끝나고 이체 버튼 클릭 시 계좌번호와 금액 검증 후 성공/실패에 따라 분기
+              const CORRECT_ACCOUNT = "110-123-456789";
+              const CORRECT_AMOUNT = 500000;
+              
+              // 계좌번호 정규화 (하이픈 제거하여 비교)
+              const normalizedAccount = (accountNumber || "").replace(/-/g, "").trim();
+              const normalizedCorrectAccount = CORRECT_ACCOUNT.replace(/-/g, "");
+              
+              // 금액 비교 (숫자 타입으로 변환하여 비교)
+              const numericAmount = Number(amount) || 0;
+              
+              const isAccountCorrect = normalizedAccount === normalizedCorrectAccount;
+              const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
+              
+              // 디버깅: 실제 값 확인
+              console.log("이체 검증:", {
+                accountNumber,
+                normalizedAccount,
+                normalizedCorrectAccount,
+                isAccountCorrect,
+                amount,
+                numericAmount,
+                CORRECT_AMOUNT,
+                isAmountCorrect,
+              });
+              
+              if (isAccountCorrect && isAmountCorrect) {
+                // 성공: 계좌번호와 금액 모두 맞음
+                // nextbtn 버튼 클릭으로 자동 처리됨
+                console.log("성공: 계좌번호와 금액 모두 맞음");
+                // 완료 페이지로는 이동하지 않음 (1020 스텝이 끝나면 자동으로 진행)
+              } else {
+                // 실패: 계좌번호 또는 금액 오입력
+                // nextbtn 버튼 클릭으로 자동 처리됨
+                console.log("실패: 계좌번호 또는 금액 오입력", {
+                  accountError: !isAccountCorrect,
+                  amountError: !isAmountCorrect,
+                });
+                // 1220 스텝이 끝나면 로직에서 다음 스텝 결정:
+                // - 금액만 틀림: 1221 → 1222 → 1223 → 1224 → 1225 → 1235
+                // - 계좌번호만 틀림: 1231 → 1232 → 1233 → 1234 → 1235
+                // - 둘 다 틀림: 1231 → 1232 → 1233 → 1234 → 1235
+              }
+            }}
             onReenterAccount={() => goToStep(1)}
             onReenterAmount={() => goToStep(4)}
             onCancel={() => goToStep(1)}
@@ -161,19 +229,20 @@ export default function ScenarioContainer() {
       )}
 
       {/* 비밀번호 입력 시트 */}
-      {isPasswordSheetOpen && clampedStep === 5 && (
-        <Scenario5
-          onSuccess={(password) => {
-            // 일반 이체에서는 비밀번호를 별도로 저장하지 않고 검증만 수행합니다.
-            setPasswordSheetOpen(false);
-            goToStep(6);
-          }}
-          onClose={() => {
-            setPasswordSheetOpen(false);
-            goToStep(4);
-          }}
-        />
-      )}
+        {isPasswordSheetOpen && clampedStep === 5 && (
+          <Scenario5
+            onSuccess={(password) => {
+              // 일반 이체에서는 비밀번호를 별도로 저장하지 않고 검증만 수행합니다.
+              setPasswordSheetOpen(false);
+              goToStep(6);
+              // 비밀번호 입력 성공 시 다음 페이지로 이동 (1016 → 1017 → 1018 → 1019는 자동 진행)
+            }}
+            onClose={() => {
+              setPasswordSheetOpen(false);
+              goToStep(4);
+            }}
+          />
+        )}
     </div>
   );
 }

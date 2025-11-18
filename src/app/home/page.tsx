@@ -7,6 +7,7 @@ import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도�
 import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
 import Modal from "@/components/common/Modal"; // 준비 중 서비스 안내 모달 컴포넌트입니다.
 import Image from "next/image";
+import { useScenarioTrigger } from "@/lib/hooks/useScenarioTrigger";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -18,13 +19,17 @@ const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용�
 export default function HomePage() {
   const router = useRouter(); // 페이지 이동 처리를 위해 라우터 인스턴스를 가져옵니다.
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림 상태를 관리합니다.
+  const { startScenario } = useScenarioTrigger();
 
   const handleProfileClick = () => {
     router.push("/mypage"); // 프로필 버튼 클릭 시 마이페이지로 이동합니다.
   };
 
   const handleAccountClick = () => {
-    router.push("/woorimain"); // 계좌 조회/이체 서비스 카드를 눌렀을 때 우리 메인 화면으로 이동합니다.
+    // 조회·이체 서비스 카드를 눌렀을 때는
+    // WooriMainPage로 이동하면서 시나리오 튜토리얼을 오버레이로 표시합니다.
+    // ※ 백엔드 시나리오 ID는 1이며, 첫 Step은 1001부터 시작합니다.
+    router.push("/woorimain?scenarioId=1&stepId=1001");
   };
 
   const handleModalOpen = () => {
@@ -47,7 +52,7 @@ export default function HomePage() {
       rounded: "rounded-[10px]",
       imageWidth: "56px",
       imageHeight: "49px",
-      onClick: handleAccountClick, // 클릭 시 계좌 관련 시나리오 진입으로 이동합니다.
+      onClick: handleAccountClick, // 클릭 시 계좌 조회/이체 시나리오 진입으로 이동합니다.
     },
     {
       title: "공과금",
