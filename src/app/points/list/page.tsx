@@ -128,8 +128,9 @@ export default function PointListPage() {
       }
 
       const json = await response.json();
-      const items: PointHistoryItem[] = json.content ?? [];
-      setHistoryList(items);
+const items: PointHistoryItem[] = json.data?.content ?? [];
+setHistoryList(items);
+
     } catch (error) {
       console.error("포인트 내역 조회 오류:", error);
       setError(
