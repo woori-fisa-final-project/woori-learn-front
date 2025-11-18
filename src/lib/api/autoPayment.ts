@@ -1,6 +1,7 @@
 import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
 import { devLog, logApiCall, logApiResponse, devError } from "@/utils/logger";
 import { ApiError } from "@/types/errors";
+import { AUTO_PAYMENT } from "../constants";
 
 const BASE_URL = "/education/auto-payment";
 
@@ -107,7 +108,7 @@ export async function getAutoPaymentList(
 
   // 페이지네이션 파라미터
   queryParams.append("page", (params.page ?? 0).toString());
-  queryParams.append("size", (params.size ?? 20).toString());
+  queryParams.append("size", (params.size ?? AUTO_PAYMENT.PAGE_SIZE).toString());
 
   if (params.sort) {
     queryParams.append("sort", params.sort);

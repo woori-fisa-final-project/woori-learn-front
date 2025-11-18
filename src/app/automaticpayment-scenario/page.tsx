@@ -62,6 +62,30 @@ function convertToAutoTransferInfo(
   };
 }
 
+/**
+ * Promise를 반환하는 함수들을 청크 단위로 나누어 순차적으로 병렬 실행하는 헬퍼 함수
+ * @param promiseFunctions 실행할 Promise를 반환하는 함수들의 배열
+ * @param chunkSize 한 번에 병렬로 실행할 Promise의 개수
+ * @returns 모든 Promise의 결과가 병합된 배열
+ */
+const runPromisesInChunks = async (promiseFunctions: (() => Promise<any>)[], chunkSize: number) => {
+  const results = [];
+  
+  // promises 배열을 chunkSize 크기의 청크로 나눕니다.
+  for (let i = 0; i < promiseFunctions.length; i += chunkSize) {
+    const chunk = promiseFunctions.slice(i, i + chunkSize);
+    
+    // Promise.all을 사용하여 현재 청크의 요청들을 병렬로 실행합니다.
+    const chunkResults = await Promise.all(chunk.map(fn => fn()));
+    
+    // 결과를 병합합니다.
+    results.push(...chunkResults);
+  }
+  
+  return results;
+};
+
+
 function AutomaticPaymentScenarioContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -115,24 +139,42 @@ function AutomaticPaymentScenarioContent() {
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 4. 해당 계좌의 자동이체 목록 조회 (페이지네이션 - 모든 페이지)
+      // 4. 해당 계좌의 자동이체 목록 조회 (첫 페이지)
       const firstPage = await getAutoPaymentList({
         educationalAccountId: representativeAccount.id,
         page: 0,
         size: AUTO_PAYMENT.PAGE_SIZE,
       });
 
-      // 5. 나머지 페이지들을 병렬로 조회 (빈 배열도 안전하게 처리)
-      const remainingPages = Array.from({ length: firstPage.totalPages - 1 }, (_, i) => i + 1);
-      const remainingResults = await Promise.all(
-        remainingPages.map(pageNum =>
-          getAutoPaymentList({
-            educationalAccountId: representativeAccount.id,
-            page: pageNum,
-            size: AUTO_PAYMENT.PAGE_SIZE,
-          })
-        )
-      );
+      const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
+      
+      let remainingResults = [];
+
+      // 5. 나머지 페이지들을 청크 단위로 조회 (수정된 로직)
+      if (totalRemainingPages > 0) {
+        
+        // 한 번에 병렬로 요청할 페이지 수 (동시 요청 제한)
+        const CHUNK_SIZE = 5; 
+        
+        // Promise를 반환하는 함수 배열 생성
+        const remainingPromiseFunctions = Array.from(
+          { length: totalRemainingPages }, 
+          (_, i) => {
+            const pageNum = i + 1; // 1페이지부터 시작
+            return () => getAutoPaymentList({
+              educationalAccountId: representativeAccount.id,
+              page: pageNum,
+              size: AUTO_PAYMENT.PAGE_SIZE,
+            });
+          }
+        );
+
+        // 청크 단위로 병렬 요청 실행
+        remainingResults = await runPromisesInChunks(
+          remainingPromiseFunctions,
+          CHUNK_SIZE
+        );
+      }
 
       // 6. 모든 페이지의 content를 하나로 합치기
       const allPayments = [
@@ -154,6 +196,7 @@ function AutomaticPaymentScenarioContent() {
     } catch (error) {
       devError("[fetchData] 데이터 조회 실패:", error);
       setAutoTransferList([]);
+      setErrorModal({ isOpen: true, message: "자동이체 목록을 불러오는 데 실패했습니다." });
     } finally {
       setIsLoading(false);
     }
