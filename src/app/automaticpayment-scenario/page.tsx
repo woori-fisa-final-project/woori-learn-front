@@ -122,32 +122,25 @@ function AutomaticPaymentScenarioContent() {
         size: AUTO_PAYMENT.PAGE_SIZE,
       });
 
-      // 5. 전체 페이지 수 확인 후 나머지 페이지 병렬 조회
-      let allPayments = firstPage.content;
+      // 5. 나머지 페이지들을 병렬로 조회 (빈 배열도 안전하게 처리)
+      const remainingPages = Array.from({ length: firstPage.totalPages - 1 }, (_, i) => i + 1);
+      const remainingResults = await Promise.all(
+        remainingPages.map(pageNum =>
+          getAutoPaymentList({
+            educationalAccountId: representativeAccount.id,
+            page: pageNum,
+            size: AUTO_PAYMENT.PAGE_SIZE,
+          })
+        )
+      );
 
-      if (firstPage.totalPages > 1) {
-        devLog(`[fetchData] 총 ${firstPage.totalPages}페이지 중 첫 페이지 조회 완료, 나머지 페이지 조회 시작`);
+      // 6. 모든 페이지의 content를 하나로 합치기
+      const allPayments = [
+        ...firstPage.content,
+        ...remainingResults.flatMap(result => result.content)
+      ];
 
-        // 나머지 페이지들을 병렬로 조회
-        const remainingPages = Array.from({ length: firstPage.totalPages - 1 }, (_, i) => i + 1);
-        const remainingResults = await Promise.all(
-          remainingPages.map(pageNum =>
-            getAutoPaymentList({
-              educationalAccountId: representativeAccount.id,
-              page: pageNum,
-              size: AUTO_PAYMENT.PAGE_SIZE,
-            })
-          )
-        );
-
-        // 모든 페이지의 content를 하나로 합치기 (flatMap 사용으로 성능 개선)
-        allPayments = [
-          ...firstPage.content,
-          ...remainingResults.flatMap(result => result.content)
-        ];
-      }
-
-      // 6. 조회된 모든 자동이체를 화면용 데이터로 변환
+      // 7. 조회된 모든 자동이체를 화면용 데이터로 변환
       if (allPayments && allPayments.length > 0) {
         devLog(`[fetchData] 자동이체 ${allPayments.length}건 조회 완료 (전체: ${firstPage.totalElements}건)`);
         const convertedList = allPayments.map(payment => {

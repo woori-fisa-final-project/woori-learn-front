@@ -84,14 +84,11 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
   /**
    * 금액을 검증하고 유효하면 상태를 업데이트합니다.
    * @param newAmount - 설정할 금액
-   * @returns 성공 여부
    */
-  const trySetAmount = (newAmount: number): boolean => {
+  const trySetAmount = (newAmount: number): void => {
     if (validateAndSetError(newAmount)) {
       setAmount(newAmount);
-      return true;
     }
-    return false;
   };
 
   const handleDigit = (digit: string) => {

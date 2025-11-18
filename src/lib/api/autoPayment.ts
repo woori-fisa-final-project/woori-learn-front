@@ -36,7 +36,7 @@ async function handleApiError(response: Response, context: string): Promise<neve
   const clonedResponse = response.clone();
   try {
     const errorData = await response.json();
-    backendMessage = errorData.message || "";
+    backendMessage = errorData?.message || "";
   } catch {
     // JSON 파싱 실패 시 텍스트로 읽기
     try {
