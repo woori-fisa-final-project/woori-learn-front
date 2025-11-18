@@ -148,7 +148,7 @@ export default function PointExchangePage() {
 
       const response = await requestPointExchange(dto);
 
-      console.log('환전 요청 성공:', response);
+      // console.log('환전 요청 성공:', response);
       setSubmitStatus('success');
 
       // 기존 타이머 정리
@@ -158,7 +158,7 @@ export default function PointExchangePage() {
         router.push('/mypage');
       }, 1500);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       setSubmitStatus('error');
     }
   };

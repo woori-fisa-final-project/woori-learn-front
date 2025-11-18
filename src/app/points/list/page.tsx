@@ -21,7 +21,18 @@ import {
 const searchIcon = "/images/search.png";
 
 // -------------------------------------------------------
-// 필터 상태 타입 명확화
+// API 응답 타입 정의
+// -------------------------------------------------------
+interface PointHistoryItem {
+  id: number;
+  type: "DEPOSIT" | "WITHDRAW";
+  status: "APPLY" | "SUCCESS" | "FAILED" | null;
+  amount: number;
+  createdAt: string;
+}
+
+// -------------------------------------------------------
+// 필터 상태 타입 정의
 // -------------------------------------------------------
 interface FilterState {
   period: PeriodType;
@@ -45,12 +56,12 @@ export default function PointListPage() {
     size: 50,
   });
 
-  const [historyList, setHistoryList] = useState<any[]>([]);
+  const [historyList, setHistoryList] = useState<PointHistoryItem[]>([]);
 
   // -------------------------------------------------------
   // 카드 타입 매핑
   // -------------------------------------------------------
-  const mapCardType = (item: any) => {
+  const mapCardType = (item: PointHistoryItem) => {
     if (item.type === "DEPOSIT") return "earn";
 
     if (item.type === "WITHDRAW") {
@@ -62,19 +73,17 @@ export default function PointListPage() {
         case "FAILED":
           return "exchange_failed";
         default:
-          console.warn(`Unknown withdraw status: ${item.status}`, item);
           return "unknown";
       }
     }
 
-    console.warn(`Unknown point type: ${item.type}`, item);
     return "unknown";
   };
 
   // -------------------------------------------------------
   // 상태 텍스트 매핑
   // -------------------------------------------------------
-  const mapStatusText = (item: any) => {
+  const mapStatusText = (item: PointHistoryItem) => {
     if (item.type === "DEPOSIT") return "적립 완료";
 
     if (item.type === "WITHDRAW") {
@@ -114,7 +123,10 @@ export default function PointListPage() {
       );
 
       const json = await response.json();
-      setHistoryList(json.content ?? []);
+
+      // 타입 보장
+      const items: PointHistoryItem[] = json.content ?? [];
+      setHistoryList(items);
     } catch (error) {
       console.error("포인트 내역 조회 오류 :", error);
     }
