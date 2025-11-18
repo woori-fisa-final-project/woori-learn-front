@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"; // 사용자 이름과 포인트 정보를 상태로 관리하기 위해 React 훅을 사용합니다.
-import { getAvailablePoints } from "@/constants/points"; // 기본 포인트 값을 계산하기 위해 포인트 유틸 함수를 불러옵니다.
 import axiosInstance from "@/utils/axiosInstance";
 import { ApiError } from "@/utils/apiError";
 
@@ -29,14 +28,6 @@ export function useUserData() { // 사용자 이름과 보유 포인트를 제�
     loadUserData();
   }, []);
 
-  // 이름 변경이 필요한 경우 사용할 수 있도록 setter도 함께 반환
-  const updateUserName = (name: string) => { // 사용자 이름을 변경할 때 호출하는 함수입니다.
-    setUserName(name); // 상태에 즉시 반영하여 UI를 업데이트합니다.
-    if (typeof window !== "undefined") {
-      localStorage.setItem("userName", name); // 브라우저 환경일 때만 로컬 스토리지에 이름을 저장합니다.
-    }
-  };
-
-  return { userName, availablePoints, updateUserName }; // 컴포넌트에서 이름, 포인트, 이름 업데이트 함수를 사용할 수 있도록 반환합니다.
+  return { userName, availablePoints}; // 컴포넌트에서 이름, 포인트, 이름 업데이트 함수를 사용할 수 있도록 반환합니다.
 }
 

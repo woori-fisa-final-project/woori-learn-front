@@ -66,6 +66,7 @@ export default function SignupPage() {
       }
       else{
         setId("");
+        alert("이미 사용중인 아이디입니다.");
         setError("이미 사용 중인 아이디입니다.");
       }
     }
@@ -119,7 +120,7 @@ export default function SignupPage() {
               disabled={!isIdFilled}
               size="sm"
               fullWidth={false}
-              className="min-w-[70px]! w-auto px-3 shrink-0 whitespace-nowrap"
+              className="!min-w-[70px] w-auto px-3 shrink-0 whitespace-nowrap"
             >
               중복 확인
             </Button>

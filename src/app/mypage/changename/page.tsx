@@ -6,13 +6,11 @@ import Input from "@/components/common/Input"; // 공통 입력 필드를 불러
 import Button from "@/components/common/Button"; // 공통 버튼 컴포넌트를 사용합니다.
 import PageHeader from "@/components/common/PageHeader"; // 상단 헤더 UI를 구성하는 공통 컴포넌트입니다.
 import PageContainer from "@/components/common/PageContainer"; // 페이지 레이아웃을 감싸는 공통 컨테이너입니다.
-import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 데이터 저장/갱신을 담당하는 커스텀 훅입니다.
 import { changeName } from "./changeName";
 
 export default function ChangeNamePage() {
   const router = useRouter(); // 라우터 인스턴스를 가져와 다른 페이지로 이동할 때 사용합니다.
   const [name, setName] = useState(""); // 입력 필드에 연결된 이름 상태를 관리합니다.
-  const { updateUserName } = useUserData(); // 사용자 이름을 저장/갱신하는 함수를 가져옵니다.
 
   const handleBack = () => {
     router.push("/mypage"); // 뒤로가기 버튼 클릭 시 마이페이지로 이동합니다.
@@ -24,7 +22,6 @@ export default function ChangeNamePage() {
 
     try{
       await changeName(newName);
-      updateUserName(name.trim()); // 앞뒤 공백을 제거한 후 이름을 저장합니다.
       router.push("/mypage"); // 저장이 완료되면 마이페이지로 돌아갑니다.
     }catch (err) {
       alert("이름 변경에 실패했습니다.");

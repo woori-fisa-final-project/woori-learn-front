@@ -1,4 +1,5 @@
 import axiosInstance from "@/utils/axiosInstance";
+import { useAuthStore } from "@/utils/tokenStorage";
 
 interface LoginResponse {
   data: {
@@ -16,11 +17,12 @@ export async function loginUser(id: string, password: string): Promise<LoginResp
       skipAuth: true
     });
 
-    const { accessToken, refreshToken } = response.data.data;
+    const { accessToken } = response.data.data;
 
     // 브라우저 저장
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
+    const { setAccessToken } = useAuthStore.getState();
+    setAccessToken(accessToken);
+    console.log(useAuthStore.getState().accessToken);
 
     return response.data;
   } catch (error: any) {

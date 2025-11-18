@@ -6,6 +6,7 @@ import Button from "@/components/common/Button";
 import PasswordToggleIcon from "@/components/common/PasswordToggleIcon";
 import { loginUser } from "./login";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const logoImage = "/images/logo1.png";
 
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [rememberId, setRememberId] = useState(false);
   // 비밀번호 표시/숨김 토글 상태를 관리해 입력 필드의 type을 전환합니다.
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // 브라우저 환경에서만 localStorage를 조회하도록 서버 렌더링 시 안전 장치를 둡니다.
@@ -29,7 +31,7 @@ export default function LoginPage() {
       setId(savedId);
       setRememberId(true);
     }
-  }, []);
+  }, [router]);
 
   const handleTogglePassword = () => {
     // 현재 비밀번호 표시 여부를 반전시켜 입력 필드의 type을 즉시 전환합니다.
@@ -51,7 +53,7 @@ export default function LoginPage() {
       // 로그인 시도
       await loginUser(id, password);
       // 로그인 성공 후 홈 화면으로 이동
-      window.location.href = "/home";
+      router.push("/home");
       } catch (error) {
       console.error("로그인 요청 오류:", error);
       alert("로그인에 실패했습니다.");

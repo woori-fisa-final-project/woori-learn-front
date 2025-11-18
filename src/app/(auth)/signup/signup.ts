@@ -15,17 +15,12 @@ export const checkDuplicateId = async (userId: string) => {
     );
     return true;
   }catch(e){
-    alert("이미 사용중인 아이디입니다.");
     console.error("중복 체크 실패");
     return false;
   }
 };
 
-export const signup = async (payload: {
-  userId: string;
-  password: string;
-  nickname: string;
-}) => {
+export const signup = async (payload: SignupParams) => {
   try{
     await axiosInstance.post("/users/signup", payload, {skipAuth: true});
     return true;
