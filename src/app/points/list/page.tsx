@@ -21,7 +21,7 @@ import {
 const searchIcon = "/images/search.png";
 
 // -------------------------------------------------------
-// API 응답 타입 정의
+// API 응답 타입
 // -------------------------------------------------------
 interface PointHistoryItem {
   id: number;
@@ -32,7 +32,7 @@ interface PointHistoryItem {
 }
 
 // -------------------------------------------------------
-// 필터 상태 타입 정의
+// 필터 타입
 // -------------------------------------------------------
 interface FilterState {
   period: PeriodType;
@@ -57,6 +57,7 @@ export default function PointListPage() {
   });
 
   const [historyList, setHistoryList] = useState<PointHistoryItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // -------------------------------------------------------
   // 카드 타입 매핑
@@ -72,8 +73,6 @@ export default function PointListPage() {
           return "exchange_complete";
         case "FAILED":
           return "exchange_failed";
-        default:
-          return "unknown";
       }
     }
 
@@ -101,9 +100,11 @@ export default function PointListPage() {
   };
 
   // -------------------------------------------------------
-  // API 조회
+  // 📌 API 조회 + 오류 처리
   // -------------------------------------------------------
   const fetchHistory = async () => {
+    setError(null); // 요청 시작 시 에러 초기화
+
     try {
       const query = new URLSearchParams({
         username: "testuser",
@@ -122,13 +123,19 @@ export default function PointListPage() {
         }
       );
 
-      const json = await response.json();
+      if (!response.ok) {
+        throw new Error("응답 오류");
+      }
 
-      // 타입 보장
+      const json = await response.json();
       const items: PointHistoryItem[] = json.content ?? [];
       setHistoryList(items);
     } catch (error) {
-      console.error("포인트 내역 조회 오류 :", error);
+      console.error("포인트 내역 조회 오류:", error);
+      setError(
+        "내역을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+      );
+      setHistoryList([]); // 에러 발생 시 리스트 초기화
     }
   };
 
@@ -141,7 +148,7 @@ export default function PointListPage() {
   // -------------------------------------------------------
   // 필터 적용
   // -------------------------------------------------------
-  const handleFilterApply = (filters: any) => {
+   const handleFilterApply = (filters: { period: string; sort: string; status: string; }) => {
     setFilterState((prev) => ({
       ...prev,
       period: periodEnum[filters.period] ?? prev.period,
@@ -150,7 +157,6 @@ export default function PointListPage() {
       page: 1,
     }));
   };
-
   return (
     <PageContainer>
       <div className="flex h-[calc(100dvh-60px)] w-full flex-col">
@@ -197,8 +203,12 @@ export default function PointListPage() {
 
         {/* 리스트 */}
         <div className="mt-5 flex-1 min-h-0 overflow-y-auto">
+          {error && (
+            <p className="px-4 pb-2 text-center text-sm text-red-500">{error}</p>
+          )}
+
           <div className="flex flex-col gap-4 pb-4">
-            {historyList.length > 0 ? (
+            {!error && historyList.length > 0 ? (
               historyList.map((item) => (
                 <PointHistoryCard
                   key={item.id}
@@ -208,11 +218,11 @@ export default function PointListPage() {
                   type={mapCardType(item)}
                 />
               ))
-            ) : (
+            ) : !error ? (
               <div className="p-8 text-center text-gray-500">
                 조회된 내역이 없습니다.
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

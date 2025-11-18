@@ -56,11 +56,18 @@ export interface PointExchangeHistoryQuery {
   size?: number;
 }
 
-export async function getPointHistory(query: any = {}) {
-  const params = new URLSearchParams(query).toString();
+export async function getPointHistory(
+  query: PointExchangeHistoryQuery = {}
+) {
+  const params = new URLSearchParams(
+    query as Record<string, string>
+  ).toString();
+
   const res = await fetch(`${API}/points/history?${params}`, {
-    credentials: 'include',
+    credentials: "include",
   });
-  if (!res.ok) throw new Error('포인트 이력 조회 실패');
+
+  if (!res.ok) throw new Error("포인트 이력 조회 실패");
   return res.json();
 }
+
