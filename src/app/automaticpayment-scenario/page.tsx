@@ -21,6 +21,7 @@ import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
 import { AUTO_PAYMENT } from "@/lib/constants";
+import { isApiError } from "@/types/errors";
 
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
@@ -63,25 +64,33 @@ function convertToAutoTransferInfo(
 }
 
 /**
+ * 동시 API 호출 제한을 위한 청크 크기
+ */
+const API_FETCH_CHUNK_SIZE = 5;
+
+/**
  * Promise를 반환하는 함수들을 청크 단위로 나누어 순차적으로 병렬 실행하는 헬퍼 함수
  * @param promiseFunctions 실행할 Promise를 반환하는 함수들의 배열
  * @param chunkSize 한 번에 병렬로 실행할 Promise의 개수
  * @returns 모든 Promise의 결과가 병합된 배열
  */
-const runPromisesInChunks = async (promiseFunctions: (() => Promise<any>)[], chunkSize: number) => {
-  const results = [];
-  
+const runPromisesInChunks = async <T,>(
+  promiseFunctions: (() => Promise<T>)[],
+  chunkSize: number
+): Promise<T[]> => {
+  const results: T[] = [];
+
   // promises 배열을 chunkSize 크기의 청크로 나눕니다.
   for (let i = 0; i < promiseFunctions.length; i += chunkSize) {
     const chunk = promiseFunctions.slice(i, i + chunkSize);
-    
+
     // Promise.all을 사용하여 현재 청크의 요청들을 병렬로 실행합니다.
     const chunkResults = await Promise.all(chunk.map(fn => fn()));
-    
+
     // 결과를 병합합니다.
     results.push(...chunkResults);
   }
-  
+
   return results;
 };
 
@@ -147,18 +156,14 @@ function AutomaticPaymentScenarioContent() {
       });
 
       const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
-      
-      let remainingResults = [];
+
+      let remainingResults: Awaited<ReturnType<typeof getAutoPaymentList>>[] = [];
 
       // 5. 나머지 페이지들을 청크 단위로 조회 (수정된 로직)
       if (totalRemainingPages > 0) {
-        
-        // 한 번에 병렬로 요청할 페이지 수 (동시 요청 제한)
-        const CHUNK_SIZE = 5; 
-        
         // Promise를 반환하는 함수 배열 생성
         const remainingPromiseFunctions = Array.from(
-          { length: totalRemainingPages }, 
+          { length: totalRemainingPages },
           (_, i) => {
             const pageNum = i + 1; // 1페이지부터 시작
             return () => getAutoPaymentList({
@@ -172,7 +177,7 @@ function AutomaticPaymentScenarioContent() {
         // 청크 단위로 병렬 요청 실행
         remainingResults = await runPromisesInChunks(
           remainingPromiseFunctions,
-          CHUNK_SIZE
+          API_FETCH_CHUNK_SIZE
         );
       }
 
@@ -196,7 +201,13 @@ function AutomaticPaymentScenarioContent() {
     } catch (error) {
       devError("[fetchData] 데이터 조회 실패:", error);
       setAutoTransferList([]);
-      setErrorModal({ isOpen: true, message: "자동이체 목록을 불러오는 데 실패했습니다." });
+
+      // ApiError인 경우 사용자 친화적인 메시지 사용
+      const errorMessage = isApiError(error)
+        ? error.message
+        : "자동이체 목록을 불러오는 데 실패했습니다.";
+
+      setErrorModal({ isOpen: true, message: errorMessage });
     } finally {
       setIsLoading(false);
     }

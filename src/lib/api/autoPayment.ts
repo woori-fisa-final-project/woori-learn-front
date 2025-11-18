@@ -14,7 +14,7 @@ interface ApiResponse<T> {
 /**
  * Spring Data Page 구조
  */
-interface Page<T> {
+export interface Page<T> {
   content: T[];
   totalPages: number;
   totalElements: number;
