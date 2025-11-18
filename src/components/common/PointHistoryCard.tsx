@@ -4,7 +4,12 @@ interface PointHistoryCardProps {
   date: string;
   status: string;
   amount: string;
-  type: "earn" | "exchange_request" | "exchange_complete" | "exchange_failed";
+  type: "earn" 
+    | "exchange_request" 
+    | "exchange_complete" 
+    | "exchange_failed"
+    | "unknown";  // ← 추가
+
   className?: string;
 }
 
