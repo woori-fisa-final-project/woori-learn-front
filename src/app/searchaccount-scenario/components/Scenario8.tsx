@@ -21,12 +21,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
+import { useAccountList } from "./hooks/useAccountList";
+import type { AccountCard } from "./hooks/useAccountList";
+
 import Modal from "@/components/common/Modal";
 import Button from "@/components/common/Button";
-
 import AlertModalContent from "./components/AlertModalContent";
 import CategoryBlock from "./components/CategoryBlock";
-import { useAccountList } from "./hooks/useAccountList";
+
 
 // 상단 퀵 필터 버튼용 상수
 const QUICK_FILTERS = [
@@ -184,14 +186,14 @@ export default function Scenario8() {
           })}
         </section>
 
-        {/* ▽ 입출금 / 예적금 리스트 ▽ */}
+        {/* 입출금 / 예적금 리스트 */}
         <section className="mt-[24px] space-y-[24px]">
           {/* 입출금 */}
           {depositAccounts.length > 0 && (
             <CategoryBlock
               title={`입출금 ${depositAccounts.length}`}
               accounts={depositAccounts}
-              onTransfer={(acc: any) => {
+              onTransfer={(acc: AccountCard) => {
                 router.push(
                   `/searchaccount-scenario?step=9&accountId=${acc.id}&accountNumber=${acc.accountNumber}`
                 );

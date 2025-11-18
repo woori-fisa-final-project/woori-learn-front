@@ -13,7 +13,7 @@ interface AccountResponse {
   balance: number;
 }
 
-interface AccountCard {
+export interface AccountCard {
   id: number;
   title: string;
   bank: string;
@@ -44,6 +44,7 @@ export function useAccountList(userId: number) {
       setError(null);
 
       const url = `http://localhost:8080/education/accounts/list/${userId}`;
+      //const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/education/accounts/list/${userId}`;
       console.log(`GET ${url}`);
 
       const res = await fetch(url);

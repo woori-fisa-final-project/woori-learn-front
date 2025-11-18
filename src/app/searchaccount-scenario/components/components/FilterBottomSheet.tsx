@@ -1,72 +1,74 @@
 "use client";
 
+import { FilterState } from "../hooks/useTransactionFilters";
+
+interface FilterBottomSheetProps {
+  open: boolean;
+  onClose: () => void;
+  draft: FilterState;
+  setDraft: React.Dispatch<React.SetStateAction<FilterState>>;
+  updatePeriod: (period: FilterState["period"]) => void; 
+  onApply: () => void;
+  onReset: () => void;
+}
+
 export default function FilterBottomSheet({
   open,
   onClose,
   draft,
   setDraft,
+  updatePeriod,
   onApply,
   onReset,
-}: any) {
-  if (!open) return null;
+}: FilterBottomSheetProps) {
 
-  const PERIOD_OPTIONS = ["이번달", "3개월", "6개월", "1년"];
-
-  const handleSelectPeriod = (label: string) => {
-    setDraft((prev: any) => ({
-      ...prev,
-      period: label,
-    }));
+  /** 기간 선택 → 날짜 자동 반영 */
+  const handleSelectPeriod = (period: FilterState["period"]) => {
+    updatePeriod(period);   // 날짜(start/end) 자동 설정
   };
 
+  const handleSelectType = (type: FilterState["type"]) => {
+    setDraft((prev) => ({ ...prev, type }));
+  };
+
+  const handleSelectSort = (order: FilterState["sortOrder"]) => {
+    setDraft((prev) => ({ ...prev, sortOrder: order }));
+  };
+
+  if (!open) return null;
+
   return (
-    <>
-      {/* Dim */}
-      <button className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+    <div className="fixed inset-0 bg-black/40">
+      <div className="absolute bottom-0 w-full bg-white rounded-t-xl p-4">
 
-      {/* Bottom Sheet */}
-      <div className="fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-[24px] p-[24px] shadow-xl">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-[20px]">
-          <h3 className="text-[16px] font-semibold text-gray-900">조회조건 선택</h3>
-          <button className="text-[22px] text-gray-500" onClick={onClose}>
-            ×
-          </button>
-        </div>
-
-        {/* 조회기간 */}
-        <section>
-          <h4 className="text-[14px] font-medium text-gray-700">조회기간</h4>
-
-          <div className="mt-[12px] grid grid-cols-4 gap-[8px]">
-            {PERIOD_OPTIONS.map((label) => (
+        {/* 기간 */}
+        <section className="mb-4">
+          <h4 className="font-semibold mb-2">조회기간</h4>
+          <div className="flex gap-2">
+            {["이번달", "3개월", "6개월", "1년"].map((p) => (
               <button
-                key={label}
-                onClick={() => handleSelectPeriod(label)}
-                className={`rounded-[12px] px-[10px] py-[10px] text-[13px] ${
-                  draft.period === label
-                    ? "bg-[#2F6FD9] text-white"
-                    : "bg-[#F5F6F8] text-gray-600"
+                key={p}
+                onClick={() => handleSelectPeriod(p as FilterState["period"])}
+                className={`px-3 py-2 rounded-lg border ${
+                  draft.period === p ? "bg-blue-500 text-white" : "bg-gray-100"
                 }`}
               >
-                {label}
+                {p}
               </button>
             ))}
           </div>
         </section>
 
         {/* 거래구분 */}
-        <section className="mt-[24px]">
-          <h4 className="text-[14px] font-medium text-gray-700">거래구분</h4>
-          <div className="mt-[12px] flex gap-[10px]">
+        <section className="mb-4">
+          <h4 className="font-semibold mb-2">거래구분</h4>
+          <div className="flex gap-2">
             {["전체", "입금", "출금"].map((t) => (
               <button
                 key={t}
-                onClick={() => setDraft((prev: any) => ({ ...prev, type: t }))}
-                className={`rounded-[12px] px-[14px] py-[10px] text-[13px] ${
-                  draft.type === t
-                    ? "bg-[#2F6FD9] text-white"
-                    : "bg-[#F5F6F8] text-gray-600"
+                onClick={() => handleSelectType(t as FilterState["type"])}
+                className={`px-3 py-2 rounded-lg border ${
+                  draft.type === t ? "bg-blue-500 text-white" : "bg-gray-100"
                 }`}
               >
                 {t}
@@ -76,44 +78,38 @@ export default function FilterBottomSheet({
         </section>
 
         {/* 정렬 */}
-        <section className="mt-[20px]">
-          <h4 className="text-[14px] font-medium text-gray-700">정렬</h4>
-          <div className="mt-[12px] flex gap-[10px]">
-            {["최신순", "과거순"].map((t) => (
+        <section className="mb-4">
+          <h4 className="font-semibold mb-2">정렬</h4>
+          <div className="flex gap-2">
+            {["최신순", "과거순"].map((s) => (
               <button
-                key={t}
-                onClick={() =>
-                  setDraft((prev: any) => ({ ...prev, sortOrder: t }))
-                }
-                className={`rounded-[12px] px-[14px] py-[10px] text-[13px] ${
-                  draft.sortOrder === t
-                    ? "bg-[#2F6FD9] text-white"
-                    : "bg-[#F5F6F8] text-gray-600"
+                key={s}
+                onClick={() => handleSelectSort(s as FilterState["sortOrder"])}
+                className={`px-3 py-2 rounded-lg border ${
+                  draft.sortOrder === s ? "bg-blue-500 text-white" : "bg-gray-100"
                 }`}
               >
-                {t}
+                {s}
               </button>
             ))}
           </div>
         </section>
 
-        {/* Buttons */}
-        <div className="mt-[28px] flex gap-[12px]">
+        <div className="flex gap-2 mt-4">
           <button
             onClick={onReset}
-            className="flex-1 py-[12px] border border-[#D3DCF0] rounded-[12px] text-gray-600"
+            className="flex-1 py-2 bg-gray-200 rounded-lg"
           >
             초기화
           </button>
-
           <button
             onClick={onApply}
-            className="flex-1 py-[12px] rounded-[12px] bg-[#2F6FD9] text-white font-semibold"
+            className="flex-1 py-2 bg-blue-600 text-white rounded-lg"
           >
             적용하기
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -31,7 +31,7 @@ export function useAccountInfo(displayAccountNumber: string) {
           formatAccountNumber(acc.accountNumber) === displayAccountNumber
       );
 
-      if (!selected) selected = list[0];
+      if (!selected) selected = new Error("계좌 없음");
       if (!selected) throw new Error("계좌 없음");
 
       const info: AccountInfo = {

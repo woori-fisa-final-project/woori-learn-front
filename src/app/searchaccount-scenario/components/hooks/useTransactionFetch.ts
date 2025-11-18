@@ -3,11 +3,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { TransactionResponse } from "@/types";
+import { Transaction, TransactionResponse } from "@/types";
 import { transformApiTransaction } from "../utils/transactionFormatter";
 
 export function useTransactionFetch() {
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const fetchTransactions = useCallback(

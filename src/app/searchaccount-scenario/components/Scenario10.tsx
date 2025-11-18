@@ -29,7 +29,8 @@ import type { Transaction } from "@/types";
 // 금액 포맷팅
 function formatAmount(amount: number) {
   const formatted = Math.abs(amount).toLocaleString();
-  return amount > 0 ? `+${formatted}원` : `${formatted}원`;
+  if (amount === 0) return "0원";
+  return amount > 0 ? `+${formatted}원` : `-${formatted}원`;
 }
 
 export default function Scenario10() {
@@ -112,17 +113,22 @@ export default function Scenario10() {
       </section>
 
       <section className="mt-[32px]">
-        <button className="flex w-full items-center justify-between rounded-[12px] border border-[#E4E8F0] px-[16px] py-[14px] text-[14px] text-gray-600">
+        <button 
+        type="button"
+        className="flex w-full items-center justify-between rounded-[12px] border border-[#E4E8F0] px-[16px] py-[14px] text-[14px] text-gray-600">
           <span>{`'${detail.keyword}' 검색하기`}</span>
           <span className="text-[16px] text-gray-400">›</span>
         </button>
       </section>
 
       <div className="mt-auto flex gap-[12px] pt-[24px]">
-        <button className="flex-1 rounded-[12px] border border-[#D3DCF0] py-[12px] text-[15px] font-medium text-[#2F6FD9]">
+        <button 
+        type="button"
+        className="flex-1 rounded-[12px] border border-[#D3DCF0] py-[12px] text-[15px] font-medium text-[#2F6FD9]">
           공유
         </button>
         <button
+          type="button"
           onClick={() => router.push("/quiz")}
           className="flex-1 rounded-[12px] bg-[#2F6FD9] py-[12px] text-[15px] font-semibold text-white"
         >

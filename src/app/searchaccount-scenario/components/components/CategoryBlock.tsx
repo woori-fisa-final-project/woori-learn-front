@@ -1,12 +1,15 @@
 "use client";
 
-import AccountCard from "./AccountCard";
+import type { AccountCard } from "../hooks/useAccountList";
+import AccountCardComponent  from "./AccountCard";
 
-export default function CategoryBlock({
-  title,
-  accounts,
-  onTransfer,
-}: any) {
+interface Props {
+  title: string;
+  accounts: AccountCard[];
+  onTransfer: (acc: AccountCard) => void;
+}
+
+export default function CategoryBlock({ title, accounts, onTransfer }: Props) {
   const categoryTotal = accounts.reduce((sum: any, acc: any) => sum + acc.rawBalance, 0);
 
   return (
@@ -18,7 +21,7 @@ export default function CategoryBlock({
 
       <div className="mt-[16px] space-y-[16px]">
         {accounts.map((item: any) => (
-          <AccountCard key={item.id} item={item} onTransfer={onTransfer} />
+          <AccountCardComponent  key={item.id} item={item} onTransfer={onTransfer} />
         ))}
       </div>
     </div>

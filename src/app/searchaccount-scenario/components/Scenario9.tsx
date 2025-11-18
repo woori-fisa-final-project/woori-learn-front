@@ -48,6 +48,7 @@ export default function Scenario9() {
     appliedFilters,
     draftFilters,
     setDraftFilters,
+    updatePeriod,
     applyFilters,
     resetFilters,
   } = useTransactionFilters();
@@ -77,7 +78,7 @@ export default function Scenario9() {
     })();
 
     return () => setOnBack(null);
-  }, []);
+  }, [accountNumber, loadAccountInfo, fetchTransactions, router, setOnBack, setTitle]);
 
   if (accountError || txError) {
     return (
@@ -126,8 +127,10 @@ export default function Scenario9() {
         onClose={() => setOpenFilter(false)}
         draft={draftFilters}
         setDraft={setDraftFilters}
+        updatePeriod={updatePeriod}
         onReset={resetFilters}
         onApply={async () => {
+        if (!accountInfo) return;
         await applyFilters(accountInfo!, fetchTransactions);
         setOpenFilter(false);  
         }}

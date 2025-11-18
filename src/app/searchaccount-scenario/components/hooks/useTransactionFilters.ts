@@ -24,7 +24,7 @@ const PERIOD_PARAM_MAP: Record<PeriodLabel, string> = {
   이번달: "1M",
   "3개월": "3M",
   "6개월": "6M",
-  "1년": "12M",
+  "1년": "1Y",
 };
 
 /** 기간 선택 → 날짜 범위 자동 계산 */
