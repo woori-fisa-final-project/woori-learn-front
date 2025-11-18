@@ -6,8 +6,7 @@ import { formatKoreanDate } from "../utils/dateUtils";;
 
 export function useTransactionTransform(
   transactions: Transaction[],
-  appliedFilters: any,
-  accountInfo: any
+  appliedFilters: { start: Date; end: Date; type: string; order: string },
 ) {
   const filtered = useMemo(() => {
     const { start, end, type } = appliedFilters;

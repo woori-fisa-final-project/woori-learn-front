@@ -31,8 +31,9 @@ export function useAccountInfo(displayAccountNumber: string) {
           formatAccountNumber(acc.accountNumber) === displayAccountNumber
       );
 
-      if (!selected) selected = new Error("계좌 없음");
-      if (!selected) throw new Error("계좌 없음");
+       if (!selected) {
+        throw new Error("일치하는 계좌를 찾을 수 없습니다.");
+      }
 
       const info: AccountInfo = {
         id: selected.id,

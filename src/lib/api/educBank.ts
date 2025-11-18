@@ -2,12 +2,16 @@ import { EducationalAccount } from "@/types/account";
 
 /**
  * 사용자의 계좌 목록 조회
- * 백엔드 응답: 배열 형태 그대로 내려옴
+ * 백엔드 응답: { code, message, data: [...] } 형태의 객체
  * 예:
- * [
- *   { accountName: "박소희", accountNumber: "1122334455", balance: 3938900 },
- *   { accountName: "박소희", accountNumber: "9999999999", balance: 500000 }
- * ]
+ * {
+ *   "code": 200,
+ *   "message": "성공",
+ *   "data": [
+ *     { "accountName": "박소희", "accountNumber": "1122334455", "balance": 3938900 },
+ *     { "accountName": "박소희", "accountNumber": "9999999999", "balance": 500000 }
+ *   ]
+ * }
  */
 
 export async function getAccountList(

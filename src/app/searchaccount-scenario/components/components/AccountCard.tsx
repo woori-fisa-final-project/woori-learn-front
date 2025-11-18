@@ -1,6 +1,9 @@
 "use client";
 
-export default function AccountCard({ item, onTransfer }: any) {
+import type { AccountCard } from "@/types";
+
+export default function AccountCard(
+  { item, onTransfer }: { item: AccountCard, onTransfer: (item: AccountCard) => void }) {
   return (
     <div className="rounded-[16px] bg-white p-[18px] shadow-sm">
       <div className="flex items-center justify-between gap-[10px]">

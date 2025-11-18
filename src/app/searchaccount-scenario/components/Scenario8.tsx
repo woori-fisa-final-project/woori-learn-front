@@ -22,7 +22,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useAccountList } from "./hooks/useAccountList";
-import type { AccountCard } from "./hooks/useAccountList";
+import type { AccountCard } from "@/types";
 
 import Modal from "@/components/common/Modal";
 import Button from "@/components/common/Button";
@@ -206,7 +206,7 @@ export default function Scenario8() {
             <CategoryBlock
               title={`예적금 ${savingsAccounts.length}`}
               accounts={savingsAccounts}
-              onTransfer={(acc: any) => {
+              onTransfer={(acc: AccountCard) => {
                 // 예적금은 기본 이체 불가 → 안내 모달
                 openModal(acc.disabledMessage);
               }}

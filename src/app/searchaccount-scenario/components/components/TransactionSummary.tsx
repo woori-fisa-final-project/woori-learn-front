@@ -1,11 +1,16 @@
 "use client";
 
-export default function TransactionSummary({
-  filters,
-  onOpen,
-  totalAmount,
-  appliedRange,
-}: any) {
+import type { FilterState } from "../hooks/useTransactionFilters";
+
+interface TransactionSummaryProps {
+  filters: FilterState;
+  onOpen: () => void;
+  totalAmount: number;
+  appliedRange: string;
+}
+
+export default function TransactionSummary(
+  { filters, onOpen, totalAmount, appliedRange }: TransactionSummaryProps) {
   return (
     <section className="mt-[24px]">
       <div className="flex justify-between text-[13px] text-gray-600">

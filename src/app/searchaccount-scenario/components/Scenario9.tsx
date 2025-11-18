@@ -131,7 +131,7 @@ export default function Scenario9() {
         onReset={resetFilters}
         onApply={async () => {
         if (!accountInfo) return;
-        await applyFilters(accountInfo!, fetchTransactions);
+        await applyFilters(accountInfo, fetchTransactions);
         setOpenFilter(false);  
         }}
       />

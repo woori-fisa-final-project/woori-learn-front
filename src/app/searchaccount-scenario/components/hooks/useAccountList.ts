@@ -5,27 +5,8 @@
 
 import { useState, useEffect } from "react";
 import { formatAccountNumber, formatBalance } from "../utils/accountFormatter";
+import type { AccountResponse, AccountCard } from "@/types";
 
-interface AccountResponse {
-  id: number;
-  accountName: string;
-  accountNumber: string;
-  balance: number;
-}
-
-export interface AccountCard {
-  id: number;
-  title: string;
-  bank: string;
-  accountNumber: string;
-  accountName?: string;
-  badge: string;
-  balance: string;
-  transferAvailable: boolean;
-  disabledMessage?: string;
-  type: "deposit" | "savings";
-  rawBalance: number;
-}
 
 export function useAccountList(userId: number) {
   const [accounts, setAccounts] = useState<AccountCard[]>([]);
