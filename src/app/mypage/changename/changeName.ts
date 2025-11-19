@@ -1,4 +1,3 @@
-import { ApiError } from "@/utils/apiError";
 import axiosInstance from "@/utils/axiosInstance";
 
 export async function changeName(newName: string) {

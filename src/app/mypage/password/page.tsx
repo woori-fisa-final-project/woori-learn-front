@@ -8,6 +8,7 @@ import PageHeader from "@/components/common/PageHeader"; // 페이지 상단 헤
 import PageContainer from "@/components/common/PageContainer"; // 페이지 전체 레이아웃을 감싸는 컨테이너입니다.
 import { changePassword } from "./changePassword";
 import { checkPassword } from "@/utils/validate";
+import { ApiError } from "@/utils/apiError";
 
 export default function ChangePasswordPage() {
   const router = useRouter(); // 다른 페이지로 이동하기 위해 라우터 인스턴스를 사용합니다.
@@ -50,8 +51,9 @@ export default function ChangePasswordPage() {
       setError("");
       await changePassword(currentPassword, newPassword);
       router.push("/mypage");
-    } catch (e) {
-      setError("비밀번호 변경에 실패하였습니다.");
+    } catch (e: unknown) {
+      const errorMessage = e instanceof ApiError ? e.message : "비밀번호 변경에 실패하였습니다.";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

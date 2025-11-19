@@ -1,3 +1,4 @@
+import { ApiError } from "@/utils/apiError";
 import axiosInstance from "@/utils/axiosInstance";
 
 export interface SignupParams {
@@ -13,9 +14,9 @@ export const checkDuplicateId = async (userId: string) => {
         params: { userId }
       });
     return true;
-  }catch(error: any) {
+  }catch(error: unknown) {
     // 409 Conflict 에러인 경우에만 중복으로 처리
-    if (error.status === 409) {
+    if (error instanceof ApiError && error.status === 409) {
       console.error("아이디 중복:", error.message);
       return false; // 중복
     }
@@ -29,8 +30,8 @@ export const signup = async (payload: SignupParams) => {
   try{
     await axiosInstance.post("/users/signup", payload, {skipAuth: true});
     return true;
-  }catch(error: any){
+  }catch(error: unknown){
     console.error("회원가입 요청 오류", error);
-    throw new Error("회원가입 중 알 수 없는 오류가 발생했습니다.");
+    throw error;
   }
 };

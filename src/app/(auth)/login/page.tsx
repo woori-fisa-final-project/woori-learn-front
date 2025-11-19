@@ -7,6 +7,7 @@ import PasswordToggleIcon from "@/components/common/PasswordToggleIcon";
 import { loginUser } from "./login";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { ApiError } from "@/utils/apiError";
 
 const logoImage = "/images/logo1.png";
 
@@ -61,7 +62,8 @@ export default function LoginPage() {
       router.push("/home");
       } catch (error) {
       console.error("로그인 요청 오류:", error);
-      alert("로그인에 실패했습니다.");
+      const errorMessage = error instanceof ApiError ? error.message : "로그인에 실패했습니다. 다시 시도해주세요.";
+      alert(errorMessage);
     }finally {
       setIsLoading(false);
     }

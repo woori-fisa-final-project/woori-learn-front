@@ -56,12 +56,6 @@ export default function SignupPage() {
         return;
       }
 
-      // 비밀번호 검사
-      if (password !== confirmPassword) {
-        setFormError("비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 경고 메시지를 표시합니다.
-        return;
-      }
-
       // 비밀번호 유효성 검사
       const passwordError = checkPassword(password);
       if (passwordError) {
