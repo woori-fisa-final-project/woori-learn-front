@@ -51,7 +51,7 @@ axiosInstance.interceptors.response.use(
       (error.response.status === 401 ||
       code === 40101 || code === 40102)
 
-    if (isJwtExpired && !originalRequest._retry // 무한 루프 방지
+    if (isJwtExpired && !originalRequest._retry && originalRequest.url !== '/auth/refresh' // 무한 루프 방지
     ) {
       originalRequest._retry = true;
 
@@ -72,7 +72,7 @@ axiosInstance.interceptors.response.use(
 
         // refresh token으로 access token 갱신
         refreshPromise = (async () => {
-          const refreshResponse = await axios.post(
+          const refreshResponse = await axiosInstance.post(
             `/auth/refresh`,
             {},
             { skipAuth: true }
@@ -99,7 +99,9 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         // refresh token도 실패하면 로그인으로
         useAuthStore.getState().clearTokens();
-        window.location.href = "/login";
+        if (typeof window !== 'undefined') {
+          window.location.href = "/login";
+        }
         return Promise.reject(
           new ApiError(401, "토큰 갱신 실패")
         );

@@ -3,7 +3,7 @@ export class ApiError extends Error {
   details?: any;
 
   constructor(status: number, message: string, details?: any) {
-    super();
+    super(message);
     
     Object.setPrototypeOf(this, ApiError.prototype); // TS에서 instanceof 보장
     

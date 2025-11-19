@@ -1,8 +1,3 @@
-/**
- * [SECURITY UPDATE] Gemini feedback 적용
- * - Replaced intrusive alert with inline error messaging
- * - Maintained UX consistency with signup form validation
- */
 "use client";
 
 import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 라우터 훅을 가져옵니다.
@@ -12,6 +7,7 @@ import Button from "@/components/common/Button"; // 제출 버튼에 사용할 �
 import PageHeader from "@/components/common/PageHeader"; // 페이지 상단 헤더 영역을 구성하는 컴포넌트입니다.
 import PageContainer from "@/components/common/PageContainer"; // 페이지 전체 레이아웃을 감싸는 컨테이너입니다.
 import { changePassword } from "./changePassword";
+import { checkPassword } from "@/utils/validate";
 
 export default function ChangePasswordPage() {
   const router = useRouter(); // 다른 페이지로 이동하기 위해 라우터 인스턴스를 사용합니다.
@@ -24,15 +20,6 @@ export default function ChangePasswordPage() {
   const handleBack = () => {
     router.push("/mypage"); // 상단 뒤로가기 선택 시 마이페이지로 이동합니다.
   };
-
-  function checkPassword(password: string) {
-    let error = ""
-    if (password.length < 8) error = "8자 이상 입력이 필요합니다.";
-    else if (!/[A-Za-z]/.test(password)) error = "영문이 1자 이상 포함되어야 합니다.";
-    else if (!/\d/.test(password)) error = "숫자가 1자 이상 포함되어야 합니다.";
-    else if (!/[!@#$%^&*()~_+\-[\]{};':"\\|,.<>/?]/.test(password)) error = "특수문자가 1자 이상 포함되어야 합니다.";
-    return error;
-  }
 
   const handleSubmit = async() => {
     if (isLoading) return;

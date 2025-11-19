@@ -11,8 +11,7 @@ export const checkDuplicateId = async (userId: string) => {
     await axiosInstance.get(`/auth/verify`, {
         skipAuth: true,
         params: { userId }
-      },
-    );
+      });
     return true;
   }catch(error: any) {
     // 409 Conflict 에러인 경우에만 중복으로 처리
@@ -32,11 +31,6 @@ export const signup = async (payload: SignupParams) => {
     return true;
   }catch(error: any){
     console.error("회원가입 요청 오류", error);
-
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    }
-    
     throw new Error("회원가입 중 알 수 없는 오류가 발생했습니다.");
   }
 };

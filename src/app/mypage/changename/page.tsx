@@ -12,6 +12,7 @@ export default function ChangeNamePage() {
   const router = useRouter(); // 라우터 인스턴스를 가져와 다른 페이지로 이동할 때 사용합니다.
   const [name, setName] = useState(""); // 입력 필드에 연결된 이름 상태를 관리합니다.
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const handleBack = () => {
     router.push("/mypage"); // 뒤로가기 버튼 클릭 시 마이페이지로 이동합니다.
@@ -29,9 +30,10 @@ export default function ChangeNamePage() {
 
     try{
       await changeName(newName);
+      setFormError("");
       router.push("/mypage"); // 저장이 완료되면 마이페이지로 돌아갑니다.
     }catch (err) {
-      alert("이름 변경에 실패했습니다.");
+      setFormError("이름 변경에 실패했습니다.");
       console.error(err);
     }finally{
       setIsLoading(false);
@@ -62,6 +64,13 @@ export default function ChangeNamePage() {
           onChange={(event) => setName(event.target.value)}
         />
       </div>
+
+      {/* 폼 전체 에러 메시지 */}
+      {formError && (
+        <p className="mt-3 text-[14px] text-red-500 font-medium">
+            {formError}
+        </p>
+      )}
 
       <div className="mt-10 w-full">
         <Button onClick={handleSubmit} disabled={!isButtonEnabled || isLoading}>

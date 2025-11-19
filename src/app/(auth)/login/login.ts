@@ -4,7 +4,6 @@ import { useAuthStore } from "@/utils/tokenStorage";
 interface LoginResponse {
   data: {
     accessToken: string;
-    refreshToken: string;
   };
 }
 

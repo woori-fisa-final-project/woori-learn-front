@@ -55,9 +55,15 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async() => {
-    useAuthStore.getState().clearTokens();
-    await axiosInstance.post("/auth/logout");
-    router.push("/login"); // 로그아웃 버튼 클릭 시 로그인 화면으로 이동합니다.
+     try {
+      await axiosInstance.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // 로그아웃 API 실패 시에도 클라이언트에서는 로그아웃 처리를 계속 진행합니다.
+    } finally {
+      useAuthStore.getState().clearTokens();
+      router.push("/login"); // 로그아웃 버튼 클릭 시 로그인 화면으로 이동합니다.
+    }
   };
 
   return (

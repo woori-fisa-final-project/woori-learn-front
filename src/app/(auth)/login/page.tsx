@@ -41,6 +41,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     if (isLoading) return;
+    setIsLoading(true);
 
     // 브라우저 환경에서만 아이디 저장 로직이 동작하도록 보장합니다.
     if (typeof window !== "undefined") {
