@@ -1,12 +1,18 @@
 export class ApiError extends Error {
-  code: number;
-  message: string;
+  status: number;
   details?: any;
 
-  constructor(code: number, message: string, details?: any) {
-    super(message);
-    this.code = code;
-    this.message = message;
+  constructor(status: number, message: string, details?: any) {
+    super();
+    
+    Object.setPrototypeOf(this, ApiError.prototype); // TS에서 instanceof 보장
+    
+    this.name = "ApiError";
+    this.status = status;
     this.details = details;
+    
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError);
+    }
   }
 }

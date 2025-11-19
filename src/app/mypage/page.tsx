@@ -8,6 +8,7 @@ import PageContainer from "@/components/common/PageContainer"; // 페이지 전�
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름, 포인트 등 마이페이지에 필요한 데이터를 제공하는 커스텀 훅입니다.
 import Image from "next/image";
 import axiosInstance from "@/utils/axiosInstance";
+import { useAuthStore } from "@/utils/tokenStorage";
 
 const profileImage = "/images/profileicon2.png"; // 프로필 영역에 표시할 이미지 경로입니다.
 const pointIcon = "/images/pointicon.png"; // 포인트 카드에 사용할 아이콘 이미지입니다.
@@ -54,6 +55,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async() => {
+    useAuthStore.getState().clearTokens();
     await axiosInstance.post("/auth/logout");
     router.push("/login"); // 로그아웃 버튼 클릭 시 로그인 화면으로 이동합니다.
   };

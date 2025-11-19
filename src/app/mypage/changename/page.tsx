@@ -11,14 +11,21 @@ import { changeName } from "./changeName";
 export default function ChangeNamePage() {
   const router = useRouter(); // 라우터 인스턴스를 가져와 다른 페이지로 이동할 때 사용합니다.
   const [name, setName] = useState(""); // 입력 필드에 연결된 이름 상태를 관리합니다.
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBack = () => {
     router.push("/mypage"); // 뒤로가기 버튼 클릭 시 마이페이지로 이동합니다.
   };
 
   const handleSubmit = async() => {
+    if (isLoading) return;
+    setIsLoading(true);
+
     const newName = name.trim();
-    if (!newName) return;
+    if (!newName) {
+      setIsLoading(false);
+      return;
+    }
 
     try{
       await changeName(newName);
@@ -26,6 +33,8 @@ export default function ChangeNamePage() {
     }catch (err) {
       alert("이름 변경에 실패했습니다.");
       console.error(err);
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -55,7 +64,7 @@ export default function ChangeNamePage() {
       </div>
 
       <div className="mt-10 w-full">
-        <Button onClick={handleSubmit} disabled={!isButtonEnabled}>
+        <Button onClick={handleSubmit} disabled={!isButtonEnabled || isLoading}>
           이름 변경하기
         </Button>
       </div>

@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [rememberId, setRememberId] = useState(false);
   // 비밀번호 표시/숨김 토글 상태를 관리해 입력 필드의 type을 전환합니다.
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export default function LoginPage() {
       setId(savedId);
       setRememberId(true);
     }
-  }, [router]);
+  }, []);
 
   const handleTogglePassword = () => {
     // 현재 비밀번호 표시 여부를 반전시켜 입력 필드의 type을 즉시 전환합니다.
@@ -39,6 +40,8 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
+    if (isLoading) return;
+
     // 브라우저 환경에서만 아이디 저장 로직이 동작하도록 보장합니다.
     if (typeof window !== "undefined") {
       if (rememberId) {
@@ -49,14 +52,17 @@ export default function LoginPage() {
         localStorage.removeItem("rememberedId");
       }
     }
+
     try{
       // 로그인 시도
       await loginUser(id, password);
       // 로그인 성공 후 홈 화면으로 이동
       router.push("/home");
+      setIsLoading(false);
       } catch (error) {
       console.error("로그인 요청 오류:", error);
       alert("로그인에 실패했습니다.");
+      setIsLoading(false);
     }
   };
 
@@ -114,7 +120,7 @@ export default function LoginPage() {
 
         {/* 로그인 버튼 영역: 클릭 시 handleLogin 로직이 실행됩니다. */}
         <div className="mt-20">
-          <Button variant="primary" onClick={handleLogin}>
+          <Button variant="primary" onClick={handleLogin} disabled={isLoading}>
             로그인
           </Button>
         </div>

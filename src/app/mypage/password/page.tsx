@@ -19,25 +19,69 @@ export default function ChangePasswordPage() {
   const [newPassword, setNewPassword] = useState(""); // 새 비밀번호 입력값을 관리합니다.
   const [confirmPassword, setConfirmPassword] = useState(""); // 새 비밀번호 확인 입력값을 저장합니다.
   const [error, setError] = useState(""); // 비밀번호 불일치 등 검증 실패 시 표시할 메시지입니다.
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBack = () => {
     router.push("/mypage"); // 상단 뒤로가기 선택 시 마이페이지로 이동합니다.
   };
 
+  function checkPassword(password: string) {
+    let error = ""
+    if (password.length < 8) error = "8자 이상 입력이 필요합니다.";
+    else if (!/[A-Za-z]/.test(password)) error = "영문이 1자 이상 포함되어야 합니다.";
+    else if (!/\d/.test(password)) error = "숫자가 1자 이상 포함되어야 합니다.";
+    else if (!/[!@#$%^&*()~_+\-[\]{};':"\\|,.<>/?]/.test(password)) error = "특수문자가 1자 이상 포함되어야 합니다.";
+    return error;
+  }
+
   const handleSubmit = async() => {
+    if (isLoading) return;
+    setIsLoading(true);
+
+    // 새 비밀번호와 일치 여부
     if (newPassword !== confirmPassword) {
       setError("새 비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 에러 메시지를 설정합니다.
+      setIsLoading(false);
+      return;
+    }
+
+    // 기존 비밀번호와 일치 여부
+    if(currentPassword === newPassword){
+      setError("기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+      setIsLoading(false);
+      return;
+    }
+
+    // 공백 포함 여부
+    if(/\s/.test(newPassword)){
+      setError("비밀번호에 공백을 포함할 수 없습니다.");
+      setIsLoading(false);
       return;
     }
 
     setError(""); // 검증을 통과했으므로 오류 메시지를 초기화합니다.
     if (currentPassword && newPassword && confirmPassword) {
-      try{
-        await changePassword(currentPassword, newPassword);
-        router.push("/mypage"); // 모든 입력이 존재하면 마이페이지로 돌아갑니다.
-      }catch(e){
-        setError("비밀번호 변경에 실패하였습니다.");
+      
+      // 비밀번호 입력값 검증
+      const errors = checkPassword(newPassword);
+
+      // 검증 성공
+      if (errors.length === 0) {
+        try{
+          await changePassword(currentPassword, newPassword);
+          router.push("/mypage"); // 모든 입력이 존재하면 마이페이지로 돌아갑니다.
+        }catch(e){
+          setError("비밀번호 변경에 실패하였습니다.");
+        }finally{
+          setIsLoading(false);
+        }
       }
+      
+      else{
+        setError(errors);
+      }
+      
+      setIsLoading(false);
     }
   };
 
@@ -53,6 +97,9 @@ export default function ChangePasswordPage() {
         </p>
         <p className="text-[14px] font-normal leading-normal text-gray-500">
           보안을 위해 기존 비밀번호와 다르게 변경해주세요.
+        </p>
+        <p className="text-[14px] font-normal leading-normal text-gray-500">
+          8~20자 이내, 숫자와 영문 및 특수문자를 포함해 주세요.
         </p>
       </div>
 
@@ -96,7 +143,7 @@ export default function ChangePasswordPage() {
       )}
 
       <div className="mt-10 w-full">
-        <Button onClick={handleSubmit} disabled={!isButtonEnabled}>
+        <Button onClick={handleSubmit} disabled={!isButtonEnabled || isLoading}>
           비밀번호 변경하기
         </Button>
       </div>

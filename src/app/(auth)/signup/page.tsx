@@ -21,7 +21,27 @@ export default function SignupPage() {
   const [id, setId] = useState(""); // 아이디 입력값을 관리합니다.
   const [password, setPassword] = useState(""); // 첫 번째 비밀번호 입력값을 저장합니다.
   const [confirmPassword, setConfirmPassword] = useState(""); // 비밀번호 재입력값으로 일치 여부를 확인합니다.
-  const [error, setError] = useState(""); // 검증 실패 시 보여줄 에러 메시지를 보관합니다.
+  const [usernameMessage, setUsernameMessage] = useState({ type: "", text: ""});
+  const [formError, setFormError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  function checkId(id: string){
+    let error = "";
+    if (id.length < 5 || id.length > 20) error = "아이디는 5~20자 사이여야 합니다.";
+    else if (!/^[a-z]/.test(id)) error = "아이디는 영문 소문자로 시작해야 합니다.";
+    else if (!/[A-Za-z]/.test(id)) error = "영문이 1자 이상 포함되어야 합니다.";
+    else if (!/\d/.test(id)) error = "숫자가 1자 이상 포함되어야 합니다.";
+    return error;
+  }
+
+  function checkPassword(password: string) {
+    let error = ""
+    if (password.length < 8 || password.length > 20) error = "비밀번호는 8~20자 사이여야 합니다.";
+    else if (!/[A-Za-z]/.test(password)) error = "영문이 1자 이상 포함되어야 합니다.";
+    else if (!/\d/.test(password)) error = "숫자가 1자 이상 포함되어야 합니다.";
+    else if (!/[!@#$%^&*()~_+\-[\]{};':"\\|,.<>/?]/.test(password)) error = "특수문자가 1자 이상 포함되어야 합니다.";
+    return error;
+  }
 
   const isAllFieldsFilled =
     name.trim() !== "" &&
@@ -35,37 +55,73 @@ export default function SignupPage() {
   };
 
   const handleSignup = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setFormError("");
+
     if (password !== confirmPassword) {
-      setError("비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 경고 메시지를 표시합니다.
+      setFormError("비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 경고 메시지를 표시합니다.
+      setIsLoading(false);
       return;
     }
 
-    setError(""); // 모든 검증을 통과했으므로 에러 메시지를 초기화합니다.
     if (isAllFieldsFilled) {
-      const success = await signup({
-        userId: id,
-        password,
-        nickname: name,
-      });
-
-      if (success) {
-        router.push("/login");
-      } else {
-        setError("회원가입에 실패했습니다. 다시 시도해주세요.");
+      // 아이디 검증
+      const idError = checkId(id);
+      
+      // 아이디 검증 실패
+      if(idError.length !== 0){
+        setFormError(idError);
+        setIsLoading(false);
+        return;
       }
+
+      // 비밀번호 입력값 검증
+      const errors = checkPassword(password);
+
+      // 검증 성공
+      if (errors.length === 0) {
+          const success = await signup({
+          userId: id,
+          password,
+          nickname: name,
+        });
+
+        if (success) {
+          router.push("/login");
+        } else {
+          setFormError("회원가입에 실패했습니다. 다시 시도해주세요.");
+        }
+      }
+
+      // 검증 실패
+      else{
+        setFormError(errors);
+      }
+
+      setIsLoading(false);
     }
   };
 
   const handleDuplicateCheck = async () => {
+    // 아이디 검증
+    const idError = checkId(id);
+      
+    // 아이디 검증 실패
+    if(idError.length !== 0){
+        setUsernameMessage({type:"error", text: idError});
+        setIsLoading(false);
+        return;
+    }
+
     if (id.trim() !== "") {
       const available = await checkDuplicateId(id);
       if(available){
-        alert("사용 가능한 아이디입니다.");
-        setError("");
+        setUsernameMessage({type:"success", text: "사용 가능한 아이디입니다."});
       }
       else{
-        alert("이미 사용중인 아이디입니다.");
-        setError("이미 사용 중인 아이디입니다.");
+        setUsernameMessage({type:"error", text: "이미 사용 중인 아이디입니다."});
       }
     }
   };
@@ -125,6 +181,20 @@ export default function SignupPage() {
           </div>
         </div>
 
+        {/* 아이디 중복 체크 메시지 */}
+        {usernameMessage.text && (
+          <p className={`text-sm mt-2 text-[14px] ${
+            usernameMessage.type === "error" ? "text-red-500" : "text-green-600"
+          }`}>
+            {usernameMessage.text}
+          </p>
+        )}
+
+        {/* 아이디 조건 안내 */}
+        <div className="mt-2 space-y-1 text-sm text-gray-500">
+          <p>5~20자 이내, 영문 소문자로 시작해 숫자와 영문을 포함해서 만들어 주세요. (특수문자 사용 불가)</p>
+        </div>
+
         {/* 비밀번호 입력 필드: showEyeIcon으로 가시성을 조절합니다. */}
         <Input
           label="비밀번호"
@@ -135,6 +205,11 @@ export default function SignupPage() {
           showEyeIcon
           className="mt-5"
         />
+
+        {/* 비밀번호 조건 안내 */}
+        <div className="mt-2 space-y-1 text-sm text-gray-500">
+          <p>8~20자 이내, 숫자와 영문 및 특수문자를 포함해 주세요.</p>
+        </div>
 
         {/* 비밀번호 확인 필드: confirmPassword 상태를 갱신합니다. */}
         <Input
@@ -147,16 +222,16 @@ export default function SignupPage() {
           className="mt-5"
         />
 
-        {/* 비밀번호 불일치 등 검증 실패 시 에러 메시지를 노출합니다. */}
-        {error && (
-          <p className="mt-3 text-[14px] font-medium text-red-500" role="alert">
-            {error}
+        {/* 폼 전체 에러 메시지 (회원가입 버튼 위) */}
+        {formError && (
+          <p className="mt-3 text-[14px] text-red-500 font-medium">
+            {formError}
           </p>
         )}
 
         {/* 모든 입력이 유효할 때만 활성화되는 가입 버튼입니다. */}
         <div className="mt-5">
-          <Button onClick={handleSignup} disabled={!isAllFieldsFilled}>
+          <Button onClick={handleSignup} disabled={!isAllFieldsFilled || isLoading}>
             회원가입
           </Button>
         </div>
