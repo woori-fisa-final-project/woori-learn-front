@@ -22,11 +22,10 @@ export async function loginUser(id: string, password: string): Promise<LoginResp
     // 브라우저 저장
     const { setAccessToken } = useAuthStore.getState();
     setAccessToken(accessToken);
-    console.log(useAuthStore.getState().accessToken);
 
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("로그인 요청 오류", error);
-    throw new Error("로그인 실패");
+    throw error;
   }
 }

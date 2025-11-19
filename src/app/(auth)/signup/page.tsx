@@ -60,12 +60,10 @@ export default function SignupPage() {
     if (id.trim() !== "") {
       const available = await checkDuplicateId(id);
       if(available){
-        setId(id);
         alert("사용 가능한 아이디입니다.");
         setError("");
       }
       else{
-        setId("");
         alert("이미 사용중인 아이디입니다.");
         setError("이미 사용 중인 아이디입니다.");
       }

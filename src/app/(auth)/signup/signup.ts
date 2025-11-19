@@ -26,6 +26,6 @@ export const signup = async (payload: SignupParams) => {
     return true;
   }catch(e){
     console.error("회원가입 요청 오류", e);
-    return false;
+    throw e;
   }
 };

@@ -36,8 +36,7 @@ export default function ChangePasswordPage() {
         await changePassword(currentPassword, newPassword);
         router.push("/mypage"); // 모든 입력이 존재하면 마이페이지로 돌아갑니다.
       }catch(e){
-        alert("비밀번호 변경에 실패하였습니다.");
-        console.error(e);
+        setError("비밀번호 변경에 실패하였습니다.");
       }
     }
   };
