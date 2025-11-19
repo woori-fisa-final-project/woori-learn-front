@@ -57,49 +57,50 @@ export default function SignupPage() {
   const handleSignup = async () => {
     if (isLoading) return;
 
-    setIsLoading(true);
-    setFormError("");
-
-    if (password !== confirmPassword) {
-      setFormError("비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 경고 메시지를 표시합니다.
-      setIsLoading(false);
+    if (!isAllFieldsFilled) {
+      setFormError("모든 필드를 올바르게 입력해주세요.");
       return;
     }
 
-    if (isAllFieldsFilled) {
-      // 아이디 검증
+    setIsLoading(true);
+    setFormError("");
+    
+     try {
+      // 아이디 유효성 검사
       const idError = checkId(id);
-      
-      // 아이디 검증 실패
-      if(idError.length !== 0){
+      if (idError) {
         setFormError(idError);
+        return;
+      }
+
+      // 비밀번호 검사
+      if (password !== confirmPassword) {
+        setFormError("비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 경고 메시지를 표시합니다.
         setIsLoading(false);
         return;
       }
 
-      // 비밀번호 입력값 검증
-      const errors = checkPassword(password);
-
-      // 검증 성공
-      if (errors.length === 0) {
-          const success = await signup({
-          userId: id,
-          password,
-          nickname: name,
-        });
-
-        if (success) {
-          router.push("/login");
-        } else {
-          setFormError("회원가입에 실패했습니다. 다시 시도해주세요.");
-        }
+      // 비밀번호 유효성 검사
+      const passwordError = checkPassword(password);
+      if (passwordError) {
+        setFormError(passwordError);
+        return;
       }
 
-      // 검증 실패
-      else{
-        setFormError(errors);
-      }
+      const success = await signup({
+        userId: id,
+        password,
+        nickname: name,
+      });
 
+      if (success) {
+        router.push("/login");
+      } else {
+        setFormError("회원가입에 실패했습니다. 다시 시도해주세요.");
+      }
+    } catch (error: any) {
+      setFormError(error.message || "회원가입 중 오류가 발생했습니다.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -111,7 +112,6 @@ export default function SignupPage() {
     // 아이디 검증 실패
     if(idError.length !== 0){
         setUsernameMessage({type:"error", text: idError});
-        setIsLoading(false);
         return;
     }
 

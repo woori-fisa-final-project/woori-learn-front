@@ -111,7 +111,7 @@ axiosInstance.interceptors.response.use(
 
     // 그 외 일반 에러
     if (error.response) {
-      const { data } = error.response.data;
+      const data = error.response.data?.data;
       return Promise.reject(new ApiError(code, message, data));
     }
 

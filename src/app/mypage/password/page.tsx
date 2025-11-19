@@ -38,49 +38,34 @@ export default function ChangePasswordPage() {
     if (isLoading) return;
     setIsLoading(true);
 
-    // 새 비밀번호와 일치 여부
-    if (newPassword !== confirmPassword) {
-      setError("새 비밀번호가 일치하지 않습니다. 다시 확인해주세요."); // 두 비밀번호가 다르면 에러 메시지를 설정합니다.
-      setIsLoading(false);
-      return;
-    }
-
-    // 기존 비밀번호와 일치 여부
-    if(currentPassword === newPassword){
-      setError("기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
-      setIsLoading(false);
-      return;
-    }
-
-    // 공백 포함 여부
-    if(/\s/.test(newPassword)){
-      setError("비밀번호에 공백을 포함할 수 없습니다.");
-      setIsLoading(false);
-      return;
-    }
-
-    setError(""); // 검증을 통과했으므로 오류 메시지를 초기화합니다.
-    if (currentPassword && newPassword && confirmPassword) {
-      
-      // 비밀번호 입력값 검증
-      const errors = checkPassword(newPassword);
-
-      // 검증 성공
-      if (errors.length === 0) {
-        try{
-          await changePassword(currentPassword, newPassword);
-          router.push("/mypage"); // 모든 입력이 존재하면 마이페이지로 돌아갑니다.
-        }catch(e){
-          setError("비밀번호 변경에 실패하였습니다.");
-        }finally{
-          setIsLoading(false);
-        }
+    try {
+      if (newPassword !== confirmPassword) {
+        setError("새 비밀번호가 일치하지 않습니다. 다시 확인해주세요.");
+        return;
       }
-      
-      else{
-        setError(errors);
+
+      if (currentPassword === newPassword) {
+        setError("기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+        return;
       }
-      
+
+      if (/\s/.test(newPassword)) {
+        setError("비밀번호에 공백을 포함할 수 없습니다.");
+        return;
+      }
+
+      const passwordError = checkPassword(newPassword);
+      if (passwordError) {
+        setError(passwordError);
+        return;
+      }
+
+      setError("");
+      await changePassword(currentPassword, newPassword);
+      router.push("/mypage");
+    } catch (e) {
+      setError("비밀번호 변경에 실패하였습니다.");
+    } finally {
       setIsLoading(false);
     }
   };

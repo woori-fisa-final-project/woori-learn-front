@@ -14,9 +14,15 @@ export const checkDuplicateId = async (userId: string) => {
       },
     );
     return true;
-  }catch(e){
-    console.error("중복 체크 실패");
-    return false;
+  }catch(error: any) {
+    // 409 Conflict 에러인 경우에만 중복으로 처리
+    if (error.status === 409) {
+      console.error("아이디 중복:", error.message);
+      return false; // 중복
+    }
+    // 그 외 에러는 다시 throw하여 호출부에서 처리
+    console.error("중복 체크 실패:", error);
+    throw error;
   }
 };
 

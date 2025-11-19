@@ -58,10 +58,10 @@ export default function LoginPage() {
       await loginUser(id, password);
       // 로그인 성공 후 홈 화면으로 이동
       router.push("/home");
-      setIsLoading(false);
       } catch (error) {
       console.error("로그인 요청 오류:", error);
       alert("로그인에 실패했습니다.");
+    }finally {
       setIsLoading(false);
     }
   };
