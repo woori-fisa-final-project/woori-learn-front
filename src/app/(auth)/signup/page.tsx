@@ -1,8 +1,3 @@
-/**
- * [SECURITY UPDATE] Gemini feedback 적용
- * - Replaced intrusive alert with inline error messaging
- * - Documented secure UX considerations for signup validation
- */
 "use client"; // 이 페이지는 클라이언트 컴포넌트로 동작하여 상태와 브라우저 API를 활용합니다.
 
 import { useRouter } from "next/navigation";
@@ -13,6 +8,7 @@ import Button from "@/components/common/Button";
 import { signup, checkDuplicateId } from "./signup";
 import Image from "next/image";
 import { checkId, checkPassword } from "@/utils/validate";
+import { ApiError } from "@/utils/apiError";
 
 const backIcon = "/images/backicon.png"; // 뒤로가기 버튼에서 사용할 아이콘 경로입니다.
 
@@ -74,9 +70,10 @@ export default function SignupPage() {
       } else {
         setFormError("회원가입에 실패했습니다. 다시 시도해주세요.");
       }
-    } catch (error: any) {
-      setFormError(error.message || "회원가입 중 오류가 발생했습니다.");
-    } finally {
+    }  catch (error: unknown) {
+      const message = error instanceof ApiError ? error.message : "회원가입 중 오류가 발생했습니다.";
+      setFormError(message);
+     } finally {
       setIsLoading(false);
     }
   };

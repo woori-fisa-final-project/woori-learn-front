@@ -7,6 +7,7 @@ import Button from "@/components/common/Button"; // 공통 버튼 컴포넌트�
 import PageHeader from "@/components/common/PageHeader"; // 상단 헤더 UI를 구성하는 공통 컴포넌트입니다.
 import PageContainer from "@/components/common/PageContainer"; // 페이지 레이아웃을 감싸는 공통 컨테이너입니다.
 import { changeName } from "./changeName";
+import { ApiError } from "@/utils/apiError";
 
 export default function ChangeNamePage() {
   const router = useRouter(); // 라우터 인스턴스를 가져와 다른 페이지로 이동할 때 사용합니다.
@@ -32,8 +33,9 @@ export default function ChangeNamePage() {
       await changeName(newName);
       setFormError("");
       router.push("/mypage"); // 저장이 완료되면 마이페이지로 돌아갑니다.
-    }catch (err) {
-      setFormError("이름 변경에 실패했습니다.");
+    }catch (err: unknown) {
+      const message = err instanceof ApiError ? err.message : "이름 변경에 실패했습니다.";
+      setFormError(message);
       console.error(err);
     }finally{
       setIsLoading(false);

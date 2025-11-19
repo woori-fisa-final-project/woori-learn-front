@@ -43,13 +43,17 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    if (!error.response) {
+      return Promise.reject(new ApiError(-1, "네트워크 오류가 발생했습니다."));
+    }
+
     const code = error.response.data?.code ?? -1;
     const message = error.response.data?.message ?? "알 수 없는 오류가 발생했습니다.";
 
     // 401 에러 중 access token 토큰 만료 에러 발생 시
     const isJwtExpired = error.response &&
-      (error.response.status === 401 ||
-      code === 40101 || code === 40102)
+      error.response.status === 401 &&
+      (code === 40101 || code === 40102)
 
     if (isJwtExpired && !originalRequest._retry && originalRequest.url !== '/auth/refresh' // 무한 루프 방지
     ) {
