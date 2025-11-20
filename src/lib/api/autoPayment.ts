@@ -2,28 +2,9 @@ import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
 import { devLog, logApiCall, logApiResponse, devError } from "@/utils/logger";
 import axiosInstance from "@/utils/axiosInstance";
 import { AUTO_PAYMENT } from "../constants";
+import type { ApiResponse, Page } from "@/types/api";
 
 const BASE_URL = "/education/auto-payment";
-
-interface ApiResponse<T> {
-  code: number;
-  message: string;
-  data: T;
-}
-
-/**
- * Spring Data Page 구조
- */
-export interface Page<T> {
-  content: T[];
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-}
 
 interface GetAutoPaymentListParams {
   educationalAccountId: number;

@@ -22,6 +22,7 @@ import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
 import { AUTO_PAYMENT } from "@/lib/constants";
 import { isApiError } from "@/types/errors";
+import { runPromisesInChunks } from "@/utils/promiseUtils";
 
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
@@ -67,33 +68,6 @@ function convertToAutoTransferInfo(
  * 동시 API 호출 제한을 위한 청크 크기
  */
 const API_FETCH_CHUNK_SIZE = 5;
-
-/**
- * Promise를 반환하는 함수들을 청크 단위로 나누어 순차적으로 병렬 실행하는 헬퍼 함수
- * @param promiseFunctions 실행할 Promise를 반환하는 함수들의 배열
- * @param chunkSize 한 번에 병렬로 실행할 Promise의 개수
- * @returns 모든 Promise의 결과가 병합된 배열
- */
-const runPromisesInChunks = async <T,>(
-  promiseFunctions: (() => Promise<T>)[],
-  chunkSize: number
-): Promise<T[]> => {
-  const results: T[] = [];
-
-  // promises 배열을 chunkSize 크기의 청크로 나눕니다.
-  for (let i = 0; i < promiseFunctions.length; i += chunkSize) {
-    const chunk = promiseFunctions.slice(i, i + chunkSize);
-
-    // Promise.all을 사용하여 현재 청크의 요청들을 병렬로 실행합니다.
-    const chunkResults = await Promise.all(chunk.map(fn => fn()));
-
-    // 결과를 병합합니다.
-    results.push(...chunkResults);
-  }
-
-  return results;
-};
-
 
 function AutomaticPaymentScenarioContent() {
   const searchParams = useSearchParams();
