@@ -1,6 +1,6 @@
 import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
 import { devLog, logApiCall, logApiResponse, devError } from "@/utils/logger";
-import { ApiError } from "@/types/errors";
+import axiosInstance from "@/utils/axiosInstance";
 import { AUTO_PAYMENT } from "../constants";
 
 const BASE_URL = "/education/auto-payment";
@@ -23,66 +23,6 @@ export interface Page<T> {
   first: boolean;
   last: boolean;
   empty: boolean;
-}
-
-/**
- * API 에러를 사용자 친화적인 메시지로 변환하는 헬퍼 함수
- * ApiError를 throw하므로 절대 반환하지 않습니다.
- */
-async function handleApiError(response: Response, context: string): Promise<never> {
-  const status = response.status;
-  let errorMessage = "";
-  let backendMessage = "";
-
-  const clonedResponse = response.clone();
-  try {
-    const errorData = await response.json();
-    backendMessage = errorData?.message || "";
-  } catch {
-    // JSON 파싱 실패 시 텍스트로 읽기
-    try {
-      backendMessage = await clonedResponse.text();
-    } catch {
-      backendMessage = "";
-    }
-  }
-
-  // 상태 코드별 에러 메시지
-  switch (status) {
-    case 400:
-      errorMessage = backendMessage || "잘못된 요청입니다.\n입력 정보를 확인해주세요.";
-      break;
-    case 401:
-      errorMessage = backendMessage || "인증에 실패했습니다.\n다시 로그인해주세요.";
-      break;
-    case 403:
-      errorMessage = backendMessage || "권한이 없습니다.\n접근 권한을 확인해주세요.";
-      break;
-    case 404:
-      errorMessage = backendMessage || "요청한 정보를 찾을 수 없습니다.";
-      break;
-    case 429:
-      // Rate limiting 에러
-      const retryAfter = response.headers.get("X-Rate-Limit-Retry-After-Seconds");
-      if (retryAfter) {
-        errorMessage = `요청 한도를 초과했습니다.\n${retryAfter}초 후에 다시 시도해주세요.`;
-      } else {
-        errorMessage = "요청 한도를 초과했습니다.\n잠시 후 다시 시도해주세요.";
-      }
-      break;
-    case 500:
-    case 502:
-    case 503:
-    case 504:
-      errorMessage = "서버 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.";
-      break;
-    default:
-      errorMessage = backendMessage || `오류가 발생했습니다. (코드: ${status})`;
-  }
-
-  devError(`[${context}] 에러 응답 ${status}:`, backendMessage || "No message");
-
-  throw new ApiError(errorMessage, status, backendMessage);
 }
 
 interface GetAutoPaymentListParams {
@@ -114,19 +54,11 @@ export async function getAutoPaymentList(
     queryParams.append("sort", params.sort);
   }
 
-  const response = await fetch(`${BASE_URL}/list/paged?${queryParams.toString()}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await axiosInstance.get<ApiResponse<Page<AutoPayment>>>(
+    `${BASE_URL}/list/paged?${queryParams.toString()}`
+  );
 
-  if (!response.ok) {
-    await handleApiError(response, "getAutoPaymentList");
-  }
-
-  const result: ApiResponse<Page<AutoPayment>> = await response.json();
-  return result.data;
+  return response.data.data;
 }
 
 /**
@@ -135,19 +67,11 @@ export async function getAutoPaymentList(
 export async function getAutoPaymentDetail(
   autoPaymentId: number
 ): Promise<AutoPayment> {
-  const response = await fetch(`${BASE_URL}/detail/${autoPaymentId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await axiosInstance.get<ApiResponse<AutoPayment>>(
+    `${BASE_URL}/detail/${autoPaymentId}`
+  );
 
-  if (!response.ok) {
-    await handleApiError(response, "getAutoPaymentDetail");
-  }
-
-  const result: ApiResponse<AutoPayment> = await response.json();
-  return result.data;
+  return response.data.data;
 }
 
 interface CreateAutoPaymentParams {
@@ -170,20 +94,12 @@ interface CreateAutoPaymentParams {
 export async function createAutoPayment(
   params: CreateAutoPaymentParams
 ): Promise<AutoPayment> {
-  const response = await fetch(BASE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
+  const response = await axiosInstance.post<ApiResponse<AutoPayment>>(
+    BASE_URL,
+    params
+  );
 
-  if (!response.ok) {
-    await handleApiError(response, "createAutoPayment");
-  }
-
-  const result: ApiResponse<AutoPayment> = await response.json();
-  return result.data;
+  return response.data.data;
 }
 
 /**
@@ -200,19 +116,8 @@ export async function cancelAutoPayment(
 
   logApiCall("POST", url, { autoPaymentId, educationalAccountId });
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({}),
-  });
+  const response = await axiosInstance.post<ApiResponse<AutoPayment>>(url, {});
 
-  if (!response.ok) {
-    await handleApiError(response, "cancelAutoPayment");
-  }
-
-  const result: ApiResponse<AutoPayment> = await response.json();
-  logApiResponse(response.status, url, result);
-  return result.data;
+  logApiResponse(response.status, url, response.data);
+  return response.data.data;
 }
