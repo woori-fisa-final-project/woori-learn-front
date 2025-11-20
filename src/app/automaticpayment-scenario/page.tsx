@@ -20,6 +20,9 @@ import { devLog, devError } from "@/utils/logger";
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
+import { AUTO_PAYMENT } from "@/lib/constants";
+import { isApiError } from "@/types/errors";
+import { runPromisesInChunks } from "@/utils/promiseUtils";
 
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
@@ -114,15 +117,49 @@ function AutomaticPaymentScenarioContent() {
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 4. 해당 계좌의 자동이체 목록 조회
-      const payments = await getAutoPaymentList({
+      // 4. 해당 계좌의 자동이체 목록 조회 (첫 페이지)
+      const firstPage = await getAutoPaymentList({
         educationalAccountId: representativeAccount.id,
+        page: 0,
+        size: AUTO_PAYMENT.PAGE_SIZE,
       });
 
-      // 5. 모든 자동이체를 배열로 변환하여 표시
-      if (payments && payments.length > 0) {
-        devLog(`[fetchData] 자동이체 ${payments.length}건 조회`);
-        const convertedList = payments.map(payment => {
+      const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
+
+      let remainingResults: Awaited<ReturnType<typeof getAutoPaymentList>>[] = [];
+
+      // 5. 나머지 페이지들을 청크 단위로 조회 (수정된 로직)
+      if (totalRemainingPages > 0) {
+        // Promise를 반환하는 함수 배열 생성
+        const remainingPromiseFunctions = Array.from(
+          { length: totalRemainingPages },
+          (_, i) => {
+            const pageNum = i + 1; // 1페이지부터 시작
+            return () => getAutoPaymentList({
+              educationalAccountId: representativeAccount.id,
+              page: pageNum,
+              size: AUTO_PAYMENT.PAGE_SIZE,
+            });
+          }
+        );
+
+        // 청크 단위로 병렬 요청 실행
+        remainingResults = await runPromisesInChunks(
+          remainingPromiseFunctions,
+          AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+        );
+      }
+
+      // 6. 모든 페이지의 content를 하나로 합치기
+      const allPayments = [
+        ...firstPage.content,
+        ...remainingResults.flatMap(result => result.content)
+      ];
+
+      // 7. 조회된 모든 자동이체를 화면용 데이터로 변환
+      if (allPayments && allPayments.length > 0) {
+        devLog(`[fetchData] 자동이체 ${allPayments.length}건 조회 완료 (전체: ${firstPage.totalElements}건)`);
+        const convertedList = allPayments.map(payment => {
           devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);
         });
@@ -133,6 +170,13 @@ function AutomaticPaymentScenarioContent() {
     } catch (error) {
       devError("[fetchData] 데이터 조회 실패:", error);
       setAutoTransferList([]);
+
+      // ApiError인 경우 사용자 친화적인 메시지 사용
+      const errorMessage = isApiError(error)
+        ? error.message
+        : "자동이체 목록을 불러오는 데 실패했습니다.";
+
+      setErrorModal({ isOpen: true, message: errorMessage });
     } finally {
       setIsLoading(false);
     }

@@ -2,8 +2,10 @@
 
 import Button from "@/components/common/Button"; // 확인 버튼에 사용할 공통 컴포넌트입니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우 상태를 공유하는 커스텀 훅입니다.
-import { useMemo } from "react"; // 금액 표시에 사용할 메모이제이션을 위해 React 훅을 불러옵니다.
+import { useMemo, useState } from "react"; // 금액 표시에 사용할 메모이제이션을 위해 React 훅을 불러옵니다.
 import Image from "next/image";
+import Modal from "@/components/common/Modal";
+import { validateAutoPaymentAmount } from "@/utils/validationUtils";
 
 type Scenario4Props = {
   onNext: () => void; // 금액 입력 후 다음 단계로 전환할 콜백입니다.
@@ -47,6 +49,12 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     sourceAccountNumber,
   } = useTransferFlow(); // 플로우 전반에서 공유되는 은행, 계좌, 금액 정보를 가져옵니다.
 
+  // 금액 초과 에러 모달
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
+
   const displayBank = selectedBank ?? "국민은행"; // 은행 선택이 없으면 기본값을 표시합니다.
   const displayRecipient = recipientName || "나누구"; // 수취인 이름이 비어 있으면 기본명을 사용합니다.
   const displayAccount = accountNumber || "-"; // 계좌번호가 미입력인 경우 대시(-)로 표시합니다.
@@ -55,6 +63,33 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     if (!amount) return "0";
     return amount.toLocaleString(); // 입력 금액을 천 단위 구분 기호가 포함된 문자열로 변환합니다.
   }, [amount]);
+
+  /**
+   * 금액을 검증하고 유효하지 않으면 에러 모달을 표시합니다.
+   * @param newAmount - 검증할 금액
+   * @returns 유효한 금액이면 true, 그렇지 않으면 false
+   */
+  const validateAndSetError = (newAmount: number): boolean => {
+    const validation = validateAutoPaymentAmount(newAmount);
+    if (!validation.isValid) {
+      setErrorModal({
+        isOpen: true,
+        message: validation.errorMessage || "",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  /**
+   * 금액을 검증하고 유효하면 상태를 업데이트합니다.
+   * @param newAmount - 설정할 금액
+   */
+  const trySetAmount = (newAmount: number): void => {
+    if (validateAndSetError(newAmount)) {
+      setAmount(newAmount);
+    }
+  };
 
   const handleDigit = (digit: string) => {
     if (digit === "←") {
@@ -75,7 +110,9 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
     const nextString = `${current}${digits}`.replace(/^0+(\d)/, "$1");
     const sanitized = nextString.replace(/^0+$/, "0");
     const numericValue = Number(sanitized || "0");
-    setAmount(numericValue); // 계산된 숫자 값을 금액 상태에 저장합니다.
+
+    // 금액 검증 후 설정
+    trySetAmount(numericValue);
   };
 
   const onDelete = () => {
@@ -90,10 +127,14 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
 
   const handleQuickAmount = (value: number | null) => {
     if (value === null) {
-      setAmount(FULL_BALANCE_AMOUNT); // 전액 버튼은 미리 정의된 잔액 값으로 설정합니다.
+      trySetAmount(FULL_BALANCE_AMOUNT); // 전액 버튼도 검증을 거쳐 설정합니다.
       return;
     }
-    setAmount(amount + value); // 빠른 금액 버튼은 현재 금액에 해당 값을 더합니다.
+
+    const newAmount = amount + value;
+
+    // 금액 검증 후 설정
+    trySetAmount(newAmount);
   };
 
   const handleConfirm = () => {
@@ -184,6 +225,15 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
           확인
         </Button>
       </div>
+
+      {/* 금액 초과 에러 모달 */}
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+        title="금액 제한"
+        description={errorModal.message}
+        confirmText="확인"
+      />
     </div>
   );
 }
