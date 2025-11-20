@@ -47,14 +47,14 @@ export default function SignupPage() {
      try {
       // 아이디 유효성 검사
       const idError = checkId(id);
-      if (idError) {
+      if (idError.length !== 0) {
         setFormError(idError);
         return;
       }
 
       // 비밀번호 유효성 검사
       const passwordError = checkPassword(password);
-      if (passwordError) {
+      if (passwordError.length !== 0) {
         setFormError(passwordError);
         return;
       }
