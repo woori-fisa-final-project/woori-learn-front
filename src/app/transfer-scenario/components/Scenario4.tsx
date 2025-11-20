@@ -127,7 +127,7 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
 
   const handleQuickAmount = (value: number | null) => {
     if (value === null) {
-      setAmount(FULL_BALANCE_AMOUNT); // 전액 버튼은 미리 정의된 잔액 값으로 설정합니다.
+      trySetAmount(FULL_BALANCE_AMOUNT); // 전액 버튼도 검증을 거쳐 설정합니다.
       return;
     }
 

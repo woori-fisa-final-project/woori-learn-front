@@ -64,11 +64,6 @@ function convertToAutoTransferInfo(
   };
 }
 
-/**
- * 동시 API 호출 제한을 위한 청크 크기
- */
-const API_FETCH_CHUNK_SIZE = 5;
-
 function AutomaticPaymentScenarioContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -151,7 +146,7 @@ function AutomaticPaymentScenarioContent() {
         // 청크 단위로 병렬 요청 실행
         remainingResults = await runPromisesInChunks(
           remainingPromiseFunctions,
-          API_FETCH_CHUNK_SIZE
+          AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
         );
       }
 
