@@ -7,9 +7,8 @@ import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도�
 import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
 import Modal from "@/components/common/Modal"; // 준비 중 서비스 안내 모달 컴포넌트입니다.
 import Image from "next/image";
-import axiosInstance from "@/utils/axiosInstance";
-import { CompletedScenario, ScenarioProgress } from "@/types";
 import { SCENARIO_CONFIG } from "@/constants/scenario";
+import { fetchCompletedScenarios, fetchScenarioProgress } from "./scenario";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -17,18 +16,6 @@ const utilityImage = "/images/utility-image.png"; // 공과금 카드 이미지�
 const savingsImage = "/images/savings-image.png"; // 예/적금 카드 이미지입니다.
 const loanImage = "/images/loan-image.png"; // 대출 카드 이미지입니다.
 const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용하는 아이콘입니다.
-
-// API 호출 함수 : 완료 시나리오 조회
-const fetchCompletedScenarios = async () => {
-  const res = await axiosInstance.get<{ data: CompletedScenario[] }>("/users/me/scenarios/completed");
-  return res.data.data;
-};
-
-// API 호출 함수 : 진행률 조회
-const fetchScenarioProgress = async () => {
-  const res = await axiosInstance.get<{ data: ScenarioProgress[] }>("/users/me/scenarios/progress");
-  return res.data.data;
-};
 
 export default function HomePage() {
   const router = useRouter(); // 페이지 이동 처리를 위해 라우터 인스턴스를 가져옵니다.
@@ -174,40 +161,46 @@ export default function HomePage() {
     loadScenarioStatus();
   }, []);
 
-  // 완료 여부 계산
-  const scenarioCompletion = SCENARIO_CONFIG.map((cfg, index) => {
-    const progress = progressCards[index]?.progress ?? 0;
-    // 진행률이 100이상이면 완료
-    const completedByRate = progress >= 100;
-    // 완료 시나리오 목록(Set)에 포함되어 있으면 완료
-    const completedByApi = completedScenarioIds.has(cfg.id);
+  // 특정 시나리오가 완료되었는지 여부를 계산하는 헬퍼 함수
+  const isScenarioCompleted = (scenarioId: number): boolean => {
+    // progressCards에서 id로 찾아서 진행률 가져오기
+    const progress = progressCards.find((c) => c.scenarioId === scenarioId)?.progress ?? 0;
+
+    const completedByRate = progress >= 100;  // 진행률 100% 이상
+    const completedByApi = completedScenarioIds.has(scenarioId);  // 완료 목록에 포함
+
     return completedByRate || completedByApi;
-  });
+  }
 
-  // 모든 시나리오 완료 여부(마무리 퀴즈 활성화 판단용 - 추후 사용 가능)
-  const allScenariosCompleted = scenarioCompletion.length > 0 && scenarioCompletion.every(Boolean);
-  
-  const progressSteps = SCENARIO_CONFIG.map((cfg, index) => {
-    const completed = scenarioCompletion[index];
+  // 모든 시나리오 완료 여부(추후 마무리 퀴즈 활성화 판단용)
+  const allScenariosCompleted = SCENARIO_CONFIG.length > 0 && SCENARIO_CONFIG.every((cfg) => isScenarioCompleted(cfg.id));
 
-    return {
-      label: cfg.scenarioTitle as string,
-      bgColor: completed ? "bg-[#2F6FE0]" : "bg-[#C3C3C3]",
-      textColor: "text-gray-500",
-      iconSrc: completed ? "/images/maincheck2.png" : "/images/maincheck.png",
-      iconAlt: completed ? `${cfg.scenarioTitle} 완료` : `${cfg.scenarioTitle} 진행 중`,
-      iconClassName: completed ? "bg-[#0043CE]" : "bg-[#C3C3C3]",
-    };
-  });
+  // 진행 바에 사용할 단계들
+  const progressSteps = [
+    // 각 시나리오 단계
+    ...SCENARIO_CONFIG.map((cfg) => {
+      const completed = isScenarioCompleted(cfg.id);
 
-  progressSteps.push({
-    label: "마무리 퀴즈",
-    bgColor: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
-    textColor: allScenariosCompleted ? "text-[#0B8A46]" : "text-gray-400",
-    iconSrc: allScenariosCompleted ? "/images/maincheck3.png" : "/images/maincheck.png",
-    iconAlt: allScenariosCompleted ? "마무리 퀴즈 완료" : "마무리 퀴즈 진행 예정",
-    iconClassName: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
-  });
+      return {
+        label: cfg.scenarioTitle as string,
+        bgColor: completed ? "bg-[#2F6FE0]" : "bg-[#C3C3C3]",
+        textColor: "text-gray-500",
+        iconSrc: completed ? "/images/maincheck2.png" : "/images/maincheck.png",
+        iconAlt: completed ? `${cfg.scenarioTitle} 완료` : `${cfg.scenarioTitle} 진행 중`,
+        iconClassName: completed ? "bg-[#0043CE]" : "bg-[#C3C3C3]",
+      };
+    }),
+
+    // 마무리 퀴즈 단계
+    {
+      label: "마무리 퀴즈",
+      bgColor: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
+      textColor: allScenariosCompleted ? "text-[#0B8A46]" : "text-gray-400",
+      iconSrc: allScenariosCompleted ? "/images/maincheck3.png" : "/images/maincheck.png",
+      iconAlt: allScenariosCompleted ? "마무리 퀴즈 완료" : "마무리 퀴즈 진행 예정",
+      iconClassName: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
+    }
+  ];
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
