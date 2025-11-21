@@ -2,8 +2,6 @@ import { useMemo } from "react";
 import type { ScenarioStep } from "@/types/scenario";
 import Overlay from "@/components/common/Overlay";
 import Weebee from "@/components/scenario/character/Weebee";
-import { CHARACTER } from "@/components/scenario/constants/character";
-
 
 type OverlayStepProps = {
   content: Record<string, any>;
@@ -15,7 +13,7 @@ type OverlayStepProps = {
 // 현재 시나리오 화면 위에 반투명 배경 + 말풍선을 겹쳐 보여줍니다.
 // onBackgroundClick이 전달되면, 배경(어두운 영역)을 클릭했을 때 해당 콜백을 실행합니다.
 export default function OverlayStep({ content, onBackgroundClick, previousStep }: OverlayStepProps) {
-  const isWeebee = content.character === CHARACTER.WEEBEE;
+  const isWeebee = content.character === "wibee";
   const balloonBase =
     "relative inline-block w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";
 

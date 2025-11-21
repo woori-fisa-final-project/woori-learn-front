@@ -261,7 +261,13 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         id: 1024,
         scenarioId: 1,
         type: "PRACTICE",
-        content: { button: "nextbtn" }
+        content: {
+          button: "nextbtn",
+          choices: [
+            { good: true, next: 1025 },
+            { good: false, next: 1225 },
+          ],
+        },
       },
 
       1025: {
@@ -279,7 +285,13 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         id: 1026,
         scenarioId: 1,
         type: "PRACTICE",
-        content: { button: "nextbtn" }
+        content: {
+          button: "nextbtn",
+          choices: [
+            { good: true, next: 1027 },
+            { good: false, next: 1327 },
+          ],
+        },
       },
 
       1027: {
@@ -291,6 +303,124 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
           emotion: "congratulation",
           text: "축하해! 이체가 성공적으로 완료됐어!"
         }
+      },
+
+      1028: {
+        id: 1028,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          character: "wibee",
+          emotion: "love",
+          text: "집주인에게 월세 50만 원이 잘 전달됐어. 이제 넌 앱으로 이체하는 방법을 알게 된 거야!"
+        }
+      },
+      
+      1029: {
+        id: 1029,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          character: "user",
+          text: "이체가 정말 된 건지 확인하고 싶어"
+        }
+      },
+      
+      1030: {
+        id: 1030,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          character: "wibee",
+          text: "당연하지! 거래내역을 확인하는 방법도 알려줄게!"
+        }
+      },
+      
+      1031: {
+        id: 1031,
+        scenarioId: 1,
+        type: "OVERLAY",
+        content: {
+          character: "wibee",
+          emotion: "stick",
+          text: "이체한 내역을 확인하려면 '전체계좌보기'로 가면 돼."
+        }
+      },
+      
+      1032: {
+        id: 1032,
+        scenarioId: 1,
+        type: "OVERLAY",
+        content: {
+          character: "wibee",
+          text: "전체계좌보기에서는 내가 가진 모든 계좌를 한눈에 볼 수 있고, 각 계좌의 거래 내역도 확인할 수 있어!"
+        }
+      },
+      
+      1033: {
+        id: 1033,
+        scenarioId: 1,
+        type: "PRACTICE",
+        content: {
+          button: "nextbtn"
+        }
+      },
+      
+      1034: {
+        id: 1034,
+        scenarioId: 1,
+        type: "OVERLAY",
+        content: {
+          character: "wibee",
+          emotion: "stick",
+          text: "아까 월세를 이체할 때 사용한 계좌가 어떤 거였지? 한번 선택해 봐"
+        }
+      },
+      
+      1035: {
+        id: 1035,
+        scenarioId: 1,
+        type: "PRACTICE",
+        content: {
+          button: "nextbtn"
+        }
+      },
+      
+      1036: {
+        id: 1036,
+        scenarioId: 1,
+        type: "OVERLAY",
+        content: {
+          character: "wibee",
+          emotion: "stick",
+          text: "거래내역이 많으면 찾기 어려울 수 있어. 그래서 조회 조건을 설정해서 원하는 내역만 볼 수 있어!"
+        }
+      },
+      
+      1088: {
+        id: 1088,
+        scenarioId: 1,
+        type: "PRACTICE",
+        content: {
+          button: "nextbtn",
+          choices: [
+            { good: true, next: 1089 },
+            { good: false, next: 1489 },
+          ],
+        },
+      },
+
+      1091: {
+        id: 1091,
+        scenarioId: 1,
+        type: "PRACTICE",
+        content: {
+          button: "nextbtn",
+          choices: [
+            { good: true, next: 1092 },
+            { good: false, next: 1592 },
+          ],
+        },
       },
       
       1225: {
@@ -341,7 +471,7 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
       1327: {
         id: 1327,
         scenarioId: 1,
-        type: "CHOICE",
+        type: "DIALOG",
         content: {
           meta: { branch: "bad", badEnding: false },
           character: "wibee",
@@ -349,9 +479,9 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
           text: "이체가... 완료됐어. 그런데...",
           choices: [
             { good: false, next: 1328 },
-            { good: false, next: 1338 }
-          ]
-        }
+            { good: false, next: 1338 },
+          ],
+        },
       },
       
       1328: {

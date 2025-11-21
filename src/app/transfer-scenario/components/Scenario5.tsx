@@ -130,11 +130,7 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
             )}
           </div>
 
-          <div className="mt-[28px]">
-            <Button onClick={handleSubmit} disabled={password.length < 4}>
-              확인
-            </Button>
-          </div>
+          
         </div>
       </div>
     </div>

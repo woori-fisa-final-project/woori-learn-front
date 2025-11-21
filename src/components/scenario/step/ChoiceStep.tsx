@@ -1,7 +1,5 @@
 import type { ScenarioStep } from "@/types/scenario";
 import Weebee from "@/components/scenario/character/Weebee";
-import { CHARACTER } from "@/components/scenario/constants/character";
-
 
 type ChoiceStepProps = {
   content: Record<string, any>;
@@ -22,7 +20,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
     (previousStep.type === "DIALOG" || previousStep.type === "OVERLAY");
 
   const previousContent = showPreviousDialog ? (previousStep!.content as any) : null;
-  const isWeebee = content.character === CHARACTER.WEEBEE;
+  const isWeebee = previousContent?.character === "wibee";
 
   const balloonBase =
     "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";
@@ -61,13 +59,13 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
         </div>
       )}
 
-      {/* 선택지 버튼들 - 하단 고정 (DialogStep 내용과 겹치지 않도록 충분한 여백) */}
-      <div className="fixed bottom-[60px] left-0 right-0 z-[10000] flex flex-col gap-3 px-[20px] bg-gradient-to-t from-[#549AE4] to-transparent pt-[20px]">
+      {/* 선택지 버튼들 - 하단 고정, 가운데 정렬 (DialogStep 내용과 겹치지 않도록 충분한 여백) */}
+      <div className="fixed bottom-[60px] left-0 right-0 z-[10000] flex flex-col items-center gap-3 px-[20px] bg-gradient-to-t from-[#549AE4] to-transparent pt-[20px]">
         {choices.map((choice: any) => (
           <button
             key={choice.text}
             type="button"
-            className="relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800 cursor-pointer hover:bg-[#FFF9E6] transition-colors"
+            className="relative inline-block w-full max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800 cursor-pointer hover:bg-[#FFF9E6] transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onChoose(choice.next);
@@ -80,5 +78,3 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
     </div>
   );
 }
-
-

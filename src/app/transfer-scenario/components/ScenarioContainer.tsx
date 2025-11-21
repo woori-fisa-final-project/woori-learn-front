@@ -17,12 +17,13 @@ type ScenarioContainerProps = {
   onScenarioStepChangeWithResume?: (stepId: number) => Promise<void>; // 시나리오를 먼저 로드한 후 step 변경
   // 시나리오 오버레이 코드추가
   onPracticeNext: () => Promise<void> | void;
+  onTransferResult?: (result: "success" | "fail") => void;
 };
 
-export default function ScenarioContainer({onPracticeNext}: ScenarioContainerProps) {
+export default function ScenarioContainer({onPracticeNext, onTransferResult}: ScenarioContainerProps) {
   const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
   const searchParams = useSearchParams(); // URL 쿼리 파라미터를 읽기 위해 사용합니다.
-  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
+  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, lastErrorType, setLastErrorType,} = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
   const [step, setStep] = useState<number>(1); // 현재 진행 중인 단계(1~7)를 관리합니다.
   const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false); // 은행 선택 바텀 시트 열림 여부를 저장합니다.
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState<boolean>(false); // 비밀번호 입력 바텀 시트 열림 여부를 저장합니다.
@@ -203,23 +204,24 @@ export default function ScenarioContainer({onPracticeNext}: ScenarioContainerPro
                 CORRECT_AMOUNT,
                 isAmountCorrect,
               });
-              
+
+              // ✅ 어디가 틀렸는지 저장
               if (isAccountCorrect && isAmountCorrect) {
-                // 성공: 계좌번호와 금액 모두 맞음
-                // nextbtn 버튼 클릭으로 자동 처리됨
-                console.log("성공: 계좌번호와 금액 모두 맞음");
-                // 완료 페이지로는 이동하지 않음 (1020 스텝이 끝나면 자동으로 진행)
+                setLastErrorType("none");
+              } else if (!isAccountCorrect && isAmountCorrect) {
+                setLastErrorType("account");
+              } else if (isAccountCorrect && !isAmountCorrect) {
+                setLastErrorType("amount");
               } else {
-                // 실패: 계좌번호 또는 금액 오입력
-                // nextbtn 버튼 클릭으로 자동 처리됨
-                console.log("실패: 계좌번호 또는 금액 오입력", {
-                  accountError: !isAccountCorrect,
-                  amountError: !isAmountCorrect,
-                });
-                // 1220 스텝이 끝나면 로직에서 다음 스텝 결정:
-                // - 금액만 틀림: 1221 → 1222 → 1223 → 1224 → 1225 → 1235
-                // - 계좌번호만 틀림: 1231 → 1232 → 1233 → 1234 → 1235
-                // - 둘 다 틀림: 1231 → 1232 → 1233 → 1234 → 1235
+                setLastErrorType("both");
+              }
+              
+              if (onTransferResult) {
+                if (isAccountCorrect && isAmountCorrect) {
+                  onTransferResult("success");
+                } else {
+                  onTransferResult("fail");
+                }
               }
             }}
             onReenterAccount={() => goToStep(1)}

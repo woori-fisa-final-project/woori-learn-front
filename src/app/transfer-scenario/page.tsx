@@ -6,6 +6,8 @@ import ScenarioContainer from "./components/ScenarioContainer"; // 이체 시나
 import { TransferFlowProvider} from "@/lib/hooks/useTransferFlow"; // 이체 과정에서 사용하는 상태를 전역으로 제공하기 위한 컨텍스트 프로바이더입니다.
 // 시나리오 오버레이 코드추가
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
+import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+
 import OverlayStep from "@/components/scenario/step/OverlayStep";
 import ModalStep from "@/components/scenario/step/ModalStep";
 import DialogStep from "@/components/scenario/step/DialogStep";
@@ -18,7 +20,8 @@ import DialogStep from "@/components/scenario/step/DialogStep";
 function TransferScenarioContent() {
   const searchParams = useSearchParams();
   // 시나리오 오버레이 코드추가
-  const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
+  const { currentStep, previousStep, nextStep, resume, goToStep } = useScenarioEngine();
+  const { lastErrorType } = useTransferFlow();
 
   // URL 쿼리에서 scenarioId, stepId를 읽어와 시나리오를 재개합니다.
   useEffect(() => {
@@ -54,16 +57,81 @@ function TransferScenarioContent() {
   // 이제 nextbtn 버튼 클릭으로 자동 처리됩니다.
 
   const handleDialogNext = async () => {
-    if (currentStep?.id != null) {
+    if (!currentStep || currentStep.id == null) return;
+  
+    const { content, scenarioId } = currentStep;
+    const choices = content?.choices as { good: boolean; next: number }[] | undefined;
+  
+    // ⭐ 1327 같은 BAD 분기 DIALOG인지 검사
+    const isBadBranchDialog =
+      content?.meta?.branch === "bad" &&
+      Array.isArray(choices) &&
+      choices.length > 0;
+  
+    if (isBadBranchDialog) {
+      let targetNextId = choices[0].next; // 기본값: 금액 오류용
+  
+      if (lastErrorType === "amount") {
+        // 금액만 틀림 → 금액 오류 시나리오(1328)
+        targetNextId = choices[0].next;
+      } else if (lastErrorType === "account" || lastErrorType === "both") {
+        // 계좌번호 오류 또는 둘 다 틀림 → 계좌 오류 시나리오(1338)
+        targetNextId = choices[1]?.next ?? choices[0].next;
+      }
+  
+      console.log("[1327 분기] lastErrorType:", lastErrorType, "→ next:", targetNextId);
+  
+      // ⭐ 여기서 바로 해당 step으로 점프
+      await resume(scenarioId, targetNextId);
+      return;
+    }
+  
+    // ⭐ 일반 DIALOG 는 기존처럼 진행
+    await nextStep(currentStep.id);
+  };
+  
+
+  // 1026 분기 로직 핸들러
+  const handleTransferResult = async (result: "success" | "fail") => {
+    if (!currentStep || currentStep.type !== "PRACTICE") return;
+  
+    const choices = currentStep.content?.choices as
+      | { good: boolean; next: number }[]
+      | undefined;
+  
+    if (!choices || choices.length === 0) {
+      // PRACTICE지만 choices가 없으면 옛날 방식으로 nextStep만 호출
+      await nextStep(currentStep.id);
+      return;
+    }
+  
+    let targetNextId: number | undefined;
+  
+    if (result === "success") {
+      // good === true 인 choice 선택
+      targetNextId = choices.find((c) => c.good)?.next;
+    } else {
+      // good === false 인 choice 선택
+      targetNextId = choices.find((c) => !c.good)?.next;
+    }
+  
+    console.log("[handleTransferResult]", { result, targetNextId, choices });
+  
+    if (targetNextId != null) {
+      // 여기서 바로 해당 stepId로 점프
+      goToStep(targetNextId);
+    } else {
+      // 방어 코드: 혹시 next가 없으면 그냥 nextStep
       await nextStep(currentStep.id);
     }
   };
+  
 
   return (
     <>
       <Suspense fallback={<div>로딩 중...</div>}>
         {/* 시나리오 오버레이 코드추가 */}
-        <ScenarioContainer onPracticeNext={handlePracticeNext} />
+        <ScenarioContainer onPracticeNext={handlePracticeNext} onTransferResult={handleTransferResult} />
       </Suspense>
       
       {/* 시나리오 오버레이 코드추가 */}
@@ -95,13 +163,11 @@ function TransferScenarioContent() {
           )}
 
           {currentStep.type === "DIALOG" && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={handleDialogNext}>
-              {/* 파란색 그라데이션 배경 */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#ffffff] to-[#549AE4]" />
-              <div className="relative max-w-[390px] w-full mx-auto px-[20px]" onClick={(e) => e.stopPropagation()}>
-                <DialogStep content={currentStep.content} />
-              </div>
-            </div>
+            <DialogStep 
+              content={currentStep.content} 
+              onBackgroundClick={handleDialogNext}
+              previousStep={previousStep}
+            />
           )}
         </>
       )}
