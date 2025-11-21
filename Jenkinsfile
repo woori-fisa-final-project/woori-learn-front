@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB = credentials('dockerhub-cred')
         AWS_HOST = "43.200.2.107"
         DOCKER_IMAGE = "bae1234/woori-learn-front:latest"
     }
@@ -25,10 +24,14 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                sh """
-                echo "${DOCKERHUB_PSW}" | docker login -u "${DOCKERHUB_USR}" --password-stdin
-                docker push ${DOCKER_IMAGE}
-                """
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred',
+                                                usernameVariable: 'DOCKERHUB_USR',
+                                                passwordVariable: 'DOCKERHUB_PSW')]) {
+                    sh """
+                    echo "${DOCKERHUB_PSW}" | docker login -u "${DOCKERHUB_USR}" --password-stdin
+                    docker push ${DOCKER_IMAGE}
+                    """
+                }
             }
         }
 
