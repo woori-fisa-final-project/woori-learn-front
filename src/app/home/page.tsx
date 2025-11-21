@@ -1,6 +1,6 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 상태/라우터 등 브라우저 기능을 사용합니다.
 
-import { useEffect, useState } from "react"; // 모달 상태 관리를 위해 useState를 사용합니다.
+import { useEffect, useState, useMemo } from "react"; // 모달 상태 관리를 위해 useState를 사용합니다.
 import { useRouter } from "next/navigation"; // 페이지 전환을 위해 Next.js 라우터를 사용합니다.
 import ServiceCardGrid from "@/components/common/ServiceCardGrid"; // 서비스 카드 목록을 그리드 형태로 보여주는 공통 컴포넌트입니다.
 import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도를 단계별로 나타내는 프로그레스 바입니다.
@@ -119,17 +119,14 @@ export default function HomePage() {
         ]);
 
         // 진행률: scenarioId -> progressRate Map으로 변환
-        const progressMap = new Map<number, number>();
-        progressList.forEach((item) => {
-          const rate = item.progressRate ?? 0;
-          progressMap.set(item.scenarioId, rate);
-        });
+        const progressMap = new Map<number, number>(
+          progressList.map((item) => [item.scenarioId, item.progressRate ?? 0])
+        );
 
         // 완료: scenarioId를 Set에 담기
-        const completedIdSet = new Set<number>();
-        completedList.forEach((item) => {
-          completedIdSet.add(item.scenarioId);
-        });
+        const completedIdSet = new Set<number>(
+          completedList.map((item) => item.scenarioId)
+        );
 
         // SCENARIO_CONFIG 기준으로 진행 카드 데이터 재구성
         const updateCards = SCENARIO_CONFIG.map((cfg) => {
@@ -150,9 +147,9 @@ export default function HomePage() {
         setProgressCards(updateCards);
         setCompletedScenarioIds(completedIdSet);
         setStatusError(null);
-      } catch (e: any) {
+      } catch (e) {
         console.error(e);
-        setStatusError(e?.message ?? "진행 상태 조회 중 오류가 발생했습니다.");
+        setStatusError(e instanceof Error ? e.message : "진행 상태 조회 중 오류가 발생했습니다.");
       } finally {
         setIsLoadingStatus(false);
       }
@@ -161,16 +158,21 @@ export default function HomePage() {
     loadScenarioStatus();
   }, []);
 
+  const progressDataMap = useMemo(
+    () =>
+      new Map<number, number>(
+        progressCards.map((c) => [c.scenarioId, c.progress])
+      ),
+    [progressCards]
+  );
+
   // 특정 시나리오가 완료되었는지 여부를 계산하는 헬퍼 함수
   const isScenarioCompleted = (scenarioId: number): boolean => {
-    // progressCards에서 id로 찾아서 진행률 가져오기
-    const progress = progressCards.find((c) => c.scenarioId === scenarioId)?.progress ?? 0;
-
-    const completedByRate = progress >= 100;  // 진행률 100% 이상
-    const completedByApi = completedScenarioIds.has(scenarioId);  // 완료 목록에 포함
-
+    const progress = progressDataMap.get(scenarioId) ?? 0;
+    const completedByRate = progress >= 100; // 진행률 100% 이상
+    const completedByApi = completedScenarioIds.has(scenarioId); // 완료 목록에 포함
     return completedByRate || completedByApi;
-  }
+  };
 
   // 모든 시나리오 완료 여부(추후 마무리 퀴즈 활성화 판단용)
   const allScenariosCompleted = SCENARIO_CONFIG.length > 0 && SCENARIO_CONFIG.every((cfg) => isScenarioCompleted(cfg.id));
