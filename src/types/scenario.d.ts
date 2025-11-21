@@ -18,3 +18,16 @@ export interface Quiz {
   options: string; // 보기 목록 (JSON 문자열)
   answer: number; // 정답 번호
 }
+
+// API 응답 데이터에 대한 타입 정의
+export interface CompletedScenario {
+  scenarioId: number;
+  title: string;
+  completedAt: string;
+}
+
+export interface ScenarioProgress {
+  scenarioId: number;
+  title: string;
+  progressRate: number;
+}
