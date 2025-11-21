@@ -8,6 +8,8 @@ import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 �
 import Modal from "@/components/common/Modal"; // 준비 중 서비스 안내 모달 컴포넌트입니다.
 import Image from "next/image";
 import axiosInstance from "@/utils/axiosInstance";
+import { CompletedScenario, ScenarioProgress } from "@/types";
+import { SCENARIO_CONFIG } from "@/constants/scenario";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -15,27 +17,6 @@ const utilityImage = "/images/utility-image.png"; // 공과금 카드 이미지�
 const savingsImage = "/images/savings-image.png"; // 예/적금 카드 이미지입니다.
 const loanImage = "/images/loan-image.png"; // 대출 카드 이미지입니다.
 const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용하는 아이콘입니다.
-
-// 응답받은 scenarioId를 UI에 쓸 이름으로 매핑
-const SCENARIO_CONFIG = [
-  { id: 1, scenarioTitle: "조회·이체" },
-  { id: 2, scenarioTitle: "공과금" },
-  { id: 3, scenarioTitle: "예/적금" },
-  { id: 4, scenarioTitle: "대출" },
-]
-
-// API 응답 데이터에 대한 타입 정의
-interface CompletedScenario {
-  scenarioId: number;
-  title: string;
-  completedAt: string;
-}
-
-interface ScenarioProgress {
-  scenarioId: number;
-  title: string;
-  progressRate: number;
-}
 
 // API 호출 함수 : 완료 시나리오 조회
 const fetchCompletedScenarios = async () => {
@@ -63,10 +44,7 @@ export default function HomePage() {
   );
 
   // 완료된 시나리오 id 집합
-  const [completedScenarioIds, setCompletedScenarioIds] = useState<
-    Set<number>
-  >(new Set());
-
+  const [completedScenarioIds, setCompletedScenarioIds] = useState<Set<number>>(new Set());
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [statusError, setStatusError] = useState<string | null>(null);
 
@@ -156,7 +134,8 @@ export default function HomePage() {
         // 진행률: scenarioId -> progressRate Map으로 변환
         const progressMap = new Map<number, number>();
         progressList.forEach((item) => {
-          progressMap.set(item.scenarioId, item.progressRate);
+          const rate = item.progressRate ?? 0;
+          progressMap.set(item.scenarioId, rate);
         });
 
         // 완료: scenarioId를 Set에 담기
@@ -171,12 +150,7 @@ export default function HomePage() {
           const fromApi = progressMap.get(cfg.id);
           
           // 진행률이 있으면 그대로 사용, 없는데 완료 목록에 있으면 100, 둘 다 아니면 0
-          let rate = 0;
-          if (fromApi !== undefined) {
-            rate = fromApi;
-          } else if (completedIdSet.has(cfg.id)) {
-            rate = 100;
-          }
+          const rate = fromApi ?? (completedIdSet.has(cfg.id) ? 100 : 0);
           
           return {
             scenarioId: cfg.id,
@@ -211,14 +185,13 @@ export default function HomePage() {
   });
 
   // 모든 시나리오 완료 여부(마무리 퀴즈 활성화 판단용 - 추후 사용 가능)
-  const allScenariosCompleted = 
-    scenarioCompletion.length > 0 && scenarioCompletion.every(Boolean);
+  const allScenariosCompleted = scenarioCompletion.length > 0 && scenarioCompletion.every(Boolean);
   
   const progressSteps = SCENARIO_CONFIG.map((cfg, index) => {
     const completed = scenarioCompletion[index];
 
     return {
-      label: cfg.scenarioTitle,
+      label: cfg.scenarioTitle as string,
       bgColor: completed ? "bg-[#2F6FE0]" : "bg-[#C3C3C3]",
       textColor: "text-gray-500",
       iconSrc: completed ? "/images/maincheck2.png" : "/images/maincheck.png",
