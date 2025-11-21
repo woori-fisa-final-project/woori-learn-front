@@ -10,6 +10,7 @@ interface ButtonProps {
   fullWidth?: boolean; // 버튼이 부모 너비를 모두 차지할지 여부입니다.
   className?: string; // 추가 스타일 클래스를 주입하기 위한 속성입니다.
   type?: "button" | "submit" | "reset"; // 버튼 타입을 명시합니다.
+  id?: string;
 }
 
 export default function Button({
@@ -21,6 +22,7 @@ export default function Button({
   fullWidth = true,
   className = "",
   type = "button",
+  id,
 }: ButtonProps) {
   // 크기 설정
   const sizeClasses = {
@@ -98,6 +100,7 @@ export default function Button({
 
   return (
     <button
+      id={id}
       type={type}
       onClick={onClick}
       disabled={disabled}

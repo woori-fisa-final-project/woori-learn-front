@@ -278,18 +278,12 @@ export default function WooriMainPage() {
         // 다음 스텝 ID 계산 (현재 스텝 + 1)
         const nextStepId = currentStep.id + 1;
         // transfer-scenario 페이지로 이동하면서 다음 스텝을 표시
-        if (typeof window !== 'undefined') {
-          window.location.href = `/transfer-scenario?scenarioId=1&stepId=${nextStepId}&scenarioStep=2`;
-        }
+        router.push(`/transfer-scenario?scenarioId=1&stepId=${nextStepId}&scenarioStep=2`);
         return;
       }
     }
     
-    // PRACTICE step이 아니거나, 튜토리얼이 없는 경우
-    // 이체 페이지로 이동하면서 scenario2(step=2)와 튜토리얼 stepId(1011) 설정
-    if (typeof window !== 'undefined') {
-      window.location.href = "/transfer-scenario?scenarioId=1&stepId=1011&scenarioStep=2";
-    }
+    router.push("/transfer-scenario?scenarioId=1&stepId=1011&scenarioStep=2");
   };
 
   

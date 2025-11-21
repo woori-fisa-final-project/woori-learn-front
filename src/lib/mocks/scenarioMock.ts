@@ -291,7 +291,265 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
           emotion: "congratulation",
           text: "축하해! 이체가 성공적으로 완료됐어!"
         }
-      }
+      },
+      
+      1225: {
+        id: 1225,
+        scenarioId: 1,
+        type: "MODAL",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          title: "계좌가 잠겼습니다",
+          text: "보안상의 이유로 해당 계좌가 일시적으로 잠금 처리되었습니다.",
+          solution: "잠금 해제 방법",
+          "1": "영업점 방문 (신분증 지참)",
+          "2": "고객센터 전화 (본인인증)",
+        },
+      },
+      1226: {
+        id: 1226,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          emotion: "surprised",
+          text: "이럴 줄 알았어... 비밀번호를 너무 많이 틀렸어.",
+        },
+      },
+      1227: {
+        id: 1227,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          text: "이제 은행 영업점에 직접 가거나, 고객센터에 전화해야 해.",
+        },
+      },
+      1228: {
+        id: 1228,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: true },
+          character: "wibee",
+          emotion: "caution",
+          text: "실제에서는 5번의 기회가 있으니까 항상 조심해야 해. 다시 한번 시도해 보자",
+        },
+      },
+      1327: {
+        id: 1327,
+        scenarioId: 1,
+        type: "CHOICE",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          emotion: "surprised",
+          text: "이체가... 완료됐어. 그런데...",
+          choices: [
+            { good: false, next: 1328 },
+            { good: false, next: 1338 }
+          ]
+        }
+      },
+      
+      1328: {
+        id: 1328,
+        scenarioId: 1,
+        type: "MODAL",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          receiver: "이체 받은 사람: 김집주",
+          money: "금액: 5,000,000원",
+          balance: "잔액: -4,200,000원"
+        }
+      },
+      
+      1329: {
+        id: 1329,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          emotion: "surprised",
+          text: "어떡해! 500만 원이 나갔어!"
+        }
+      },
+      
+      1330: {
+        id: 1330,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          text: "너무 조급하게 확인하지 않고 진행한 결과야..."
+        }
+      },
+      
+      1331: {
+        id: 1331,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          text: "이럴 때는 바로 은행에 연락해야 해!"
+        }
+      },
+      
+      1332: {
+        id: 1332,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          text: "집주인에게 전화해서 사정을 말씀드리고, 450만 원을 돌려받아야 해."
+        }
+      },
+      
+      1338: {
+        id: 1338,
+        scenarioId: 1,
+        type: "MODAL",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          receiver: "이체 받은 사람: 이누구",
+          money: "금액: 500,000원"
+        }
+      },
+      
+      1339: {
+        id: 1339,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          emotion: "surprised",
+          text: "어떡해! 완전 다른 사람한테 돈이 입금되었어!"
+        }
+      },
+      
+      1340: {
+        id: 1340,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          text: "너무 조급하게 확인하지 않고 진행한 결과야..."
+        }
+      },
+      
+      1341: {
+        id: 1341,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          text: "이럴 때는 바로 은행에 연락해야 해!"
+        }
+      },
+      
+      1342: {
+        id: 1342,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: true },
+          character: "wibee",
+          emotion: "caution",
+          text: "신중하게! 다시 한 번 시도해보자"
+        }
+      },
+      
+      1489: {
+        id: 1489,
+        scenarioId: 1,
+        type: "MODAL",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          title: "계좌가 잠겼습니다",
+          text: "보안상의 이유로 해당 계좌가 일시적으로 잠금 처리되었습니다.",
+          solution: "잠금 해제 방법",
+          "1": "영업점 방문 (신분증 지참)",
+          "2": "고객센터 전화 (본인인증)"
+        }
+      },
+      
+      1490: {
+        id: 1490,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          emotion: "surprised",
+          text: "이럴 줄 알았어... 비밀번호를 너무 많이 틀렸어."
+        }
+      },
+      
+      1491: {
+        id: 1491,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          text: "이제 은행 영업점에 직접 가거나, 고객센터에 전화해야 해."
+        }
+      },
+      
+      1492: {
+        id: 1492,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: true },
+          character: "wibee",
+          emotion: "caution",
+          text: "실제에서는 5번의 기회가 있으니까 항상 조심해야 해. 다시 한번 시도해 보자"
+        }
+      },
+      
+      1592: {
+        id: 1592,
+        scenarioId: 1,
+        type: "IMAGE",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          image: "message2"
+        }
+      },
+      
+      1593: {
+        id: 1593,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: false },
+          character: "wibee",
+          emotion: "surprised",
+          text: "돈이 집주인에게 제대로 입금되지 않았어"
+        }
+      },
+      
+      1594: {
+        id: 1594,
+        scenarioId: 1,
+        type: "DIALOG",
+        content: {
+          meta: { branch: "bad", badEnding: true },
+          character: "wibee",
+          emotion: "caution",
+          text: "등록 정보를 다시 확인해서 오류가 있는 부분을 다시 해보자!"
+        }
+      },
     }
   }
 };

@@ -4,6 +4,7 @@ import { useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ScenarioContainer from "./components/ScenarioContainer"; // 이체 시나리오 전체 흐름을 렌더링하는 컨테이너 컴포넌트를 가져옵니다.
 import { TransferFlowProvider, useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 과정에서 사용하는 상태를 전역으로 제공하기 위한 컨텍스트 프로바이더입니다.
+// 시나리오 오버레이 코드추가
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 import OverlayStep from "@/components/scenario/step/OverlayStep";
 import ModalStep from "@/components/scenario/step/ModalStep";
@@ -16,6 +17,7 @@ import DialogStep from "@/components/scenario/step/DialogStep";
  */
 function TransferScenarioContent() {
   const searchParams = useSearchParams();
+  // 시나리오 오버레이 코드추가
   const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
 
   // URL 쿼리에서 scenarioId, stepId를 읽어와 시나리오를 재개합니다.
@@ -41,35 +43,12 @@ function TransferScenarioContent() {
     }
   }, [currentStep]);
 
-  // 전역 nextbtn 버튼 클릭 이벤트 리스너
-  useEffect(() => {
-    const handleNextBtnClick = async (e: MouseEvent) => {
-      // transfer-scenario 페이지에서만 작동하도록 체크
-      if (typeof window !== 'undefined' && !window.location.pathname.includes("transfer-scenario")) {
-        return;
-      }
-      
-      const target = e.target as HTMLElement;
-      const button = target.closest('#nextbtn') as HTMLButtonElement;
-      
-      if (!button) return;
-      
-      // 현재 step이 PRACTICE이고 content.button === "nextbtn"이면 nextStep 호출
-      if (currentStep?.type === "PRACTICE" && currentStep.content?.button === "nextbtn") {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (currentStep.id != null) {
-          await nextStep(currentStep.id);
-        }
-      }
-    };
-
-    document.addEventListener('click', handleNextBtnClick, true);
-    return () => {
-      document.removeEventListener('click', handleNextBtnClick, true);
-    };
-  }, [currentStep, nextStep]);
+  // 시나리오 오버레이 코드추가
+  const handlePracticeNext = async () => {
+    if (currentStep?.type === "PRACTICE" && currentStep.id != null) {
+      await nextStep(currentStep.id);
+    }
+  };
 
   // 하드코딩된 stepId 기반 분기 로직은 제거되었습니다.
   // 이제 nextbtn 버튼 클릭으로 자동 처리됩니다.
@@ -83,9 +62,11 @@ function TransferScenarioContent() {
   return (
     <>
       <Suspense fallback={<div>로딩 중...</div>}>
-        <ScenarioContainer />
+        {/* 시나리오 오버레이 코드추가 */}
+        <ScenarioContainer onPracticeNext={handlePracticeNext} />
       </Suspense>
       
+      {/* 시나리오 오버레이 코드추가 */}
       {/* PRACTICE 타입이 아닐 때만 오버레이를 렌더링합니다. */}
       {/* PRACTICE 타입일 때는 오버레이를 렌더링하지 않고 기존 실습 화면(ScenarioContainer)을 그대로 표시합니다. */}
       {currentStep && currentStep.type !== "PRACTICE" && (
