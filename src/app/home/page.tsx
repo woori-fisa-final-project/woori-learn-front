@@ -24,26 +24,29 @@ const SCENARIO_CONFIG = [
   { id: 4, scenarioTitle: "대출" },
 ]
 
+// API 응답 데이터에 대한 타입 정의
+interface CompletedScenario {
+  scenarioId: number;
+  title: string;
+  completedAt: string;
+}
+
+interface ScenarioProgress {
+  scenarioId: number;
+  title: string;
+  progressRate: number;
+}
+
 // API 호출 함수 : 완료 시나리오 조회
 const fetchCompletedScenarios = async () => {
-  const res = await axiosInstance.get("/users/me/scenarios/completed");
-  const json = res.data;
-  return json.data as {
-    scenarioId: number;
-    title: string;
-    completedAt: string;
-  }[];
+  const res = await axiosInstance.get<{ data: CompletedScenario[] }>("/users/me/scenarios/completed");
+  return res.data.data;
 };
 
-// APIT 호출 함수 : 진행률 조회
+// API 호출 함수 : 진행률 조회
 const fetchScenarioProgress = async () => {
-  const res = await axiosInstance.get("/users/me/scenarios/progress");
-  const json = res.data;
-  return json.data as {
-    scenarioId: number;
-    title: string;
-    progressRate: number;
-  }[];
+  const res = await axiosInstance.get<{ data: ScenarioProgress[] }>("/users/me/scenarios/progress");
+  return res.data.data;
 };
 
 export default function HomePage() {
@@ -168,12 +171,12 @@ export default function HomePage() {
           const fromApi = progressMap.get(cfg.id);
           
           // 진행률이 있으면 그대로 사용, 없는데 완료 목록에 있으면 100, 둘 다 아니면 0
-          const rate = 
-            fromApi !== undefined
-              ? fromApi
-              : completedIdSet.has(cfg.id)
-              ? 100
-              : 0;
+          let rate = 0;
+          if (fromApi !== undefined) {
+            rate = fromApi;
+          } else if (completedIdSet.has(cfg.id)) {
+            rate = 100;
+          }
           
           return {
             scenarioId: cfg.id,
@@ -198,9 +201,8 @@ export default function HomePage() {
   }, []);
 
   // 완료 여부 계산
-  const scenarioCompletion = SCENARIO_CONFIG.map((cfg) => {
-    const card = progressCards.find((c) => c.scenarioId === cfg.id);
-    const progress = card?.progress ?? 0;
+  const scenarioCompletion = SCENARIO_CONFIG.map((cfg, index) => {
+    const progress = progressCards[index]?.progress ?? 0;
     // 진행률이 100이상이면 완료
     const completedByRate = progress >= 100;
     // 완료 시나리오 목록(Set)에 포함되어 있으면 완료
