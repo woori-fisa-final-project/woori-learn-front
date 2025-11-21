@@ -1,5 +1,7 @@
 import type { ScenarioStep } from "@/types/scenario";
 import Weebee from "@/components/scenario/character/Weebee";
+import { CHARACTER } from "@/components/scenario/constants/character";
+
 
 type ChoiceStepProps = {
   content: Record<string, any>;
@@ -20,7 +22,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
     (previousStep.type === "DIALOG" || previousStep.type === "OVERLAY");
 
   const previousContent = showPreviousDialog ? (previousStep!.content as any) : null;
-  const isWeebee = previousContent?.character === "wibee";
+  const isWeebee = content.character === CHARACTER.WEEBEE;
 
   const balloonBase =
     "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";

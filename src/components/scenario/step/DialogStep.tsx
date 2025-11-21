@@ -1,4 +1,6 @@
 import Weebee from "@/components/scenario/character/Weebee";
+import { CHARACTER } from "@/components/scenario/constants/character";
+
 
 type DialogStepProps = {
   content: Record<string, any>;
@@ -10,7 +12,7 @@ type DialogStepProps = {
 // - Weebee: 좌측 정렬, 배경 #FFFCF6, 테두리 #E7C873 2px, rounded-[14px], tail 포함
 // - user: 동일 스타일(상단 빈 타원형 X), 우측 정렬
 export default function DialogStep({ content, centerAlign = true, onBackgroundClick }: DialogStepProps) {
-  const isWeebee = content.character === "wibee";
+  const isWeebee = content.character === CHARACTER.WEEBEE;
 
   const balloonBase =
     "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";

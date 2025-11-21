@@ -7,7 +7,6 @@ import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도�
 import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
 import Modal from "@/components/common/Modal"; // 준비 중 서비스 안내 모달 컴포넌트입니다.
 import Image from "next/image";
-import { useScenarioTrigger } from "@/lib/hooks/useScenarioTrigger";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -19,7 +18,6 @@ const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용�
 export default function HomePage() {
   const router = useRouter(); // 페이지 이동 처리를 위해 라우터 인스턴스를 가져옵니다.
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림 상태를 관리합니다.
-  const { startScenario } = useScenarioTrigger();
 
   const handleProfileClick = () => {
     router.push("/mypage"); // 프로필 버튼 클릭 시 마이페이지로 이동합니다.
