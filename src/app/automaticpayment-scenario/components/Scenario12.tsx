@@ -70,11 +70,15 @@ function AccountSelectStep({
                   />
                 </div>
                 <div className="flex flex-col gap-[4px]">
-                  <p className="text-[17px] font-semibold text-gray-900">{account.accountName}</p>
+                  <p className="text-[17px] font-semibold text-gray-900">
+                    {account.accountName}
+                  </p>
                   <p className="text-[13px] text-gray-500">
                     우리은행 {formatAccountNumber(account.accountNumber)}
                   </p>
-                  <p className="text-[13px] text-gray-500">잔액 {account.balance.toLocaleString()}원</p>
+                  <p className="text-[13px] text-gray-500">
+                    잔액 {account.balance.toLocaleString()}원
+                  </p>
                 </div>
               </div>
             </button>
@@ -106,7 +110,13 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   } = useTransferFlow();
 
   // 커스텀 훅으로 로직 분리
-  const { accounts, selectedAccount, isLoadingAccounts, errorMessage: accountError, selectAccount } = useAccountSelection();
+  const {
+    accounts,
+    selectedAccount,
+    isLoadingAccounts,
+    errorMessage: accountError,
+    selectAccount,
+  } = useAccountSelection();
   const { step, setStep } = useAutoPaymentSteps(setOnBack, onCancel);
   const {
     scheduleSummary,
@@ -122,7 +132,10 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 은행 선택 바텀시트 노출 여부를 관리한다.
   const [isBankSheetOpen, setBankSheetOpen] = useState(false);
   // 에러 모달 상태
-  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
+  const [errorModal, setErrorModal] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
     isOpen: false,
     message: "",
   });
@@ -174,7 +187,9 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
     setStep("form");
   };
 
-  const displaySourceAccount = selectedAccount ? formatAccountNumber(selectedAccount.accountNumber) : "000-0000-000000";
+  const displaySourceAccount = selectedAccount
+    ? formatAccountNumber(selectedAccount.accountNumber)
+    : "000-0000-000000";
   const displaySourceName = selectedAccount?.accountName ?? "우리은행계좌";
   const displaySourceBank = "우리은행";
   const inboundBank = selectedBank ?? "국민은행";
@@ -241,7 +256,7 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   };
 
   return (
-    <div className="mx-auto flex h-full flex-col min-h-[85dvh] w-full max-w-[390px] bg-white">
+    <div className="mx-auto flex h-full flex-col min-h-[84dvh] w-full max-w-[390px] bg-white">
       <main className="flex h-full flex-col px-[20px] pb-[40px]">
         {step === "account" && (
           <AccountSelectStep
@@ -262,7 +277,10 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
         )}
 
         {step === "amount" && (
-          <Scenario4 onNext={() => setStep("review")} onBack={() => setStep("form")} />
+          <Scenario4
+            onNext={() => setStep("review")}
+            onBack={() => setStep("form")}
+          />
         )}
 
         {step === "review" && (
@@ -274,9 +292,7 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
         )}
 
         {step === "schedule" && (
-          <Scenario14
-            onComplete={handleScheduleComplete}
-          />
+          <Scenario14 onComplete={handleScheduleComplete} />
         )}
 
         {step === "confirm" && scheduleSummary && (

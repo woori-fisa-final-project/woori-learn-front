@@ -24,7 +24,10 @@ export default function HomePage() {
   };
 
   const handleAccountClick = () => {
-    router.push("/woorimain"); // 계좌 조회/이체 서비스 카드를 눌렀을 때 우리 메인 화면으로 이동합니다.
+    // 조회·이체 서비스 카드를 눌렀을 때는
+    // WooriMainPage로 이동하면서 시나리오 튜토리얼을 오버레이로 표시합니다.
+    // ※ 백엔드 시나리오 ID는 1이며, 첫 Step은 1001부터 시작합니다.
+    router.push("/woorimain?scenarioId=1&stepId=1001");
   };
 
   const handleModalOpen = () => {
@@ -47,7 +50,7 @@ export default function HomePage() {
       rounded: "rounded-[10px]",
       imageWidth: "56px",
       imageHeight: "49px",
-      onClick: handleAccountClick, // 클릭 시 계좌 관련 시나리오 진입으로 이동합니다.
+      onClick: handleAccountClick, // 클릭 시 계좌 조회/이체 시나리오 진입으로 이동합니다.
     },
     {
       title: "공과금",

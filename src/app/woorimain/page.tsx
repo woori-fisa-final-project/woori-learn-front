@@ -1,11 +1,13 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 라우터와 상태 훅을 활용할 수 있습니다.
 
-import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터를 사용합니다.
+import { useRouter, useSearchParams } from "next/navigation"; // 페이지 이동 및 쿼리 파라미터를 처리하기 위해 Next.js 라우터를 사용합니다.
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다.
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
+import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
+import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
 
 type NavItem = {
   label: string;
@@ -78,7 +80,7 @@ function AccountCard({
   onTransfer,
   onViewAll,
 }: {
-  onTransfer: () => void;
+  onTransfer: (e?: React.MouseEvent) => void;
   onViewAll: () => void;
 }) {
   // 대표 계좌 요약 카드입니다.
@@ -103,8 +105,13 @@ function AccountCard({
       <div className="mt-[18px] flex items-center justify-between">
         <p className="text-[26px] font-bold text-gray-900">0원</p>
         <button
+          id="nextbtn"
           type="button"
-          onClick={onTransfer}
+          onClick={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await onTransfer(e);
+          }}
           className="rounded-[12px] px-[16px] py-[8px] text-[13px] font-semibold text-gray-700 shadow-sm transition hover:bg-primary-600"
         >
           이체
@@ -223,10 +230,27 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
 
 export default function WooriMainPage() {
   const router = useRouter(); // 버튼 클릭 시 이동을 처리하기 위해 라우터를 사용합니다.
+  const searchParams = useSearchParams();
   const { userName } = useUserData(); // 사용자 이름을 가져와 헤더에 표시합니다.
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState("");
   const [isNoticeOpen, setNoticeOpen] = useState(false);
+
+  // 시나리오 엔진: woorimain 위에서 OVERLAY 단계(예: 1009)를 재생할 때 사용합니다.
+  const { currentStep, previousStep, nextStep, resume, goToStep } = useScenarioEngine();
+
+  // URL 쿼리에서 scenarioId, stepId를 읽어와 시나리오를 재개합니다.
+  useEffect(() => {
+    const scenarioIdParam = searchParams.get("scenarioId");
+    const stepIdParam = searchParams.get("stepId");
+
+    const scenarioId = scenarioIdParam ? Number(scenarioIdParam) : NaN;
+    const stepId = stepIdParam ? Number(stepIdParam) : undefined;
+
+    if (!Number.isNaN(scenarioId)) {
+      void resume(scenarioId, stepId);
+    }
+  }, [resume, searchParams]);
 
   const handleNavigate = (route: string) => {
     router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
@@ -240,9 +264,29 @@ export default function WooriMainPage() {
     setMenuOpen(false);
   };
 
-  const handleTransfer = () => {
-    router.push("/transfer-scenario"); // 이체 시나리오 진입 페이지로 이동합니다.
+  const handleTransfer = async (e?: React.MouseEvent) => {
+    // 이벤트 전파 중단 (다른 리스너가 가로채지 않도록)
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // 이체 버튼 클릭 시: 현재 step이 PRACTICE이고 content.button === "nextbtn"이면
+    // transfer-scenario 페이지로 이동하면서 nextStep 호출하여 다음 스텝을 오버레이로 표시
+    if (currentStep?.type === "PRACTICE" && currentStep.content?.button === "nextbtn") {
+      if (currentStep.id != null) {
+        // 다음 스텝 ID 계산 (현재 스텝 + 1)
+        const nextStepId = currentStep.id + 1;
+        // transfer-scenario 페이지로 이동하면서 다음 스텝을 표시
+        router.push(`/transfer-scenario?scenarioId=1&stepId=${nextStepId}&scenarioStep=2`);
+        return;
+      }
+    }
+    
+    router.push("/transfer-scenario?scenarioId=1&stepId=1011&scenarioStep=2");
   };
+
+  
 
   const handleViewAllAccounts = () => {
     router.push("/searchaccount-scenario"); // 전체 계좌 조회 시나리오 페이지로 이동합니다.
@@ -299,6 +343,30 @@ export default function WooriMainPage() {
         onConfirm={handleCloseNotice}
         zIndex="z-[100]"
       />
+
+      {/* PRACTICE 타입이 아닐 때만 시나리오를 렌더링합니다. */}
+      {currentStep && currentStep.type !== "PRACTICE" && (
+        <ScenarioRenderer
+          step={currentStep}
+          previousStep={previousStep}
+          onChoiceNext={(nextStepId) => {
+            goToStep(nextStepId);
+          }}
+          onBackgroundClick={async () => {
+            // CHOICE 단계에서는 ChoiceStep 내부에서 onChoiceNext를 통해 이동하므로
+            // 여기서는 일반 nextStep을 호출하지 않습니다.
+            if (currentStep?.type === "CHOICE") return;
+            // PRACTICE 단계에서는 content.button을 통해 next-step을 요청하므로
+            // 여기서는 일반 nextStep을 호출하지 않습니다.
+            if (currentStep?.type === "PRACTICE") return;
+            if (currentStep?.id != null) {
+              await nextStep(currentStep.id);
+            }
+          }}
+        />
+      )}
+
+      {/* PRACTICE 타입일 때는 아무것도 렌더링하지 않습니다 (오버레이 제거). */}
     </div>
   );
 }

@@ -7,7 +7,7 @@ import NumericKeypad from "@/components/common/NumericKeypad"; // 숫자 패드 
 const REQUIRED_PASSWORD = "1234"; // 시나리오에서 사용되는 고정 비밀번호 값입니다.
 
 type Scenario5Props = {
-  onSuccess: (password: string) => void; // 비밀번호 검증에 성공했을 때 호출되는 콜백입니다. 입력된 비밀번호를 전달합니다.
+  onSuccess: (password: string) => void | Promise<void>; // 비밀번호 검증에 성공했을 때 호출되는 콜백입니다. 입력된 비밀번호를 전달합니다.
   onClose: () => void; // 바텀 시트를 닫을 때 실행되는 콜백입니다.
 };
 
@@ -44,7 +44,7 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
         if (timerRef.current) {
           clearTimeout(timerRef.current);
         }
-        timerRef.current = setTimeout(() => {
+        timerRef.current = setTimeout(async() => {
           const enteredPassword = value;
           setPassword(""); // 비밀번호 입력을 비우고
           onSuccess(enteredPassword); // 성공 콜백을 실행하며 입력된 비밀번호를 전달합니다.
@@ -57,7 +57,7 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (password.length < 4) {
       return; // 4자리가 채워지지 않으면 제출하지 않습니다.
     }
@@ -130,11 +130,7 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
             )}
           </div>
 
-          <div className="mt-[28px]">
-            <Button onClick={handleSubmit} disabled={password.length < 4}>
-              확인
-            </Button>
-          </div>
+          
         </div>
       </div>
     </div>
