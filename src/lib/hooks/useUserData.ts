@@ -1,30 +1,75 @@
-import { useState, useEffect } from "react"; // 사용자 이름과 포인트 정보를 상태로 관리하기 위해 React 훅을 사용합니다.
-import { getAvailablePoints } from "@/constants/points"; // 기본 포인트 값을 계산하기 위해 포인트 유틸 함수를 불러옵니다.
+import { useState, useEffect } from 'react';
+import { getCurrentUser } from '@/lib/api/user.api';
+import { getAvailablePoints, setAvailablePoints as cachePoints } from '@/constants/points';
 
-export function useUserData() { // 사용자 이름과 보유 포인트를 제공하는 커스텀 훅입니다.
-  const [userName, setUserName] = useState("아무개"); // 사용자 이름을 상태로 관리하며 기본값을 설정합니다.
-  const [availablePoints, setAvailablePoints] = useState(0); // 보유 포인트를 상태로 관리합니다.
+/**
+ * 사용자 데이터를 관리하는 커스텀 훅
+ * 
+ * API 우선으로 동작하며 localStorage는 캐시/폴백용으로만 사용:
+ * 1. API에서 최신 데이터 가져오기 시도
+ * 2. 성공 시 localStorage에 캐시
+ * 3. 실패 시 localStorage 캐시 데이터 사용 (폴백)
+ */
+export function useUserData() {
+  const [userName, setUserName] = useState('아무개');
+  const [availablePoints, setAvailablePoints] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { // 컴포넌트 마운트 시 로컬 저장소에서 사용자 데이터를 불러옵니다.
-    if (typeof window === "undefined") return; // ✅ SSR 환경 안전 처리
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (typeof window === 'undefined') return; // SSR 안전 처리
 
-    const savedName = localStorage.getItem("userName"); // 저장된 사용자 이름이 있는지 확인합니다.
-    if (savedName) {
-      setUserName(savedName);
-    }
+      try {
+        setIsLoading(true);
+        setError(null);
 
-    const points = getAvailablePoints(); // 포인트 유틸을 통해 기본 포인트를 계산합니다.
-    setAvailablePoints(points); // 계산된 포인트를 상태에 반영합니다.
+        // 1. API에서 최신 사용자 데이터 가져오기
+        const userData = await getCurrentUser();
+
+        setUserName(userData.name);
+        setAvailablePoints(userData.points);
+
+        // 2. localStorage에 캐시 저장
+        localStorage.setItem('userName', userData.name);
+        cachePoints(userData.points);
+
+      } catch (err) {
+        // 3. API 실패 시 localStorage 캐시 데이터 사용 (폴백)
+        console.warn('API 호출 실패, 캐시 데이터 사용:', err);
+        setError('사용자 정보를 불러오는 중 문제가 발생했습니다.');
+
+        const cachedName = localStorage.getItem('userName');
+        const cachedPoints = getAvailablePoints();
+
+        if (cachedName) setUserName(cachedName);
+        setAvailablePoints(cachedPoints);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
-  // 이름 변경이 필요한 경우 사용할 수 있도록 setter도 함께 반환
-  const updateUserName = (name: string) => { // 사용자 이름을 변경할 때 호출하는 함수입니다.
-    setUserName(name); // 상태에 즉시 반영하여 UI를 업데이트합니다.
-    if (typeof window !== "undefined") {
-      localStorage.setItem("userName", name); // 브라우저 환경일 때만 로컬 스토리지에 이름을 저장합니다.
+  /**
+   * 사용자 이름 업데이트 함수
+   * API 호출은 하지 않고 로컬 상태만 업데이트 (필요시 API 연동 가능)
+   */
+  const updateUserName = (name: string) => {
+    setUserName(name);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userName', name);
     }
   };
 
-  return { userName, availablePoints, updateUserName }; // 컴포넌트에서 이름, 포인트, 이름 업데이트 함수를 사용할 수 있도록 반환합니다.
+  return {
+    userName,
+    availablePoints,
+    isLoading,
+    error,
+    updateUserName,
+  };
 }
+
 

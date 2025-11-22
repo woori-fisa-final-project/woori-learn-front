@@ -128,8 +128,8 @@ export default function PointListPage() {
       }
 
       const json = await response.json();
-const items: PointHistoryItem[] = json.data?.content ?? [];
-setHistoryList(items);
+      const items: PointHistoryItem[] = json.data?.content ?? [];
+      setHistoryList(items);
 
     } catch (error) {
       console.error("포인트 내역 조회 오류:", error);
@@ -141,23 +141,22 @@ setHistoryList(items);
   };
 
   useEffect(() => {
-    if (activeTab === "history") {
-      fetchHistory();
-    }
-  }, [filterState, activeTab]);
+    fetchHistory();
+  }, [filterState, activeTab === "history"]);
 
   // -------------------------------------------------------
   // 필터 적용
   // -------------------------------------------------------
-   const handleFilterApply = (filters: { period: string; sort: string; status: string; }) => {
+  const handleFilterApply = (filters: { period: string; sort: string; status: string; }) => {
     setFilterState((prev) => ({
       ...prev,
-      period: periodEnum[filters.period] ?? prev.period,
-      sort: sortEnum[filters.sort] ?? prev.sort,
-      status: statusEnum[filters.status] ?? prev.status,
+      period: periodEnum[filters.period as keyof typeof periodEnum] ?? prev.period,
+      sort: sortEnum[filters.sort as keyof typeof sortEnum] ?? prev.sort,
+      status: statusEnum[filters.status as keyof typeof statusEnum] ?? prev.status,
       page: 1,
     }));
   };
+
   return (
     <PageContainer>
       <div className="flex h-[calc(100dvh-60px)] w-full flex-col">

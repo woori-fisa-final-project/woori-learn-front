@@ -8,7 +8,7 @@ export const DEFAULT_POINTS = 5000;
 // --------------------------------------------------------------
 // localStorage key
 // --------------------------------------------------------------
-const POINTS_KEY = "availablePoints";
+export const POINTS_KEY = "availablePoints";
 
 // --------------------------------------------------------------
 // 보유 포인트 조회
@@ -53,18 +53,18 @@ export const periodEnum: Record<string, PeriodType> = {
   "3개월": "THREE_MONTHS",
 };
 
-export const sortEnum: Record<string, SortType> = {
+export const sortEnum = {
   "최신순": "DESC",
   "오래된순": "ASC",
-};
+} as const satisfies Record<string, SortType>;
 
-export const statusEnum: Record<string, StatusType> = {
+export const statusEnum = {
   "전체": "ALL",
   "적립": "DEPOSIT",
   "환전 신청": "WITHDRAW_APPLY",
   "환전 완료": "WITHDRAW_SUCCESS",
   "환전 실패": "WITHDRAW_FAILED",
-};
+} as const satisfies Record<string, StatusType>;
 
 // --------------------------------------------------------------
 // 화면 표시용 텍스트 매핑

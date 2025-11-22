@@ -47,30 +47,25 @@ export default function PointExchangePage() {
 
   const formattedExpectedAmount = expectedAmount.toLocaleString();
 
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
-    const amount = parseInt(withdrawalAmount.replace(/,/g, ''));
+  const validateAmount = (value: string, availablePoints: number) => {
+    const amount = parseInt(value.replace(/,/g, ''));
 
-    if (!withdrawalAmount) {
-      newErrors.withdrawalAmount = '환전 금액을 입력해주세요.';
-    } else if (amount < 1) {
-      newErrors.withdrawalAmount = '최소 환전 금액은 1p입니다.';
-    } else if (amount > availablePoints) {
-      newErrors.withdrawalAmount = `보유 포인트(${availablePoints.toLocaleString()}p)를 초과할 수 없습니다.`;
-    }
+    if (!value) return '환전 금액을 입력해주세요.';
+    if (amount < 1) return '최소 환전 금액은 1p입니다.';
+    if (amount > availablePoints)
+      return `보유 포인트(${availablePoints.toLocaleString()}p)를 초과할 수 없습니다.`;
 
-    const accountDigits = accountNumber.replace(/-/g, '');
+    return null;
+  };
 
-    if (!accountNumber.trim()) {
-      newErrors.accountNumber = '계좌번호를 입력해주세요.';
-    } else if (!/^\d+$/.test(accountDigits)) {
-      newErrors.accountNumber = '계좌번호는 숫자만 입력 가능합니다.';
-    } else if (accountDigits.length < 10) {
-      newErrors.accountNumber = '계좌번호는 최소 10자리 이상이어야 합니다.';
-    }
+  const validateAccountNumber = (value: string) => {
+    const digits = value.replace(/-/g, '');
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!value.trim()) return '계좌번호를 입력해주세요.';
+    if (!/^\d+$/.test(digits)) return '계좌번호는 숫자만 입력 가능합니다.';
+    if (digits.length < 10) return '계좌번호는 최소 10자리 이상이어야 합니다.';
+
+    return null;
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,32 +73,8 @@ export default function PointExchangePage() {
     setWithdrawalAmount(value);
     setSubmitStatus('idle');
 
-    if (value) {
-      const amount = parseInt(value);
-      if (amount > availablePoints) {
-        setErrors((prev) => ({
-          ...prev,
-          withdrawalAmount: `보유 포인트(${availablePoints.toLocaleString()}p)를 초과할 수 없습니다.`,
-        }));
-      } else if (amount < 1 && amount > 0) {
-        setErrors((prev) => ({
-          ...prev,
-          withdrawalAmount: '최소 환전 금액은 1p입니다.',
-        }));
-      } else {
-        setErrors((prev) => {
-          const n = { ...prev };
-          delete n.withdrawalAmount;
-          return n;
-        });
-      }
-    } else {
-      setErrors((prev) => {
-        const n = { ...prev };
-        delete n.withdrawalAmount;
-        return n;
-      });
-    }
+    const error = validateAmount(value, availablePoints);
+    setErrors((prev) => ({ ...prev, withdrawalAmount: error || undefined }));
   };
 
   const handleAccountNumberChange = (
@@ -113,29 +84,23 @@ export default function PointExchangePage() {
     setAccountNumber(value);
     setSubmitStatus('idle');
 
-    const digits = value.replace(/-/g, '');
-
-    if (value && !/^\d+(-?\d+)*$/.test(value)) {
-      setErrors((prev) => ({
-        ...prev,
-        accountNumber: '계좌번호는 숫자와 하이픈(-)만 입력 가능합니다.',
-      }));
-    } else if (digits.length > 0 && digits.length < 10) {
-      setErrors((prev) => ({
-        ...prev,
-        accountNumber: '계좌번호는 최소 10자리 이상이어야 합니다.',
-      }));
-    } else {
-      setErrors((prev) => {
-        const n = { ...prev };
-        delete n.accountNumber;
-        return n;
-      });
-    }
+    const error = validateAccountNumber(value);
+    setErrors((prev) => ({ ...prev, accountNumber: error || undefined }));
   };
 
   const handleSubmit = async () => {
-    if (!validateForm() || submitStatus === 'loading') return;
+    const amountError = validateAmount(withdrawalAmount, availablePoints);
+    const accountError = validateAccountNumber(accountNumber);
+
+    if (amountError || accountError) {
+      setErrors({
+        withdrawalAmount: amountError || undefined,
+        accountNumber: accountError || undefined,
+      });
+      return;
+    }
+
+    if (submitStatus === 'loading') return;
 
     setSubmitStatus('loading');
 
