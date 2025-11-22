@@ -7,7 +7,7 @@ interface ApiResponse<T> {
 }
 
 /**
- * 사용자의 계좌 목록 조회
+ * 사용자의 계좌 목록 조회 
  */
 export async function getAccountList(userId: number): Promise<EducationalAccount[]> {
   const response = await fetch(`/education/accounts/list/${userId}`, {

@@ -1,234 +1,235 @@
-"use client"; // 클라이언트 컴포넌트로 선언하여 라우터와 상태를 사용할 수 있도록 합니다.
+/*
+  1) 시나리오 8 페이지 진입
+      ↓
+  2) useScenarioHeader → 헤더 제목 “전체계좌” 설정
+      ↓
+  3) useAccountList(userId) → 전체 계좌 목록 API 호출
+      ↓
+  4) API 응답 → AccountResponse[] 를 AccountCard[] 형태로 변환
+      ↓
+  5) 입출금 / 예적금 계좌 구분
+      ↓
+  6) 전체 자산(잔액 합계) 계산
+      ↓
+  7) CategoryBlock + AccountCard 컴포넌트로 렌더링
+      ↓
+  8) 입출금 계좌 클릭 → 시나리오 9로 이동(accountNumber 전달)
+*/
 
-import { useEffect, useState } from "react"; // 헤더 뒤로가기 동작과 모달 상태 제어를 위해 필요한 훅을 사용합니다.
-import { useRouter } from "next/navigation"; // 다른 페이지로 이동하기 위해 Next.js 라우터를 불러옵니다.
-import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext"; // 시나리오 헤더의 뒤로가기 버튼 동작을 커스터마이징합니다.
-import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우에서 공유하는 상태(출금 계좌 번호 등)를 가져옵니다.
-import Modal from "@/components/common/Modal"; // 기존 alert 대신 안내 모달을 사용하기 위해 공통 모달 컴포넌트를 불러옵니다.
-import Button from "@/components/common/Button"; // 모달 내부에서 동일한 버튼 스타일을 재사용합니다.
-import Image from "next/image";
+"use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
+import { useAccountList } from "./hooks/useAccountList";
+import type { AccountCard } from "@/types";
+
+import Modal from "@/components/common/Modal";
+import Button from "@/components/common/Button";
+import AlertModalContent from "./components/AlertModalContent";
+import CategoryBlock from "./components/CategoryBlock";
+
+
+// 상단 퀵 필터 버튼용 상수
 const QUICK_FILTERS = [
-  // 빠르게 필터를 토글할 수 있도록 라벨과 활성 여부를 정리한 배열입니다.
-  { label: "입출금", active: true },
-  { label: "우리금융그룹", active: false },
-];
-
-const ACCOUNT_CARDS = [
-  // 화면에 노출될 각 계좌 카드를 정의하고, 필요 시 추가 정보를 포함합니다.
-  {
-    title: "WON통장",
-    bank: "우리",
-    accountKey: "source" as const,
-    badge: "한도제한",
-    balance: "0원",
-    transferAvailable: true, // 입출금 계좌는 이체 시나리오 9로 이동할 수 있습니다.
-  },
-  {
-    title: "WON적금통장",
-    bank: "우리",
-    accountNumber: "0000-000-000000",
-    badge: "한도제한",
-    balance: "0원",
-    transferAvailable: false, // 예적금 계좌는 학습 시나리오상 이체가 제한되어 있음을 안내합니다.
-    disabledMessage: "예적금 계좌에서는 이체를 이용할 수 없습니다.", // 눌렀을 때 안내로 사용할 메시지입니다.
-  },
+  { label: "입출금", value: "deposit" },
+  { label: "우리금융그룹", value: "woori-group" },
 ];
 
 export default function Scenario8() {
-  const router = useRouter(); // 다른 시나리오 단계로 이동시 사용합니다.
-  const { setOnBack, setTitle } = useScenarioHeader(); // 헤더 뒤로가기 버튼을 메인 화면으로 연결하기 위해 컨텍스트를 사용합니다.
-  const { sourceAccountNumber } = useTransferFlow(); // 사용자가 선택한 출금 계좌 번호를 가져옵니다.
-  const [isAlertModalOpen, setAlertModalOpen] = useState(false); // 안내 모달의 노출 여부를 관리합니다.
-  const [alertMessage, setAlertMessage] = useState(""); // 모달에 표시할 안내 문구를 저장합니다.
+  const router = useRouter();
+  const { setTitle, setOnBack } = useScenarioHeader();
 
-  useEffect(() => {
-    setTitle("전체계좌"); // 목록 화면이라는 것을 헤더에서 명확히 보여 줍니다.
-    setOnBack(() => () => {
-      router.push("/woorimain"); // 시나리오 8에서 뒤로가기를 누르면 항상 우리메인 화면으로 이동하도록 고정합니다.
-    });
+  const {
+    accounts,
+    depositAccounts,
+    savingsAccounts,
+    totalBalance,
+    isLoading,
+    error,
+    refetch,
+  } = useAccountList(1);
 
-    return () => {
-      setTitle("");
-      setOnBack(null); // 시나리오 8을 벗어날 때는 뒤로가기 설정을 초기화합니다.
-    };
-  }, [router, setOnBack, setTitle]);
+  const [isAlertModalOpen, setAlertModalOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
-  const renderAccountNumber = (item: (typeof ACCOUNT_CARDS)[number]) => {
-    // 출금 계좌 카드를 렌더링할 때는 컨텍스트에서 최신 번호를 꺼내고, 그렇지 않으면 카드에 정의된 값을 표시합니다.
-    if (item.accountKey === "source") {
-      return sourceAccountNumber; // 출금 계좌 카드일 때는 컨텍스트에 저장된 계좌번호를 사용합니다.
-    }
-    return item.accountNumber ?? "0000-000-000000"; // 그 외에는 카드에 정의된 계좌번호를 표시합니다.
-  };
+  // 총금액 토글 / 퀵필터 상태
+  const [showTotal, setShowTotal] = useState(true);
+  const [activeFilter, setActiveFilter] =
+    useState<"deposit" | "woori-group">("deposit");
 
-  const handleOpenAlertModal = (message: string) => {
-    setAlertMessage(message);
+  const openModal = (msg?: string) => {
+    setAlertMessage(msg ?? "해당 계좌에서는 이체를 이용할 수 없습니다.");
     setAlertModalOpen(true);
   };
 
-  const handleCloseAlertModal = () => {
-    setAlertModalOpen(false);
-  };
+  const closeModal = () => setAlertModalOpen(false);
+
+  useEffect(() => {
+    setTitle("전체계좌");
+    setOnBack(() => () => router.push("/woorimain"));
+
+    return () => {
+      setTitle("");
+      setOnBack(null);
+    };
+  }, [router, setTitle, setOnBack]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        계좌 정보를 불러오는 중...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <p className="mb-3 text-red-500">{error}</p>
+        <Button onClick={refetch}>다시 시도</Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-[390px] flex-col"> {/* 모바일 해상도를 기준으로 한 가운데 정렬된 래퍼입니다. */}
-      <main className="flex-1 overflow-y-auto px-[20px] pb-[40px]"> {/* 스크롤 가능한 실제 콘텐츠 영역입니다. */}
-        {/* 탭 네비게이션 영역 */}
-        <section className="mt-[24px] flex items-center justify-between">
+    <div className="mx-auto flex min-h-screen w-full max-w-[390px] flex-col">
+      {/* 메인 컨텐츠 */}
+      <main className="flex-1 overflow-y-auto px-[20px] pb-[40px]">
+        {/* 상단 탭 (계좌 / 카드 / 페이) + 은행 선택 + 새로고침 */}
+        <section className="mt-[16px] flex items-center justify-between">
           <nav className="flex items-center gap-[12px] text-[15px] font-semibold">
-            <span className="rounded-[16px] bg-[#2F6FD9] px-[14px] py-[6px] text-white">
+            <button className="rounded-[16px] bg-[#2F6FD9] px-[14px] py-[6px] text-white">
               계좌
-            </span>
-            <span className="text-gray-400">카드</span>
-            <span className="text-gray-400">페이</span>
+            </button>
+            <button className="text-gray-400">카드</button>
+            <button className="text-gray-400">페이</button>
           </nav>
+
+          <div className="flex items-center gap-[8px]">
+            {/* 은행 선택 (UI만, 아직 기능 X) */}
+            <button
+              type="button"
+              className="flex items-center gap-[4px] rounded-[16px] border border-gray-200 px-[10px] py-[4px] text-[12px] text-gray-600"
+            >
+              우리
+              <span className="text-[10px]">▼</span>
+            </button>
+
+            {/* 새로고침 버튼 */}
+            <button
+              type="button"
+              aria-label="새로고침"
+              className="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-gray-200 text-[14px] text-gray-500"
+              onClick={refetch}
+            >
+              ⟳
+            </button>
+          </div>
         </section>
 
-        {/* 총 자산과 퀵 필터 버튼 영역 */}
-        <section className="mt-[24px]">
-          <p className="text-[28px] font-bold text-gray-900">0원</p>
-          <div className="mt-[16px] flex gap-[10px]">
-            {QUICK_FILTERS.map((filter) => (
+        {/* 총금액 + 토글 스위치 + 큰 금액 표시 */}
+        <section className="mt-[16px]">
+          <div className="flex items-center justify-between text-[13px] text-gray-500">
+            <div className="flex items-center gap-[4px]">
+              <span>총금액</span>
+              <span className="text-[12px] text-gray-400">?</span>
+            </div>
+
+            {/* 토글 */}
+            <button
+              type="button"
+              onClick={() => setShowTotal((prev) => !prev)}
+              className={`flex items-center rounded-full px-[4px] py-[2px] transition ${
+                showTotal ? "bg-[#2F6FD9]" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`h-[18px] w-[18px] rounded-full bg-white shadow transition ${
+                  showTotal ? "translate-x-[14px]" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          <p
+            className={`mt-[8px] text-[28px] font-bold ${
+              showTotal ? "text-gray-900" : "text-gray-300"
+            }`}
+          >
+            {showTotal
+              ? `${totalBalance.toLocaleString("ko-KR")}원`
+              : "0원"}
+          </p>
+        </section>
+
+        {/* 퀵 필터 (입출금 / 우리금융그룹) */}
+        <section className="mt-[16px] flex gap-[10px]">
+          {QUICK_FILTERS.map((filter) => {
+            const isActive = activeFilter === filter.value;
+            return (
               <button
-                key={filter.label}
+                key={filter.value}
                 type="button"
+                onClick={() =>
+                  setActiveFilter(filter.value as "deposit" | "woori-group")
+                }
                 className={`rounded-[16px] px-[16px] py-[8px] text-[13px] font-medium ${
-                  filter.active
-                    ? "bg-[#E4EEFF] text-[#2F6FD9]"
-                    : "bg-white text-gray-600"
+                  isActive
+                    ? "bg-[#2F6FD9] text-white"
+                    : "bg-[#F3F4F6] text-gray-600"
                 }`}
               >
                 {filter.label}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </section>
 
-        {/* 카테고리별 계좌 카드 리스트 */}
-        <section className="mt-[28px] space-y-[24px]">
-          <CategoryBlock
-            title="입출금 1"
-            accounts={[ACCOUNT_CARDS[0]]}
-            renderAccountNumber={renderAccountNumber}
-            onTransfer={(account) => {
-              router.push("/searchaccount-scenario?step=9"); // 입출금 계좌에서는 거래내역 조회(시나리오 9) 화면으로 이동합니다.
-            }}
-          />
-          <CategoryBlock
-            title="예적금 1"
-            accounts={[ACCOUNT_CARDS[1]]}
-            renderAccountNumber={renderAccountNumber}
-            onTransfer={(account) => {
-              if (!account.transferAvailable) {
-                handleOpenAlertModal(account.disabledMessage ?? "해당 계좌에서는 이체를 이용할 수 없습니다."); // 예적금 계좌에서는 제한 메시지를 모달로 안내합니다.
-                // 추후 위비 말풍선으로 대체하기 꼭꼭꼭!!!
-                return;
-              }
-              router.push("/searchaccount-scenario?step=9"); // 향후 조건이 충족되면 동일한 경로로 이동할 수 있습니다.
-            }}
-          />
+        {/* 입출금 / 예적금 리스트 */}
+        <section className="mt-[24px] space-y-[24px]">
+          {/* 입출금 */}
+          {depositAccounts.length > 0 && (
+            <CategoryBlock
+              title={`입출금 ${depositAccounts.length}`}
+              accounts={depositAccounts}
+              onTransfer={(acc: AccountCard) => {
+                router.push(
+                  `/searchaccount-scenario?step=9&accountId=${acc.id}&accountNumber=${acc.accountNumber}`
+                );
+              }}
+            />
+          )}
+
+          {/* 예적금 */}
+          {savingsAccounts.length > 0 && (
+            <CategoryBlock
+              title={`예적금 ${savingsAccounts.length}`}
+              accounts={savingsAccounts}
+              onTransfer={(acc: AccountCard) => {
+                // 예적금은 기본 이체 불가 → 안내 모달
+                openModal(acc.disabledMessage);
+              }}
+            />
+          )}
+
+          {/* 계좌 없음 */}
+          {accounts.length === 0 && (
+            <div className="mt-10 text-center text-gray-500">
+              등록된 계좌가 없습니다.
+            </div>
+          )}
         </section>
       </main>
+
+      {/* 안내 모달 */}
       <Modal
         isOpen={isAlertModalOpen}
-        onConfirm={handleCloseAlertModal}
-        onClose={handleCloseAlertModal}
+        onClose={closeModal}
+        onConfirm={closeModal}
       >
-        <AlertModalContent message={alertMessage} onClose={handleCloseAlertModal} />
+        <AlertModalContent message={alertMessage} onClose={closeModal} />
       </Modal>
-    </div>
-  );
-}
-
-const AlertModalContent = ({
-  message,
-  onClose,
-}: {
-  message: string;
-  onClose: () => void;
-}) => (
-  <div className="flex flex-col items-center gap-[20px] px-[10px] py-[16px] text-center">
-    <h2 className="text-[18px] font-semibold text-gray-900">안내</h2>
-    <p className="text-[14px] text-gray-600 whitespace-pre-line">{message}</p>
-    <Button onClick={onClose} size="sm">
-      확인
-    </Button>
-  </div>
-);
-
-type CategoryBlockProps = {
-  title: string;
-  accounts: Array<(typeof ACCOUNT_CARDS)[number]>;
-  renderAccountNumber: (item: (typeof ACCOUNT_CARDS)[number]) => string;
-  onTransfer: (account: (typeof ACCOUNT_CARDS)[number]) => void;
-};
-
-function CategoryBlock({
-  title,
-  accounts,
-  renderAccountNumber,
-  onTransfer,
-}: CategoryBlockProps) {
-  return (
-    <div>
-      {/* 카테고리 헤더 */}
-      <div className="flex items-center justify-between text-[13px] text-gray-500">
-        <span>{title}</span>
-        <span>0원</span>
-      </div>
-      <div className="mt-[16px] space-y-[16px]">
-        {accounts.map((item) => (
-          <div
-            key={item.title}
-            className="rounded-[16px] bg-white p-[18px] shadow-sm"
-          >
-            <div className="flex items-center justify-between gap-[10px]">
-              <div className="flex items-center gap-[10px]">
-                <Image
-                  src="/images/bank1.png"
-                  alt="우리은행"
-                  className="h-[28px] w-[28px]"
-                  width={28}
-                  height={28}
-                />
-                <div>
-                  <p className="text-[16px] font-semibold text-gray-900">
-                    {item.title}
-                  </p>
-                  <p className="mt-[4px] text-[13px] text-gray-500">
-                    {item.bank} {renderAccountNumber(item)}
-                  </p>
-                </div>
-              </div>
-              {/* 추가 옵션 버튼 */}
-              <button
-                type="button"
-                aria-label="추가 옵션"
-                className="flex h-[24px] w-[24px] items-center justify-center text-[18px] text-gray-400"
-              >
-                ···
-              </button>
-            </div>
-            <div className="mt-[16px] flex items-center justify-between">
-              <span className="rounded-[12px] bg-[#E4EEFF] px-[12px] py-[6px] text-[11px] text-[#2F6FD9]">
-                {item.badge}
-              </span>
-              <span className="text-[18px] font-semibold text-gray-900">
-                {item.balance}
-              </span>
-            </div>
-            {/* 이체 버튼: 잔액이 존재할 때만 시나리오 전환 */}
-            <button
-              type="button"
-              onClick={() => onTransfer(item)}
-              className="mt-[14px] w-full rounded-[12px] border border-[#D8E5FB] py-[10px] text-center text-[14px] font-semibold text-[#2F6FD9] transition hover:bg-[#E4EEFF]/60"
-            >
-              이체
-            </button>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

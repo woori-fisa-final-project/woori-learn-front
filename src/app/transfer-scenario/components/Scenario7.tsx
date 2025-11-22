@@ -11,7 +11,7 @@ type Scenario7Props = {
 export default function Scenario7({ onRestart }: Scenario7Props) {
   const { recipientName, amount, selectedBank, accountNumber, currentUserName, sourceAccountNumber } = useTransferFlow(); // 컨텍스트에서 이체 완료 정보를 가져옵니다.
 
-  const displayName = recipientName || "나누구"; // 수취인 이름이 없으면 기본 이름을 사용합니다.
+  const displayName = recipientName || "유정호"; // 수취인 이름이 없으면 기본 이름을 사용합니다.
   const formattedAmount = useMemo(() => {
     if (!amount) return "0원";
     return `${amount.toLocaleString()}원`; // 금액을 천 단위 구분 기호가 포함된 문자열로 변환합니다.
