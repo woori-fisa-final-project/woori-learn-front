@@ -1,6 +1,6 @@
 import { AutoPayment, AutoPaymentStatus } from '@/types/autoPayment';
 import { devLog, logApiCall, logApiResponse, devError } from '@/utils/logger';
-import axiosInstance from '@/lib/axiosInstance';
+import axiosInstance from '@/utils/axiosInstance';
 
 const BASE_URL = '/education/auto-payment';
 

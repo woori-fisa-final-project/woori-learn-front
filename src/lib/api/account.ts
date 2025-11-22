@@ -1,5 +1,5 @@
 import { EducationalAccount } from '@/types/account';
-import axiosInstance from '@/lib/axiosInstance';
+import axiosInstance from '@/utils/axiosInstance';
 
 interface ApiResponse<T> {
   code: number;

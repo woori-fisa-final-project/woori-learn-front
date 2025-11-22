@@ -7,6 +7,7 @@ import PageContainer from "@/components/common/PageContainer";
 import PointHistoryCard from "@/components/common/PointHistoryCard";
 import FilterBottomSheet from "@/components/common/FilterBottomSheet";
 import Image from "next/image";
+import { getPointHistory } from "@/lib/api/points.api";
 
 import {
   periodEnum,
@@ -106,31 +107,18 @@ export default function PointListPage() {
     setError(null); // 요청 시작 시 에러 초기화
 
     try {
-      const query = new URLSearchParams({
-        username: "testuser",
+      // getPointHistory 함수를 사용하여 API 호출의 일관성을 유지합니다.
+      // username은 백엔드에서 토큰을 통해 식별하므로 제거합니다.
+      const response = await getPointHistory({
         period: filterState.period,
         sort: filterState.sort,
         status: filterState.status,
-        page: String(filterState.page),
-        size: String(filterState.size),
-      }).toString();
+        page: filterState.page,
+        size: filterState.size,
+      });
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/points/history?${query}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("응답 오류");
-      }
-
-      const json = await response.json();
-      const items: PointHistoryItem[] = json.data?.content ?? [];
+      const items: PointHistoryItem[] = response?.content ?? [];
       setHistoryList(items);
-
     } catch (error) {
       console.error("포인트 내역 조회 오류:", error);
       setError(

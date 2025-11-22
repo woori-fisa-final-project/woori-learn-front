@@ -124,9 +124,11 @@ export default function PointExchangePage() {
   };
 
   const isButtonEnabled =
-    withdrawalAmount &&
-    accountNumber.trim() &&
-    Object.keys(errors).length === 0;
+  withdrawalAmount &&
+  accountNumber.trim() &&
+  !errors.withdrawalAmount &&
+  !errors.accountNumber;
+
 
   return (
     <PageContainer>

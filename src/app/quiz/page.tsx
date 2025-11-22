@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import QuizScreen, { type QuizContent } from "@/components/quiz/QuizScreen";
+import axiosInstance from "@/utils/axiosInstance";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { devLog, devError } from "@/utils/logger";
 
@@ -41,11 +42,20 @@ function QuizContent() {
   const [quiz, setQuiz] = useState<QuizContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasDeposited, setHasDeposited] = useState(false);
+  const [isDepositing, setIsDepositing] = useState(false);
+  const [depositMessage, setDepositMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setTitle("Quiz");
     return () => setTitle("");
   }, [setTitle]);
+
+  useEffect(() => {
+    setHasDeposited(false);
+    setDepositMessage(null);
+    setIsDepositing(false);
+  }, [quizId]);
 
   useEffect(() => {
     async function loadQuiz() {
@@ -95,6 +105,40 @@ function QuizContent() {
     loadQuiz();
   }, [quizId]);
 
+  const handleSelectOption = useCallback(
+    async (selectedQuizId: string, optionId: string) => {
+      if (!quiz || quiz.id !== selectedQuizId) return;
+      if (quiz.id !== "2") return; // 해당 시나리오 퀴즈에만 포인트 적립
+      if (hasDeposited || isDepositing) return;
+
+      if (optionId !== quiz.correctAnswerId) {
+        setDepositMessage("정답을 선택하면 포인트가 적립돼요.");
+        return;
+      }
+
+      try {
+        setIsDepositing(true);
+        setDepositMessage(null);
+
+        await axiosInstance.post("/points/deposit", {
+          amount: 1000,
+          reason: "시나리오완료",
+        });
+
+        setHasDeposited(true);
+        setDepositMessage("시나리오 완료! 1000포인트가 적립됐어요.");
+        devLog("[QuizPage] 포인트 적립 완료");
+      } catch (err) {
+        setHasDeposited(false);
+        setDepositMessage("포인트 적립에 실패했습니다. 다시 시도해주세요.");
+        devError("[QuizPage] 포인트 적립 실패:", err);
+      } finally {
+        setIsDepositing(false);
+      }
+    },
+    [quiz, hasDeposited, isDepositing]
+  );
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -113,7 +157,10 @@ function QuizContent() {
 
   return (
     <div className="flex flex-col gap-[24px] px-[20px] py-[32px]">
-      <QuizScreen quiz={quiz} />
+      <QuizScreen quiz={quiz} onSelectOption={handleSelectOption} />
+      {depositMessage && (
+        <p className="text-center text-sm text-gray-700">{depositMessage}</p>
+      )}
     </div>
   );
 }

@@ -86,7 +86,7 @@ function AutomaticPaymentScenarioContent() {
     message: "",
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (preferAccountId?: number | null) => {
     try {
       setIsLoading(true);
 
@@ -108,7 +108,8 @@ function AutomaticPaymentScenarioContent() {
       }
 
       // 2. 첫 번째 계좌(대표계좌) 선택
-      const representativeAccount = accounts[0];
+      const representativeAccount =
+        accounts.find(acc => acc.id === preferAccountId) || accounts[0];
 
       // 3. 계좌번호 뒷자리 4자리 추출
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
@@ -156,9 +157,13 @@ function AutomaticPaymentScenarioContent() {
   };
 
   // 등록 완료 후 목록으로 돌아가기
-  const handleRegisterComplete = () => {
+  const handleRegisterComplete = (accountId?: number | null) => {
     setCurrentScreen("list");
-    fetchData(); // 목록 새로고침
+    if (typeof accountId === "number") {
+      fetchData(accountId); // 선택한 계좌 기준으로 목록 새로고침
+    } else {
+      fetchData(); // 목록 새로고침
+    }
   };
 
   // 상세 화면으로 이동
