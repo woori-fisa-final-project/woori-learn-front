@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { getCurrentUser } from '@/lib/api/user.api';
-import { getAvailablePoints, setAvailablePoints as cachePoints } from '@/constants/points';
+import { useState, useEffect } from "react";
+import axiosInstance from "@/utils/axiosInstance";
+import { ApiError } from "@/utils/apiError";
+import { getAvailablePoints, setAvailablePoints as cachePoints } from "@/constants/points";
 
 /**
  * 사용자 데이터를 관리하는 커스텀 훅
@@ -11,35 +12,35 @@ import { getAvailablePoints, setAvailablePoints as cachePoints } from '@/constan
  * 3. 실패 시 localStorage 캐시 데이터 사용 (폴백)
  */
 export function useUserData() {
-  const [userName, setUserName] = useState('아무개');
+  const [userName, setUserName] = useState("아무개");
   const [availablePoints, setAvailablePoints] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (typeof window === 'undefined') return; // SSR 안전 처리
+    if (typeof window === "undefined") return;
 
+    const fetchUserData = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // 1. API에서 최신 사용자 데이터 가져오기
-        const userData = await getCurrentUser();
+        // API 호출
+        const response = await axiosInstance.get("/users/me");
+        const data = response.data.data;
 
-        setUserName(userData.name);
-        setAvailablePoints(userData.points);
+        setUserName(data.nickname);
+        setAvailablePoints(data.point);
 
-        // 2. localStorage에 캐시 저장
-        localStorage.setItem('userName', userData.name);
-        cachePoints(userData.points);
+        // 캐시 저장
+        localStorage.setItem("userName", data.nickname);
+        cachePoints(data.point);
 
       } catch (err) {
-        // 3. API 실패 시 localStorage 캐시 데이터 사용 (폴백)
-        console.warn('API 호출 실패, 캐시 데이터 사용:', err);
-        setError('사용자 정보를 불러오는 중 문제가 발생했습니다.');
+        console.warn("API 호출 실패, 캐시 데이터 사용:", err);
+        setError("사용자 정보를 불러오는 중 문제가 발생했습니다.");
 
-        const cachedName = localStorage.getItem('userName');
+        const cachedName = localStorage.getItem("userName");
         const cachedPoints = getAvailablePoints();
 
         if (cachedName) setUserName(cachedName);
@@ -52,14 +53,10 @@ export function useUserData() {
     fetchUserData();
   }, []);
 
-  /**
-   * 사용자 이름 업데이트 함수
-   * API 호출은 하지 않고 로컬 상태만 업데이트 (필요시 API 연동 가능)
-   */
   const updateUserName = (name: string) => {
     setUserName(name);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userName', name);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userName", name);
     }
   };
 
@@ -71,5 +68,3 @@ export function useUserData() {
     updateUserName,
   };
 }
-
-
