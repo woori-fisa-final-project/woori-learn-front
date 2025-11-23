@@ -17,13 +17,19 @@
  * ```
  *
  * @param promiseFunctions 실행할 Promise를 반환하는 함수들의 배열
- * @param chunkSize 한 번에 병렬로 실행할 Promise의 개수
+ * @param chunkSize 한 번에 병렬로 실행할 Promise의 개수 (1 이상의 정수)
  * @returns 모든 Promise의 결과가 병합된 배열
+ * @throws {Error} chunkSize가 1보다 작은 경우
  */
 export async function runPromisesInChunks<T>(
   promiseFunctions: (() => Promise<T>)[],
   chunkSize: number
 ): Promise<T[]> {
+  // chunkSize 유효성 검증 (무한 루프 방지)
+  if (chunkSize < 1) {
+    throw new Error(`chunkSize must be at least 1, got ${chunkSize}`);
+  }
+
   const results: T[] = [];
 
   // promises 배열을 chunkSize 크기의 청크로 나눕니다.

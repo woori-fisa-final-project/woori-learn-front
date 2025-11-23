@@ -1,11 +1,6 @@
 import { EducationalAccount } from "@/types/account";
 import axiosInstance from "@/utils/axiosInstance";
-
-interface ApiResponse<T> {
-  code: number;
-  message: string;
-  data: T;
-}
+import type { ApiResponse } from "@/types/api";
 
 /**
  * 사용자의 계좌 목록 조회
