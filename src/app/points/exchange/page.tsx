@@ -222,16 +222,6 @@ export default function PointExchangePage() {
             className="mt-8"
           />
 
-          {errors.accountNumber && (
-            <p
-              id="account-number-error"
-              className="mt-1 text-sm text-red-500"
-              role="alert"
-            >
-              {errors.accountNumber}
-            </p>
-          )}
-
           {/* 안내 */}
           <div className="mt-6 w-full rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <h3 className="mb-2 text-[14px] font-semibold text-gray-700">
