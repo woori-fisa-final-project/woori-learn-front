@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axiosInstance from "@/utils/axiosInstance";
-import { ApiError } from "@/utils/apiError";
+import { getCurrentUser } from "@/lib/api/user.api";
 import { getAvailablePoints, setAvailablePoints as cachePoints } from "@/constants/points";
 
 /**
@@ -26,15 +25,14 @@ export function useUserData() {
         setError(null);
 
         // API 호출
-        const response = await axiosInstance.get("/users/me");
-        const data = response.data.data;
+        const data = await getCurrentUser();
 
-        setUserName(data.nickname);
-        setAvailablePoints(data.point);
+        setUserName(data.name);
+        setAvailablePoints(data.points);
 
         // 캐시 저장
-        localStorage.setItem("userName", data.nickname);
-        cachePoints(data.point);
+        localStorage.setItem("userName", data.name);
+        cachePoints(data.points);
 
       } catch (err) {
         console.warn("API 호출 실패, 캐시 데이터 사용:", err);
