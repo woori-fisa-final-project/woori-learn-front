@@ -1,15 +1,11 @@
 'use client';
 
-
 import React, { useState } from 'react';
+import AdminLayout from '../components/AdminLayout';
 import Sidebar from '../components/Sidebar';
 import { useRouter } from 'next/navigation';
 import UserDetail from './UserDetail';
 import ExchangeList from './ExchangeList';
-import PageContainer from '../../../components/common/PageContainer';
-import Button from '../../../components/common/Button';
-import ProgressBar from '../../../components/common/ProgressBar';
-import PointHistoryCard from '../../../components/common/PointHistoryCard';
 
 interface AccountInfo {
   accountNumber: string;
@@ -136,92 +132,101 @@ const AdminMain = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-gray-50">
-      <div className="h-screen sticky top-0 left-0 flex-none">
-        <Sidebar onNavigate={handleNavigate} onLogout={handleLogout} />
-      </div>
-      
-        <div className="max-w-7xl mx-auto min-h-screen px-8 py-6 flex flex-col">
-          <h1 className="text-3xl font-bold mb-12 text-center">우리 관리자 센터</h1>
-          {section === 'users' && (
-            <div className="w-full max-w-7xl mx-auto">
-              <h2 className="text-xl font-semibold mb-6 text-center">회원 목록</h2>
-              {/* 검색/필터 UI */}
-              <div className="flex flex-wrap gap-2 mb-4 w-full justify-between">
-                <input
-                  type="text"
-                  placeholder="아이디/이름 검색"
-                  className="border border-gray-300 rounded px-3 py-2 w-60"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-                <select
-                  className="border border-gray-300 rounded px-3 py-2"
-                  value={userFilter}
-                  onChange={e => setUserFilter(e.target.value)}
-                >
-                  <option value="">전체</option>
-                  <option value="progress-100">100% 완료</option>
-                  <option value="progress-incomplete">미완료</option>
-                </select>
-              </div>
-              <div className="rounded-lg shadow bg-white p-8 w-full">
-                <table className="table-auto w-full border-collapse border border-gray-200 bg-white">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border border-gray-200 px-4 py-3">회원 ID</th>
-                      <th className="border border-gray-200 px-4 py-3">이름</th>
-                      <th className="border border-gray-200 px-4 py-3">생성일자</th>
-                      <th className="border border-gray-200 px-4 py-3">보유 포인트</th>
-                      <th className="border border-gray-200 px-4 py-3">교육 진행률</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sampleData.map((user) => {
-                      const progressValue = parseInt(user.progress.replace('%', ''));
-                      return (
-                        <tr
-                          key={user.id}
-                          className="hover:bg-blue-50 cursor-pointer"
-                          onClick={() => handleUserClick(user)}
-                        >
-                          <td className="border border-gray-200 px-4 py-3 text-center font-semibold">{user.userId}</td>
-                          <td className="border border-gray-200 px-4 py-3 text-center">{user.name}</td>
-                          <td className="border border-gray-200 px-4 py-3 text-center">{user.creationDate}</td>
-                          <td className="border border-gray-200 px-4 py-3 text-center">{user.points.toLocaleString()}p</td>
-                          <td className="border border-gray-200 px-4 py-3 text-center">
-                            <div className="flex items-center gap-2 justify-center">
-                              <div className="w-32 h-3 bg-gray-200 rounded-full overflow-hidden">
-                                <div
-                                  className="h-3 bg-blue-500 rounded-full transition-all duration-300"
-                                  style={{ width: `${progressValue}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs text-gray-700 font-semibold min-w-8 text-right">{user.progress}</span>
+    <AdminLayout
+      currentSection={section}
+      onNavigate={handleNavigate}
+      onLogout={handleLogout}
+    >
+      {/* 데스크톱 사이드바 (lg 이상) */}
+      {/* <Sidebar
+        currentSection={section}
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+      /> */}
+
+      {/* 메인 컨텐츠 영역 */}
+      <div className="w-full min-h-screen bg-white">
+        
+        {section === 'users' && (
+          <div className="w-full">
+            <h2 className=" mt-10 text-2xl sm:text-xl md:text-xl font-bold mb-3 sm:mb-4 md:mb-4 text-center">회원 목록</h2>
+            {/* 검색/필터 UI */}
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-5 md:mb-6 w-full justify-between">
+              <input
+                type="text"
+                placeholder="아이디/이름 검색"
+                className="border border-gray-300 rounded px-3 py-2 w-full sm:w-48 md:w-60 text-sm sm:text-base"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <select
+                className="border border-gray-300 rounded px-3 py-2 w-full sm:w-auto text-sm sm:text-base"
+                value={userFilter}
+                onChange={e => setUserFilter(e.target.value)}
+              >
+                <option value="">전체</option>
+                <option value="progress-100">100% 완료</option>
+                <option value="progress-incomplete">미완료</option>
+              </select>
+            </div>
+            <div className="rounded-lg shadow bg-white p-4 sm:p-6 md:p-8 w-full overflow-x-auto">
+              <table className="table-auto w-full border-collapse border border-gray-200 bg-white min-w-[640px]">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">회원 ID</th>
+                    <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">이름</th>
+                    <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base hidden md:table-cell">생성일자</th>
+                    <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">보유 포인트</th>
+                    <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">교육 진행률</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => {
+                    const progressValue = parseInt(user.progress.replace('%', ''));
+                    return (
+                      <tr
+                        key={user.id}
+                        className="hover:bg-primary-50 cursor-pointer transition-colors"
+                        onClick={() => handleUserClick(user)}
+                      >
+                        <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm md:text-base">{user.userId}</td>
+                        <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm md:text-base">{user.name}</td>
+                        <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm md:text-base hidden md:table-cell">{user.creationDate}</td>
+                        <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm md:text-base">{user.points.toLocaleString()}p</td>
+                        <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center">
+                          <div className="flex items-center gap-1 sm:gap-2 justify-center">
+                            <div className="w-20 sm:w-24 md:w-32 h-2 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-2 sm:h-3 bg-primary-500 rounded-full transition-all duration-300"
+                                style={{ width: `${progressValue}%` }}
+                              ></div>
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                            <span className="text-xs text-gray-700 font-semibold min-w-8 text-right">{user.progress}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          )}
-          {section === 'userDetail' && selectedUser && (
-            <div className="w-full max-w-5xl mx-auto mt-12">
-              <UserDetail user={selectedUser} onBack={() => handleNavigate('users')} />
-            </div>
-          )}
-          {section === 'exchange' && (
-            <div className="w-full max-w-6xl mx-auto mt-12">
-              {/* TODO: 환전 신청 목록 불러오기 (API 연동) */}
-              <ExchangeList />
-            </div>
-          )}
-        </div>
-      
-    </div>
+          </div>
+        )}
+        
+        {section === 'userDetail' && selectedUser && (
+          <div className="w-full mt-6 sm:mt-8 md:mt-10 lg:mt-12">
+            <UserDetail user={selectedUser} onBack={() => handleNavigate('users')} />
+          </div>
+        )}
+        
+        {section === 'exchange' && (
+          <div className="w-full mt-6 sm:mt-8 md:mt-10 lg:mt-12">
+            {/* TODO: 환전 신청 목록 불러오기 (API 연동) */}
+            <ExchangeList />
+          </div>
+        )}
+      </div>
+    </AdminLayout>
   );
 };
 
