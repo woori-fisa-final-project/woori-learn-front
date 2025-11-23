@@ -27,12 +27,20 @@ export function useUserData() {
         // API 호출
         const data = await getCurrentUser();
 
-        setUserName(data.name);
-        setAvailablePoints(data.points);
+        // 필드 스키마(name/points vs nickname/point) 차이를 흡수해서 안전하게 설정
+        const safeName =
+          data.name ?? (data as { nickname?: string }).nickname ?? "고객님";
+        const pointsRaw =
+          data.points ?? (data as { point?: number }).point;
+        const safePoints =
+          typeof pointsRaw === "number" ? pointsRaw : 0;
+
+        setUserName(safeName);
+        setAvailablePoints(safePoints);
 
         // 캐시 저장
-        localStorage.setItem("userName", data.name);
-        cachePoints(data.points);
+        localStorage.setItem("userName", safeName);
+        cachePoints(safePoints);
 
       } catch (err) {
         console.warn("API 호출 실패, 캐시 데이터 사용:", err);
