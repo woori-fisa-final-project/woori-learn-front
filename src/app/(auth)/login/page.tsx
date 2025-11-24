@@ -55,16 +55,44 @@ export default function LoginPage() {
       }
     }
 
-    try{
-      // 로그인 시도
-      await loginUser(id, password);
-      // 로그인 성공 후 홈 화면으로 이동
-      router.push("/home");
-      } catch (error) {
+    // try{
+    //   // 로그인 시도
+    //   await loginUser(id, password);
+    //   // 로그인 성공 후 홈 화면으로 이동
+    //   router.push("/home");
+    //   } catch (error) {
+    //   console.error("로그인 요청 오류:", error);
+    //   const errorMessage = error instanceof ApiError ? error.message : "로그인에 실패했습니다. 다시 시도해주세요.";
+    //   alert(errorMessage);
+    // }finally {
+    //   setIsLoading(false);
+    // }
+
+    try {
+      // 로그인 요청 → 응답(result) 받기
+      const result = await loginUser(id, password);
+
+      // 응답 구조: { data: { accessToken: string } }
+      const role = result.data.role;
+
+      // // JWT decode
+      // const decoded: any = jwtDecode(accessToken);
+      // const role = decoded.role;
+
+      // 권한에 따른 라우팅
+      if (role === "ROLE_ADMIN") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/home");
+      }
+    } catch (error) {
       console.error("로그인 요청 오류:", error);
-      const errorMessage = error instanceof ApiError ? error.message : "로그인에 실패했습니다. 다시 시도해주세요.";
+      const errorMessage =
+        error instanceof ApiError
+          ? error.message
+          : "로그인에 실패했습니다. 다시 시도해주세요.";
       alert(errorMessage);
-    }finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -74,7 +102,13 @@ export default function LoginPage() {
       <div className="pt-[30px] w-full max-w-[min(100%,430px)] px-5 sm:max-w-[480px] md:max-w-[560px] lg:max-w-3xl">
         {/* 상단 로고 영역으로 서비스 브랜드 아이덴티티를 강조합니다. */}
         <div className="relative mx-auto mt-[58px] h-[86px] w-[150px]">
-          <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={150} height={86} />
+          <Image
+            alt="로고"
+            className="h-full w-full object-contain"
+            src={logoImage}
+            width={150}
+            height={86}
+          />
         </div>
 
         {/* 로그인 입력 필드 묶음 영역입니다. */}
@@ -102,7 +136,10 @@ export default function LoginPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 className="flex-1 text-[16px] font-medium text-gray-600 placeholder:text-gray-400 outline-none"
               />
-              <PasswordToggleIcon showPassword={showPassword} onToggle={handleTogglePassword}/>
+              <PasswordToggleIcon
+                showPassword={showPassword}
+                onToggle={handleTogglePassword}
+              />
             </div>
           </div>
 
@@ -132,7 +169,10 @@ export default function LoginPage() {
         <div className="mt-5 text-center">
           <p className="text-[16px] text-gray-400">
             계정이 없으신가요?{" "}
-            <Link href="/signup" className="font-semibold text-primary-400 underline decoration-solid underline-offset-2 hover:text-[#2677cc]">
+            <Link
+              href="/signup"
+              className="font-semibold text-primary-400 underline decoration-solid underline-offset-2 hover:text-[#2677cc]"
+            >
               회원가입하기
             </Link>
           </p>
