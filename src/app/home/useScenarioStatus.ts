@@ -49,7 +49,7 @@ export const useScenarioStatus = () => {
 
                 // 진행률: scenarioId -> progressRate Map으로 변환
                 const progressMap = new Map<number, number>(
-                    progressList.map((item) => [item.scenarioId, item.progressRate ?? 0])
+                    progressList.map((item) => [item.scenarioId, item.progressRate])
                 );
 
                 // 완료: scenarioId를 Set에 담기
