@@ -184,7 +184,7 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
         <h2 className="text-[20px] font-semibold text-gray-900">
           얼마를 이체하시겠어요?
         </h2>
-        <p className="text-[13px] text-gray-500">출금가능금액 0원</p>
+        <p className="text-[13px] text-gray-500">출금가능금액 5,000,000원</p>
         <div className="mt-[8px] text-right text-[36px] font-bold text-gray-900">
           {formattedAmount}
           <span className="ml-[4px] text-[20px] font-semibold text-gray-800">원</span>
