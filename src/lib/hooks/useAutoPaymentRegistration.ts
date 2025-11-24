@@ -5,6 +5,8 @@ import type { ScheduleSummary } from "@/app/automaticpayment-scenario/components
 import { getBankCode } from "@/utils/bankUtils";
 import { parseNumber, parseTransferDay } from "@/utils/numberUtils";
 import { devError } from "@/utils/logger";
+import { validateAutoPaymentAmount } from "@/utils/validationUtils";
+import { ERROR_MESSAGES } from "@/lib/constants";
 
 /**
  * 자동이체 등록 관련 로직을 관리하는 커스텀 훅
@@ -42,7 +44,14 @@ export function useAutoPaymentRegistration() {
     }
 
     if (!selectedAccount) {
-      setErrorMessage("계좌 정보를 찾을 수 없습니다.\n처음부터 다시 진행해주세요.");
+      setErrorMessage(ERROR_MESSAGES.ACCOUNT_NOT_FOUND);
+      return false;
+    }
+
+    // 금액 검증
+    const validation = validateAutoPaymentAmount(amount);
+    if (!validation.isValid) {
+      setErrorMessage(validation.errorMessage || "");
       return false;
     }
 
@@ -71,7 +80,7 @@ export function useAutoPaymentRegistration() {
       return true;
     } catch (error) {
       devError("[registerAutoPayment] 자동이체 등록 실패:", error);
-      setErrorMessage("자동이체 등록에 실패했습니다.\n다시 시도해주세요.");
+      setErrorMessage(ERROR_MESSAGES.REGISTRATION_FAILED);
       return false;
     }
   };
