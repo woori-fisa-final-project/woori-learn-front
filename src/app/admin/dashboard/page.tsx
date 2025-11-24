@@ -6,64 +6,74 @@ import { useRouter } from "next/navigation";
 import UserDetail from "./UserDetail";
 import ExchangeList from "./ExchangeList";
 import axiosInstance from "@/utils/axiosInstance";
+import { useAuthStore } from "@/utils/tokenStorage";
+import type { AdminUser, AdminUserListItem, ApiResponse } from "@/types/admin";
 
-interface User {
-  id: string;
-  userId: string;
-  name: string;
-  creationDate: string;
-  points: number;
-  exchangedPoints: number;
-  progress: string;
-  account: {
-    accountNumber: string;
-    createdAt: string;
-  };
-  scenarios: any[];
-  pointHistory: any[];
-}
+// interface User {
+//   id: string;
+//   userId: string;
+//   name: string;
+//   creationDate: string;
+//   points: number;
+//   exchangedPoints: number;
+//   progress: string;
+//   account: {
+//     accountNumber: string;
+//     createdAt: string;
+//   };
+//   scenarios: any[];
+//   pointHistory: any[];
+// }
 
 type Section = "users" | "userDetail" | "exchange";
 
-// API에서 내려오는 사용자 목록 구조
-interface UserListItem {
-  id: number;
-  userId: string;
-  nickname: string;
-  points: number;
-  createdAt: string;
-  progressRate: number;
-}
+// // API에서 내려오는 사용자 목록 구조
+// interface UserListItem {
+//   id: number;
+//   userId: string;
+//   nickname: string;
+//   points: number;
+//   createdAt: string;
+//   progressRate: number;
+// }
 
 const AdminMain = () => {
   const [section, setSection] = useState<Section>("users");
   const router = useRouter();
 
-  const [users, setUsers] = useState<UserListItem[]>([]);
+  const [users, setUsers] = useState<AdminUserListItem[]>([]);
   const [search, setSearch] = useState("");
   const [userFilter, setUserFilter] = useState("");
 
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
-  // 🔵 로그아웃
+  // 로그아웃
   const handleLogout = () => {
+    // 클라이언트 측 토큰 제거
+    useAuthStore.getState().clearTokens();
+
+    // TODO: 서버에 로그아웃 요청을 보내 HttpOnly 쿠키를 제거하는 로직이 필요합니다.
+
     alert("로그아웃 되었습니다.");
     router.push("/");
   };
 
-  // 🔵 사용자 목록 API 불러오기
+  // 사용자 목록 API 불러오기
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await axiosInstance.get("/admin/users", {
-          params: { page: 1, size: 10 },
-        });
+        const res = await axiosInstance.get<ApiResponse<{ items: any[] }>>(
+          "/admin/users",
+          {
+            params: { page: 1, size: 10 },
+          }
+        );
 
         const items = res.data.data.items;
 
-        const mapped = items
-          .filter((u: any) => u.role === "ROLE_USER")
-          .map((u: any) => ({
+        const mapped: AdminUserListItem[] = items
+          .filter((u) => u.role === "ROLE_USER")
+          .map((u) => ({
             id: u.id,
             userId: u.userId,
             nickname: u.nickname,
@@ -103,12 +113,14 @@ const AdminMain = () => {
     });
 
   // 🔵 특정 유저 상세 정보 호출
-  const handleUserClick = async (user: UserListItem) => {
+  const handleUserClick = async (user: AdminUserListItem) => {
     try {
-      const res = await axiosInstance.get(`/admin/users/${user.id}`);
+      const res = await axiosInstance.get<ApiResponse<any>>(
+        `/admin/users/${user.id}`
+      );
       const data = res.data.data;
 
-      const selected: User = {
+      const selected: AdminUser = {
         id: data.id.toString(),
         userId: data.userId,
         name: data.nickname,
