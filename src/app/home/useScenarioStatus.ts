@@ -25,10 +25,8 @@ const buildScenarioCards = (
 };
 
 export const useScenarioStatus = () => {
-    // 진행도 카드에 표시할 데이터(초기 값은 0)
-    const [progressCards, setProgressCards] = useState<ProgressCard[]>(() =>
-        buildScenarioCards()
-    );
+    const initialCards = useMemo(() => buildScenarioCards(), []);
+    const [progressCards, setProgressCards] = useState<ProgressCard[]>(initialCards);
 
     // 완료된 시나리오 id 집합
     const [completedScenarioIds, setCompletedScenarioIds] = useState<Set<number>>(new Set());
@@ -92,7 +90,7 @@ export const useScenarioStatus = () => {
     };
 
     // 모든 시나리오 완료 여부(추후 마무리 퀴즈 활성화 판단용)
-    const allScenariosCompleted = progressCards.length  > 0 && progressCards.every((card) => isScenarioCompleted(card.scenarioId));
+    const allScenariosCompleted = progressCards.length > 0 && progressCards.every((card) => isScenarioCompleted(card.scenarioId));
 
     return {
         progressCards,

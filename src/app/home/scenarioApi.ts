@@ -3,7 +3,7 @@ import axiosInstance from "@/utils/axiosInstance";
 
 const apiGet = async <T>(url: string): Promise<T> => {
   const { data } = await axiosInstance.get(url);
-  if (!data?.data) {
+  if (data === undefined || !Object.prototype.hasOwnProperty.call(data, "data")) {
     throw new Error(`Invalid API response format for ${url}`);
   }
   return data.data as T;
