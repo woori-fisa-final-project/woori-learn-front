@@ -156,7 +156,7 @@ export default function HomePage() {
         </div>
 
         {/* 진행률 바 */}
-        <div>
+        <div className="overflow-x-auto">
           <ProgressBar
             steps={progressSteps}
             lineColorClassName="bg-[#376FDB]"
