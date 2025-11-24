@@ -2,7 +2,7 @@ import { CompletedScenario, ScenarioProgress } from "@/types";
 import axiosInstance from "@/utils/axiosInstance";
 
 const apiGet = async <T>(url: string): Promise<T> => {
-  const { data } = await axiosInstance.get(url);
+  const { data } = await axiosInstance.get<{ data: T }>(url);
   if (data === undefined || !Object.prototype.hasOwnProperty.call(data, "data")) {
     throw new Error(`Invalid API response format for ${url}`);
   }
