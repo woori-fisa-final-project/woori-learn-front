@@ -97,7 +97,7 @@ function AutomaticPaymentScenarioContent() {
   const getRepresentativeAccount = async (userId: number): Promise<EducationalAccount | undefined> => {
     const accounts = await getAccountList(userId);
 
-    if (!accounts || accounts.length === 0) {
+    if (accounts.length === 0) {
       devError("[getRepresentativeAccount] 계좌가 없습니다.");
       return undefined;
     }
