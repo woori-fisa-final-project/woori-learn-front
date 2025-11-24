@@ -92,7 +92,7 @@ export const useScenarioStatus = () => {
     };
 
     // 모든 시나리오 완료 여부(추후 마무리 퀴즈 활성화 판단용)
-    const allScenariosCompleted = SCENARIO_CONFIG.length > 0 && SCENARIO_CONFIG.every((cfg) => isScenarioCompleted(cfg.id));
+    const allScenariosCompleted = progressCards.length  > 0 && progressCards.every((card) => isScenarioCompleted(card.scenarioId));
 
     return {
         progressCards,
