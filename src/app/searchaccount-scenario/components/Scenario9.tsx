@@ -56,7 +56,7 @@ export default function Scenario9() {
   const transformed = useTransactionTransform(
     transactions,
     appliedFilters,
-    accountInfo
+    //accountInfo
   );
 
   const [openFilter, setOpenFilter] = useState(false);
