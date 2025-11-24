@@ -89,6 +89,66 @@ function AutomaticPaymentScenarioContent() {
     message: "",
   });
 
+  /**
+   * 대표 계좌 조회
+   * @param userId - 사용자 ID
+   * @returns 첫 번째 계좌 (대표계좌) 또는 undefined
+   */
+  const getRepresentativeAccount = async (userId: number): Promise<EducationalAccount | undefined> => {
+    const accounts = await getAccountList(userId);
+
+    if (!accounts || accounts.length === 0) {
+      devError("[getRepresentativeAccount] 계좌가 없습니다.");
+      return undefined;
+    }
+
+    return accounts[0];
+  };
+
+  /**
+   * 모든 자동이체 조회 (페이지네이션 처리)
+   * @param accountId - 교육용 계좌 ID
+   * @returns 모든 페이지의 자동이체 목록
+   */
+  const getAllAutoPayments = async (accountId: number): Promise<AutoPayment[]> => {
+    const firstPage = await getAutoPaymentList({
+      educationalAccountId: accountId,
+      page: 0,
+      size: AUTO_PAYMENT.PAGE_SIZE,
+    });
+
+    const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
+
+    // 첫 페이지만 있는 경우
+    if (totalRemainingPages === 0) {
+      return firstPage.content;
+    }
+
+    // 나머지 페이지들을 청크 단위로 조회
+    const remainingPromises = Array.from(
+      { length: totalRemainingPages },
+      (_, i) => () => getAutoPaymentList({
+        educationalAccountId: accountId,
+        page: i + 1,
+        size: AUTO_PAYMENT.PAGE_SIZE,
+      })
+    );
+
+    const remainingResults = await runPromisesInChunks(
+      remainingPromises,
+      AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+    );
+
+    // 모든 페이지의 content를 하나로 합치기
+    return [
+      ...firstPage.content,
+      ...remainingResults.flatMap(r => r.content)
+    ];
+  };
+
+  /**
+   * 자동이체 목록 데이터 조회 및 상태 업데이트
+   */
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -101,64 +161,24 @@ function AutomaticPaymentScenarioContent() {
         devError("[fetchData] 유효하지 않은 userId:", userId);
       }
 
-      // 1. 계좌 목록 조회
-      const accounts = await getAccountList(currentUserId);
+      // 1. 대표 계좌 조회
+      const representativeAccount = await getRepresentativeAccount(currentUserId);
 
-      if (!accounts || accounts.length === 0) {
-        devError("[fetchData] 계좌가 없습니다.");
+      if (!representativeAccount) {
         setIsLoading(false);
         return;
       }
 
-      // 2. 첫 번째 계좌(대표계좌) 선택
-      const representativeAccount = accounts[0];
-
-      // 3. 계좌번호 뒷자리 4자리 추출
+      // 2. 계좌번호 뒷자리 4자리 추출
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 4. 해당 계좌의 자동이체 목록 조회 (첫 페이지)
-      const firstPage = await getAutoPaymentList({
-        educationalAccountId: representativeAccount.id,
-        page: 0,
-        size: AUTO_PAYMENT.PAGE_SIZE,
-      });
+      // 3. 모든 자동이체 목록 조회 (페이지네이션 처리)
+      const allPayments = await getAllAutoPayments(representativeAccount.id);
 
-      const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
-
-      let remainingResults: Awaited<ReturnType<typeof getAutoPaymentList>>[] = [];
-
-      // 5. 나머지 페이지들을 청크 단위로 조회 (수정된 로직)
-      if (totalRemainingPages > 0) {
-        // Promise를 반환하는 함수 배열 생성
-        const remainingPromiseFunctions = Array.from(
-          { length: totalRemainingPages },
-          (_, i) => {
-            const pageNum = i + 1; // 1페이지부터 시작
-            return () => getAutoPaymentList({
-              educationalAccountId: representativeAccount.id,
-              page: pageNum,
-              size: AUTO_PAYMENT.PAGE_SIZE,
-            });
-          }
-        );
-
-        // 청크 단위로 병렬 요청 실행
-        remainingResults = await runPromisesInChunks(
-          remainingPromiseFunctions,
-          AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
-        );
-      }
-
-      // 6. 모든 페이지의 content를 하나로 합치기
-      const allPayments = [
-        ...firstPage.content,
-        ...remainingResults.flatMap(result => result.content)
-      ];
-
-      // 7. 조회된 모든 자동이체를 화면용 데이터로 변환
-      if (allPayments && allPayments.length > 0) {
-        devLog(`[fetchData] 자동이체 ${allPayments.length}건 조회 완료 (전체: ${firstPage.totalElements}건)`);
+      // 4. 조회된 모든 자동이체를 화면용 데이터로 변환
+      if (allPayments.length > 0) {
+        devLog(`[fetchData] 자동이체 ${allPayments.length}건 조회 완료`);
         const convertedList = allPayments.map(payment => {
           devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);

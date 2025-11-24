@@ -20,26 +20,31 @@ interface GetAutoPaymentListParams {
 export async function getAutoPaymentList(
   params: GetAutoPaymentListParams
 ): Promise<Page<AutoPayment>> {
-  const queryParams = new URLSearchParams();
-  queryParams.append("educationalAccountId", params.educationalAccountId.toString());
+  try {
+    const queryParams = new URLSearchParams();
+    queryParams.append("educationalAccountId", params.educationalAccountId.toString());
 
-  if (params.status) {
-    queryParams.append("status", params.status);
+    if (params.status) {
+      queryParams.append("status", params.status);
+    }
+
+    // 페이지네이션 파라미터
+    queryParams.append("page", (params.page ?? 0).toString());
+    queryParams.append("size", (params.size ?? AUTO_PAYMENT.PAGE_SIZE).toString());
+
+    if (params.sort) {
+      queryParams.append("sort", params.sort);
+    }
+
+    const response = await axiosInstance.get<ApiResponse<Page<AutoPayment>>>(
+      `${BASE_URL}/list/paged?${queryParams.toString()}`
+    );
+
+    return response.data.data;
+  } catch (error) {
+    devError("[getAutoPaymentList] 목록 조회 실패:", error);
+    throw error;
   }
-
-  // 페이지네이션 파라미터
-  queryParams.append("page", (params.page ?? 0).toString());
-  queryParams.append("size", (params.size ?? AUTO_PAYMENT.PAGE_SIZE).toString());
-
-  if (params.sort) {
-    queryParams.append("sort", params.sort);
-  }
-
-  const response = await axiosInstance.get<ApiResponse<Page<AutoPayment>>>(
-    `${BASE_URL}/list/paged?${queryParams.toString()}`
-  );
-
-  return response.data.data;
 }
 
 /**
@@ -48,11 +53,16 @@ export async function getAutoPaymentList(
 export async function getAutoPaymentDetail(
   autoPaymentId: number
 ): Promise<AutoPayment> {
-  const response = await axiosInstance.get<ApiResponse<AutoPayment>>(
-    `${BASE_URL}/detail/${autoPaymentId}`
-  );
+  try {
+    const response = await axiosInstance.get<ApiResponse<AutoPayment>>(
+      `${BASE_URL}/detail/${autoPaymentId}`
+    );
 
-  return response.data.data;
+    return response.data.data;
+  } catch (error) {
+    devError("[getAutoPaymentDetail] 상세 조회 실패:", error);
+    throw error;
+  }
 }
 
 interface CreateAutoPaymentParams {
@@ -75,12 +85,17 @@ interface CreateAutoPaymentParams {
 export async function createAutoPayment(
   params: CreateAutoPaymentParams
 ): Promise<AutoPayment> {
-  const response = await axiosInstance.post<ApiResponse<AutoPayment>>(
-    BASE_URL,
-    params
-  );
+  try {
+    const response = await axiosInstance.post<ApiResponse<AutoPayment>>(
+      BASE_URL,
+      params
+    );
 
-  return response.data.data;
+    return response.data.data;
+  } catch (error) {
+    devError("[createAutoPayment] 등록 실패:", error);
+    throw error;
+  }
 }
 
 /**
@@ -90,15 +105,20 @@ export async function cancelAutoPayment(
   autoPaymentId: number,
   educationalAccountId: number
 ): Promise<AutoPayment> {
-  const queryParams = new URLSearchParams();
-  queryParams.append("educationalAccountId", educationalAccountId.toString());
+  try {
+    const queryParams = new URLSearchParams();
+    queryParams.append("educationalAccountId", educationalAccountId.toString());
 
-  const url = `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`;
+    const url = `${BASE_URL}/${autoPaymentId}/cancel?${queryParams.toString()}`;
 
-  logApiCall("POST", url, { autoPaymentId, educationalAccountId });
+    logApiCall("POST", url, { autoPaymentId, educationalAccountId });
 
-  const response = await axiosInstance.post<ApiResponse<AutoPayment>>(url, {});
+    const response = await axiosInstance.post<ApiResponse<AutoPayment>>(url, {});
 
-  logApiResponse(response.status, url, response.data);
-  return response.data.data;
+    logApiResponse(response.status, url, response.data);
+    return response.data.data;
+  } catch (error) {
+    devError("[cancelAutoPayment] 해지 실패:", error);
+    throw error;
+  }
 }
