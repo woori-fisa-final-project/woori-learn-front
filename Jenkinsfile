@@ -4,7 +4,7 @@ pipeline {
     environment {
         AWS_HOST = "43.202.43.243"
         DOCKER_IMAGE = "bae1234/woori-learn-front:latest"
-        API_BASE = "http://43.202.43.243:8080/api"
+        API_BASE = "http://43.202.43.243:8080"
     }
 
     stages {
