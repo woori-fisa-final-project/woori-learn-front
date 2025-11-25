@@ -1,26 +1,20 @@
 import { EducationalAccount } from "@/types/account";
-
-interface ApiResponse<T> {
-  code: number;
-  message: string;
-  data: T;
-}
+import axiosInstance from "@/utils/axiosInstance";
+import type { ApiResponse } from "@/types/api";
+import { devError } from "@/utils/logger";
 
 /**
- * 사용자의 계좌 목록 조회
+ * 사용자의 계좌 목록 조회 
  */
 export async function getAccountList(userId: number): Promise<EducationalAccount[]> {
-  const response = await fetch(`/education/accounts/list/${userId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  try {
+    const response = await axiosInstance.get<ApiResponse<EducationalAccount[]>>(
+      `/education/accounts/list/${userId}`
+    );
 
-  if (!response.ok) {
-    throw new Error(`계좌 목록 조회 실패: ${response.status}`);
+    return response.data.data;
+  } catch (error) {
+    devError("[getAccountList] 계좌 조회 실패:", error);
+    throw error;
   }
-
-  const result: ApiResponse<EducationalAccount[]> = await response.json();
-  return result.data;
 }

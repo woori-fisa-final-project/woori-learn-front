@@ -1,6 +1,6 @@
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
-import type { Scenario18Detail } from "@/app/automaticpayment-scenario/components/Scenario18";
+import type { Scenario18Detail } from "@/app/(education)/scenario/components/practice/automaticpayment/Scenario18";
 import { formatAccountNumber } from "@/utils/accountUtils";
 import { getBankName } from "@/utils/bankUtils";
 import { getCurrentUserName } from "@/utils/authUtils";

@@ -1,6 +1,6 @@
 import { formatDate } from "@/utils/formatDate";
 import type { ReadonlyURLSearchParams } from "next/navigation";
-import type { Scenario18Detail } from "@/app/automaticpayment-scenario/components/Scenario18";
+import type { Scenario18Detail } from "@/app/(education)/scenario/components/practice/automaticpayment/Scenario18";
 import { formatDateRange } from "@/utils/formatDateRange";
 
 export function parseScenarioDetail(searchParams: URLSearchParams | ReadonlyURLSearchParams): Scenario18Detail {

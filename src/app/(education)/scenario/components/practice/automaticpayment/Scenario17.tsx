@@ -6,7 +6,7 @@ import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { formatDate } from "@/utils/formatDate";
 import { formatDateRange } from "@/utils/formatDateRange";
-import type { ScheduleSummary } from "./types";
+import type { ScheduleSummary } from "../../../../../automaticpayment-scenario/components/types";
 
 // 완료 화면에 필요한 모든 정보를 상위에서 전달받는다.
 type Scenario17Props = {

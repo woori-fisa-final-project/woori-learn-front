@@ -1,9 +1,9 @@
 "use client"; // 클라이언트 훅(useRouter 등)을 사용하기 위해 클라이언트 컴포넌트로 선언합니다.
 
 import { Suspense } from "react";
-import Scenario8 from "./components/Scenario8"; // 실제 검색형 계좌 시나리오 화면을 담당하는 컴포넌트를 가져옵니다.
-import Scenario9 from "./components/Scenario9"; // 거래내역 조회 시나리오 화면을 추가로 렌더링하기 위해 불러옵니다.
-import Scenario10 from "./components/Scenario10"; // 거래내역 상세 시나리오 화면을 추가로 렌더링합니다.
+import Scenario8 from "../(education)/scenario/components/practice/searchaccount/Scenario8"; // 실제 검색형 계좌 시나리오 화면을 담당하는 컴포넌트를 가져옵니다.
+import Scenario9 from "../(education)/scenario/components/practice/searchaccount/Scenario9"; // 거래내역 조회 시나리오 화면을 추가로 렌더링하기 위해 불러옵니다.
+import Scenario10 from "../(education)/scenario/components/practice/searchaccount/Scenario10"; // 거래내역 상세 시나리오 화면을 추가로 렌더링합니다.
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow"; // 계좌/금액 등 공유 상태를 제공하는 컨텍스트 프로바이더를 불러옵니다.
 import { useSearchParams } from "next/navigation"; // URL 쿼리 파라미터를 읽어 어떤 시나리오를 보여줄지 결정합니다.
 

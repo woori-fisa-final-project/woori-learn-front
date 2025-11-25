@@ -12,15 +12,15 @@ import { useAutoPaymentRegistration } from "@/lib/hooks/useAutoPaymentRegistrati
 // 공통 유틸리티 함수를 불러온다.
 import { formatAccountNumber } from "@/utils/accountUtils";
 // 다른 시나리오 단계 컴포넌트를 순차적으로 사용하여 전체 플로우를 완성한다.
-import Scenario2 from "@/app/transfer-scenario/components/Scenario2";
-import Scenario3 from "@/app/transfer-scenario/components/Scenario3";
-import Scenario4 from "@/app/transfer-scenario/components/Scenario4";
-import Scenario5 from "@/app/transfer-scenario/components/Scenario5";
-import Scenario13 from "./Scenario13";
-import Scenario14 from "./Scenario14";
-import Scenario15 from "./Scenario15";
-import Scenario16 from "./Scenario16";
-import Scenario17 from "./Scenario17";
+import Scenario2 from "@/app/(education)/scenario/components/practice/transfer/Scenario2";
+import Scenario3 from "@/app/(education)/scenario/components/practice/transfer/Scenario3";
+import Scenario4 from "@/app/(education)/scenario/components/practice/transfer/Scenario4";
+import Scenario5 from "@/app/(education)/scenario/components/practice/transfer/Scenario5";
+import Scenario13 from "../../../../../automaticpayment-scenario/components/Scenario13";
+import Scenario14 from "../../../../../automaticpayment-scenario/components/Scenario14";
+import Scenario15 from "../../../../../automaticpayment-scenario/components/Scenario15";
+import Scenario16 from "../../../../../automaticpayment-scenario/components/Scenario16";
+import Scenario17 from "../../../../../automaticpayment-scenario/components/Scenario17";
 import type { EducationalAccount } from "@/types/account";
 import Image from "next/image";
 import Modal from "@/components/common/Modal";

@@ -7,7 +7,7 @@ import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { formatDate } from "@/utils/formatDate";
 import { formatDateRange } from "@/utils/formatDateRange";
 import { useMemo } from "react";
-import type { ScheduleSummary } from "./types";
+import type { ScheduleSummary } from "../../../../../automaticpayment-scenario/components/types";
 
 // 확인 화면에서 사용하는 데이터와 콜백을 명시한다.
 type Scenario15Props = {

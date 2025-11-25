@@ -4,13 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
-import Scenario1 from "./Scenario1";
-import Scenario2 from "./Scenario2";
-import Scenario3 from "./Scenario3";
-import Scenario4 from "./Scenario4";
-import Scenario5 from "./Scenario5";
-import Scenario6 from "./Scenario6";
-import Scenario7 from "./Scenario7";
+import Scenario1 from "../../(education)/scenario/components/practice/transfer/Scenario1";
+import Scenario2 from "../../(education)/scenario/components/practice/transfer/Scenario2";
+import Scenario3 from "../../(education)/scenario/components/practice/transfer/Scenario3";
+import Scenario4 from "../../(education)/scenario/components/practice/transfer/Scenario4";
+import Scenario5 from "../../(education)/scenario/components/practice/transfer/Scenario5";
+import Scenario6 from "../../(education)/scenario/components/practice/transfer/Scenario6";
+import Scenario7 from "../../(education)/scenario/components/practice/transfer/Scenario7";
 
 type ScenarioContainerProps = {
   onScenarioStepChange?: (stepId: number) => void; // 시나리오 step 변경 콜백

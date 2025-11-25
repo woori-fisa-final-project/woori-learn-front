@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/common/Button";
 import { clampDayToMonth, formatYMD } from "@/utils/dateUtils";
-import type { ScheduleSummary } from "./types";
+import type { ScheduleSummary } from "../../../../../automaticpayment-scenario/components/types";
 
 // 상위 컴포넌트에서 완료 콜백을 전달받기 위한 props 타입을 정의한다.
 type Scenario14Props = {
