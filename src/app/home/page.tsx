@@ -91,7 +91,7 @@ export default function HomePage() {
   ];
 
   const progressCards = [ // 각 교육 카테고리별 진행도 카드 데이터를 정의합니다.
-    { title: "거래내역 조회", progress: 100 },
+    { title: "거래내역 조퇴", progress: 100 },
     { title: "공과금", progress: 100 },
     { title: "예/적금", progress: 100 },
     { title: "대출", progress: 10 },
