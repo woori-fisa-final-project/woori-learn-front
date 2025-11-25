@@ -116,7 +116,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user, onBack }) => {
         <div className="flex flex-col gap-2 sm:gap-3">
           {user.pointHistory.map((h, idx) => (
             <div
-              key={idx}
+              key={`${h.date}-${idx}`}
               className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 border-b border-gray-100 pb-2 last:border-b-0"
             >
               <span className="text-xs sm:text-sm text-gray-500 w-full sm:w-28">

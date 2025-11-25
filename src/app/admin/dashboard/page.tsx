@@ -7,19 +7,14 @@ import UserDetail from "./UserDetail";
 import ExchangeList from "./ExchangeList";
 import axiosInstance from "@/utils/axiosInstance";
 import { useAuthStore } from "@/utils/tokenStorage";
-import type { AdminUser, AdminUserListItem, ApiResponse } from "@/types/admin";
+import type {
+  AdminUser,
+  AdminUserListItem,
+  ApiResponse,
+  AdminUserDetailResponse,
+} from "@/types/admin";
 
 type Section = "users" | "userDetail" | "exchange";
-
-// // API에서 내려오는 사용자 목록 구조
-// interface UserListItem {
-//   id: number;
-//   userId: string;
-//   nickname: string;
-//   points: number;
-//   createdAt: string;
-//   progressRate: number;
-// }
 
 const AdminMain = () => {
   const [section, setSection] = useState<Section>("users");
@@ -100,7 +95,7 @@ const AdminMain = () => {
   // 🔵 특정 유저 상세 정보 호출
   const handleUserClick = async (user: AdminUserListItem) => {
     try {
-      const res = await axiosInstance.get<ApiResponse<any>>(
+      const res = await axiosInstance.get<ApiResponse<AdminUserDetailResponse>>(
         `/admin/users/${user.id}`
       );
       const data = res.data.data;

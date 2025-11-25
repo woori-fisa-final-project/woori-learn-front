@@ -4,8 +4,11 @@ import ExchangeModal from "./ExchangeModal";
 interface ExchangeItem {
   id: string;
   userId: string;
+  name: string;
+  requestDate: string;
   amount: number;
   status: "환전 신청" | "환전 완료";
+  processedDate?: string;
 }
 
 const sampleExchange = [
