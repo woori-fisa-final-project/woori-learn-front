@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_HOST = "43.200.2.107"
+        AWS_HOST = "43.202.43.243"
         DOCKER_IMAGE = "bae1234/woori-learn-front:latest"
     }
 
@@ -13,13 +13,7 @@ pipeline {
             }
         }
 
-        stage('Build Frontend') {
-            agent {
-                docker {
-                    image 'node:20'
-                    args '-u root:root'
-                }
-            }
+        stage('Install Dependencies & Build Frontend') {
             steps {
                 sh """
                 npm install
@@ -51,11 +45,11 @@ pipeline {
             steps {
                 sshagent(['aws-ssh-key']) {
                     sh """
-ssh -o StrictHostKeyChecking=no ubuntu@${AWS_HOST} << 'EOF'
+ssh -o StrictHostKeyChecking=no ubuntu@${AWS_HOST} << EOF
 docker pull ${DOCKER_IMAGE}
 docker rm -f woori_frontend || true
 docker run -d --name woori_frontend -p 3000:3000 \
-    -e NEXT_PUBLIC_API_BASE_URL="http://43.200.2.107:8080" \
+    -e NEXT_PUBLIC_API_BASE_URL="http://43.202.43.243:8080" \
     ${DOCKER_IMAGE}
 EOF
                     """
