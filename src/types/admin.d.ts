@@ -21,6 +21,7 @@ export interface AdminUserListItem {
   points: number;
   createdAt: string;
   progressRate: number;
+  role?: string; // 필터링에 사용 (ROLE_USER)
 }
 
 export interface ApiResponse<T> {

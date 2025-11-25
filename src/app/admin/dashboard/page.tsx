@@ -9,22 +9,6 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useAuthStore } from "@/utils/tokenStorage";
 import type { AdminUser, AdminUserListItem, ApiResponse } from "@/types/admin";
 
-// interface User {
-//   id: string;
-//   userId: string;
-//   name: string;
-//   creationDate: string;
-//   points: number;
-//   exchangedPoints: number;
-//   progress: string;
-//   account: {
-//     accountNumber: string;
-//     createdAt: string;
-//   };
-//   scenarios: any[];
-//   pointHistory: any[];
-// }
-
 type Section = "users" | "userDetail" | "exchange";
 
 // // API에서 내려오는 사용자 목록 구조
@@ -48,30 +32,31 @@ const AdminMain = () => {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
   // 로그아웃
-  const handleLogout = () => {
-    // 클라이언트 측 토큰 제거
-    useAuthStore.getState().clearTokens();
-
-    // TODO: 서버에 로그아웃 요청을 보내 HttpOnly 쿠키를 제거하는 로직이 필요합니다.
-
-    alert("로그아웃 되었습니다.");
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // 로그아웃 API 실패 시에도 클라이언트에서는 로그아웃 처리를 계속 진행합니다.
+    } finally {
+      useAuthStore.getState().clearTokens();
+      router.push("/login"); // 로그아웃 버튼 클릭 시 로그인 화면으로 이동합니다.
+    }
   };
 
   // 사용자 목록 API 불러오기
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await axiosInstance.get<ApiResponse<{ items: any[] }>>(
-          "/admin/users",
-          {
-            params: { page: 1, size: 10 },
-          }
-        );
+        const res = await axiosInstance.get<
+          ApiResponse<{ items: AdminUserListItem[] }>
+        >("/admin/users", {
+          params: { page: 1, size: 10 },
+        });
 
         const items = res.data.data.items;
 
-        const mapped: AdminUserListItem[] = items
+        const mapped = items
           .filter((u) => u.role === "ROLE_USER")
           .map((u) => ({
             id: u.id,
