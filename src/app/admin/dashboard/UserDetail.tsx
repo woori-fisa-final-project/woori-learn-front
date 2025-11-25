@@ -1,35 +1,10 @@
+"use client";
+
 import React from "react";
-
-interface AccountInfo {
-  accountNumber: string;
-  createdAt: string;
-}
-
-interface ScenarioStatus {
-  name: string;
-  completed: boolean;
-}
-
-interface PointHistory {
-  date: string;
-  status: string;
-  amount: string;
-  type: "earn" | "exchange_request" | "exchange_complete" | "exchange_failed";
-}
+import { type AdminUser } from "@/types/admin";
 
 interface UserDetailProps {
-  user: {
-    id: string;
-    userId: string;
-    name: string;
-    creationDate: string;
-    points: number;
-    exchangedPoints: number;
-    progress: string;
-    account: AccountInfo;
-    scenarios: ScenarioStatus[];
-    pointHistory: PointHistory[];
-  };
+  user: AdminUser;
   onBack: () => void;
 }
 
@@ -42,9 +17,12 @@ const UserDetail: React.FC<UserDetailProps> = ({ user, onBack }) => {
       >
         &larr; 회원 목록으로
       </button>
+
       <h2 className="text-xl sm:text-2xl md:text-2xl font-bold mb-4 sm:mb-5 md:mb-6">
         회원 상세정보
       </h2>
+
+      {/* 기본 정보 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-4 sm:mb-5 md:mb-6">
         <div>
           <div className="mb-2 text-sm sm:text-base">
@@ -56,6 +34,8 @@ const UserDetail: React.FC<UserDetailProps> = ({ user, onBack }) => {
           <div className="mb-2 text-sm sm:text-base">
             <span className="font-semibold">생성일자:</span> {user.creationDate}
           </div>
+
+          {/* 진행률 */}
           <div className="mb-2 flex flex-col sm:flex-row items-start sm:items-center gap-2">
             <span className="font-semibold text-sm sm:text-base">
               교육 진행률:
@@ -73,6 +53,8 @@ const UserDetail: React.FC<UserDetailProps> = ({ user, onBack }) => {
             </div>
           </div>
         </div>
+
+        {/* 포인트 / 계좌 정보 */}
         <div>
           <div className="mb-2 text-sm sm:text-base">
             <span className="font-semibold">보유 포인트:</span>{" "}
@@ -92,6 +74,8 @@ const UserDetail: React.FC<UserDetailProps> = ({ user, onBack }) => {
           </div>
         </div>
       </div>
+
+      {/* 시나리오 완료 여부 */}
       <div className="mb-4 sm:mb-5 md:mb-6">
         <h3 className="text-base sm:text-lg md:text-lg font-bold mb-2 sm:mb-3">
           시나리오 완료 여부
@@ -109,10 +93,13 @@ const UserDetail: React.FC<UserDetailProps> = ({ user, onBack }) => {
           ))}
         </ul>
       </div>
+
+      {/* 포인트 내역 */}
       <div>
         <h3 className="text-base sm:text-lg md:text-lg font-bold mb-2 sm:mb-3">
           포인트 적립/출금 내역
         </h3>
+
         <div className="flex flex-col gap-2 sm:gap-3">
           {user.pointHistory.map((h, idx) => (
             <div
