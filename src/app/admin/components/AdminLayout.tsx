@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import AdminHeader from "./AdminHeader";
 import MobileSidebar from "./MobileSidebar";
+import { useCallback } from "react";
 
 type Section = "users" | "userDetail" | "exchange";
 
@@ -21,13 +22,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleMenuToggle = () => {
+  const handleMenuToggle = useCallback(() => {
     setIsMobileMenuOpen((prev) => !prev);
-  };
+  }, []);
 
-  const handleMenuClose = () => {
+  const handleMenuClose = useCallback(() => {
     setIsMobileMenuOpen(false);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">

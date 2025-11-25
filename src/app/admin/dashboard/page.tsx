@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import AdminLayout from "../components/AdminLayout";
 import { useRouter } from "next/navigation";
 import UserDetail from "./UserDetail";
@@ -27,17 +27,16 @@ const AdminMain = () => {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
   // 로그아웃
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await axiosInstance.post("/auth/logout");
     } catch (error) {
       console.error("Logout failed:", error);
-      // 로그아웃 API 실패 시에도 클라이언트에서는 로그아웃 처리를 계속 진행합니다.
     } finally {
       useAuthStore.getState().clearTokens();
-      router.push("/login"); // 로그아웃 버튼 클릭 시 로그인 화면으로 이동합니다.
+      router.push("/login");
     }
-  };
+  }, [router]); // router는 의존성 필요함
 
   // 사용자 목록 API 불러오기
   useEffect(() => {
@@ -113,7 +112,7 @@ const AdminMain = () => {
           createdAt: "",
         },
         scenarios: data.scenarios ?? [],
-        pointHistory: (data.historyList ?? []).map((h: any) => ({
+        pointHistory: (data.historyList ?? []).map((h) => ({
           date: h.createdAt?.slice(0, 10),
           status: h.status,
           amount: h.amount,

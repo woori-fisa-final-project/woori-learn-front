@@ -110,25 +110,25 @@ const ExchangeList: React.FC = () => {
         <table className="table-auto w-full border-collapse border border-gray-200 bg-white min-w-[800px]">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
+              <th className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
                 회원 ID
               </th>
-              <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
+              <th className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
                 이름
               </th>
-              <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base hidden md:table-cell">
+              <th className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base hidden md:table-cell">
                 신청일자
               </th>
-              <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
+              <th className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
                 신청금액
               </th>
-              <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
+              <th className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base">
                 처리상태
               </th>
-              <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base hidden lg:table-cell">
+              <th className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base hidden lg:table-cell">
                 처리일자
               </th>
-              <th className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base w-20 sm:w-24">
+              <th className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base w-20 sm:w-24">
                 관리
               </th>
             </tr>
@@ -139,25 +139,25 @@ const ExchangeList: React.FC = () => {
                 key={item.id}
                 className="hover:bg-primary-50 transition-colors"
               >
-                <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
+                <td className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
                   {item.userId}
                 </td>
-                <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
+                <td className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
                   {item.name}
                 </td>
-                <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base hidden md:table-cell">
+                <td className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base hidden md:table-cell">
                   {item.requestDate}
                 </td>
-                <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
+                <td className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
                   {item.amount?.toLocaleString()}원
                 </td>
-                <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
+                <td className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base">
                   {item.status}
                 </td>
-                <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base hidden lg:table-cell">
+                <td className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center whitespace-nowrap text-xs sm:text-sm md:text-base hidden lg:table-cell">
                   {item.processedDate || "-"}
                 </td>
-                <td className="border border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center w-20 sm:w-24 whitespace-nowrap">
+                <td className="border px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center w-20 sm:w-24 whitespace-nowrap">
                   {item.status === "환전 신청" && (
                     <button
                       className="px-2 sm:px-3 py-1 bg-primary-400 text-white rounded hover:bg-primary-600 transition-colors text-xs sm:text-sm"
