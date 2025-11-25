@@ -13,7 +13,7 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 RUN npm run build
 
 # -------- RUN STAGE --------
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 
 COPY --from=builder /app ./
