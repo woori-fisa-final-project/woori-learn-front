@@ -20,10 +20,10 @@ type ScenarioContainerProps = {
   onTransferResult?: (result: "success" | "fail") => void;
 };
 
-export default function ScenarioContainer({onPracticeNext, onTransferResult}: ScenarioContainerProps) {
+export default function ScenarioContainer({ onPracticeNext, onTransferResult }: ScenarioContainerProps) {
   const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
   const searchParams = useSearchParams(); // URL 쿼리 파라미터를 읽기 위해 사용합니다.
-  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, lastErrorType, setLastErrorType,} = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
+  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, lastErrorType, setLastErrorType, } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
   const [step, setStep] = useState<number>(1); // 현재 진행 중인 단계(1~7)를 관리합니다.
   const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false); // 은행 선택 바텀 시트 열림 여부를 저장합니다.
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState<boolean>(false); // 비밀번호 입력 바텀 시트 열림 여부를 저장합니다.
@@ -150,7 +150,7 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
               // 시나리오 오버레이 코드추가
               await callPracticeNextOnce(1);
             }}
-            onContactTransfer={() => {}}
+            onContactTransfer={() => { }}
           />
         )}
         {clampedStep === 3 && (
@@ -182,17 +182,17 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
               // 1019 스텝 끝나고 이체 버튼 클릭 시 계좌번호와 금액 검증 후 성공/실패에 따라 분기
               const CORRECT_ACCOUNT = "110-123-456789";
               const CORRECT_AMOUNT = 500000;
-              
+
               // 계좌번호 정규화 (하이픈 제거하여 비교)
               const normalizedAccount = (accountNumber || "").replace(/-/g, "").trim();
               const normalizedCorrectAccount = CORRECT_ACCOUNT.replace(/-/g, "");
-              
+
               // 금액 비교 (숫자 타입으로 변환하여 비교)
               const numericAmount = Number(amount) || 0;
-              
+
               const isAccountCorrect = normalizedAccount === normalizedCorrectAccount;
               const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
-              
+
               // 디버깅: 실제 값 확인
               console.log("이체 검증:", {
                 accountNumber,
@@ -215,10 +215,11 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
               } else {
                 setLastErrorType("both");
               }
-              
+
               if (onTransferResult) {
                 if (isAccountCorrect && isAmountCorrect) {
                   onTransferResult("success");
+                  goToStep(7);
                 } else {
                   onTransferResult("fail");
                 }
@@ -232,6 +233,7 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
         )}
         {clampedStep === 7 && (
           <Scenario7
+            onPracticeNext={() => callPracticeNextOnce(7)}
             onRestart={() => {
               handleReset();
               router.push("/woorimain");
@@ -258,21 +260,21 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
       )}
 
       {/* 비밀번호 입력 시트 */}
-        {isPasswordSheetOpen && clampedStep === 5 && (
-          <Scenario5
-            onSuccess={async (password) => {
-              // 일반 이체에서는 비밀번호를 별도로 저장하지 않고 검증만 수행합니다.
-              setPasswordSheetOpen(false);
-              goToStep(6);
-              // 시나리오 오버레이 코드추가
-              await callPracticeNextOnce(6);
-            }}
-            onClose={() => {
-              setPasswordSheetOpen(false);
-              goToStep(4);
-            }}
-          />
-        )}
+      {isPasswordSheetOpen && clampedStep === 5 && (
+        <Scenario5
+          onSuccess={async (password) => {
+            // 일반 이체에서는 비밀번호를 별도로 저장하지 않고 검증만 수행합니다.
+            setPasswordSheetOpen(false);
+            goToStep(6);
+            // 시나리오 오버레이 코드추가
+            await callPracticeNextOnce(6);
+          }}
+          onClose={() => {
+            setPasswordSheetOpen(false);
+            goToStep(4);
+          }}
+        />
+      )}
     </div>
   );
 }

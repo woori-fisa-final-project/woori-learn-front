@@ -35,7 +35,7 @@ export default function ScenarioRenderer({ step, previousStep, onChoiceNext, onB
   }
 
   if (type === "DIALOG") {
-    return <DialogStep content={content} onBackgroundClick={onBackgroundClick} />;
+    return <DialogStep content={content} onBackgroundClick={onBackgroundClick} previousStep={previousStep} />;
   }
 
   if (type === "OVERLAY") {

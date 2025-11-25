@@ -308,6 +308,13 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
       1028: {
         id: 1028,
         scenarioId: 1,
+        type: "PRACTICE",
+        content: { button: "nextbtn" }
+      },
+
+      1029: {
+        id: 1029,
+        scenarioId: 1,
         type: "DIALOG",
         content: {
           character: "wibee",
@@ -316,8 +323,8 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         }
       },
       
-      1029: {
-        id: 1029,
+      1030: {
+        id: 1030,
         scenarioId: 1,
         type: "DIALOG",
         content: {
@@ -326,24 +333,13 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         }
       },
       
-      1030: {
-        id: 1030,
+      1031: {
+        id: 1031,
         scenarioId: 1,
         type: "DIALOG",
         content: {
           character: "wibee",
           text: "당연하지! 거래내역을 확인하는 방법도 알려줄게!"
-        }
-      },
-      
-      1031: {
-        id: 1031,
-        scenarioId: 1,
-        type: "OVERLAY",
-        content: {
-          character: "wibee",
-          emotion: "stick",
-          text: "이체한 내역을 확인하려면 '전체계좌보기'로 가면 돼."
         }
       },
       
@@ -353,12 +349,23 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         type: "OVERLAY",
         content: {
           character: "wibee",
-          text: "전체계좌보기에서는 내가 가진 모든 계좌를 한눈에 볼 수 있고, 각 계좌의 거래 내역도 확인할 수 있어!"
+          emotion: "stick",
+          text: "이체한 내역을 확인하려면 '전체계좌보기'로 가면 돼."
         }
       },
       
       1033: {
         id: 1033,
+        scenarioId: 1,
+        type: "OVERLAY",
+        content: {
+          character: "wibee",
+          text: "전체계좌보기에서는 내가 가진 모든 계좌를 한눈에 볼 수 있고, 각 계좌의 거래 내역도 확인할 수 있어!"
+        }
+      },
+      
+      1034: {
+        id: 1034,
         scenarioId: 1,
         type: "PRACTICE",
         content: {
@@ -366,8 +373,8 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         }
       },
       
-      1034: {
-        id: 1034,
+      1035: {
+        id: 1035,
         scenarioId: 1,
         type: "OVERLAY",
         content: {
@@ -377,8 +384,8 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         }
       },
       
-      1035: {
-        id: 1035,
+      1036: {
+        id: 1036,
         scenarioId: 1,
         type: "PRACTICE",
         content: {
@@ -386,8 +393,8 @@ export const scenarioMockMap: Record<number, { meta: any; steps: Record<number, 
         }
       },
       
-      1036: {
-        id: 1036,
+      1037: {
+        id: 1037,
         scenarioId: 1,
         type: "OVERLAY",
         content: {

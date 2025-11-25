@@ -77,7 +77,7 @@ export default function DialogStep({ content, centerAlign = true, onBackgroundCl
       )}
       {/* user 대화창 - ChoiceStep과 동일한 위치에 하단 고정, 가운데 정렬 */}
       <div className="fixed bottom-[50px] left-0 right-0 w-full h-[150px] z-[10000] flex flex-col items-center gap-3 px-[20px] bg-gradient-to-t from-[#549AE4] to-transparent pt-[20px]">
-        <div className={`${balloonBase} w-full max-w-[350px]`} style={{ height: "150px", display: "flex", alignItems: "center" }}>ㅋㅋ
+        <div className={`${balloonBase} w-full max-w-[350px]`} style={{ height: "150px", display: "flex", alignItems: "center" }}>
           <p>{content.text}</p>
         </div>
       </div>

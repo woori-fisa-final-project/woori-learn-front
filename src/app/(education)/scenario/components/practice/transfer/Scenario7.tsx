@@ -2,13 +2,16 @@
 
 import Button from "@/components/common/Button"; // 완료 화면의 확인 버튼에 사용할 공통 컴포넌트입니다.
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 플로우 상태를 공유하는 커스텀 훅입니다.
+import { useRouter } from "next/navigation";
 import { useMemo } from "react"; // 금액 표시를 위해 메모이제이션을 사용합니다.
 
 type Scenario7Props = {
   onRestart: () => void; // 확인 버튼 클릭 시 플로우를 재시작하는 콜백입니다.
+  onPracticeNext: () => void;
 };
 
-export default function Scenario7({ onRestart }: Scenario7Props) {
+export default function Scenario7({ onRestart, onPracticeNext }: Scenario7Props) {
+  const router = useRouter();
   const { recipientName, amount, selectedBank, accountNumber, currentUserName, sourceAccountNumber } = useTransferFlow(); // 컨텍스트에서 이체 완료 정보를 가져옵니다.
 
   const displayName = recipientName || "유정호"; // 수취인 이름이 없으면 기본 이름을 사용합니다.
@@ -19,6 +22,10 @@ export default function Scenario7({ onRestart }: Scenario7Props) {
 
   const depositBank = selectedBank ?? "국민은행"; // 선택된 은행이 없으면 기본값을 사용합니다.
   const depositAccount = accountNumber || "000-000-000000"; // 계좌번호가 없으면 기본 계좌번호를 표시합니다.
+
+  const handleConfirm = () => {
+    router.push("/woorimain?scenarioId=1&stepId=1029");
+  }
 
   return (
     <div className="flex h-full flex-col items-center pt-[80px]">
@@ -47,7 +54,7 @@ export default function Scenario7({ onRestart }: Scenario7Props) {
 
       {/* 확인 버튼: 시나리오 플로우를 재시작하거나 종료합니다. */}
       <div className="mt-auto w-full pb-[32px]">
-        <Button onClick={onRestart}>확인</Button>
+        <Button onClick={handleConfirm}>확인</Button>
       </div>
     </div>
   );
