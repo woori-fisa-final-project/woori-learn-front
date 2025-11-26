@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { formatAccountNumber, formatBalance } from "../utils/accountFormatter";
 import type { AccountResponse, AccountCard } from "@/types";
 
-
 export function useAccountList(userId: number) {
   const [accounts, setAccounts] = useState<AccountCard[]>([]);
   const [depositAccounts, setDepositAccounts] = useState<AccountCard[]>([]);
@@ -46,31 +45,33 @@ export function useAccountList(userId: number) {
 
       if (!result.data) throw new Error("응답 구조가 잘못되었습니다.");
 
-      const transformed = result.data.map((acc: AccountResponse, idx: number) => {
-        const isDeposit = idx === 0;
+      const transformed = result.data.map(
+        (acc: AccountResponse, idx: number) => {
+          const isDeposit = idx === 0;
 
-        return {
-          id: acc.id,
-          title: isDeposit ? "WON통장" : "WON적금통장",
-          bank: "우리",
-          accountNumber: formatAccountNumber(acc.accountNumber),
-          accountName: acc.accountName,
-          badge: "한도제한",
-          balance: formatBalance(acc.balance),
-          rawBalance: acc.balance,
-          transferAvailable: isDeposit,
-          type: isDeposit ? "deposit" : "savings",
-          disabledMessage: !isDeposit
-            ? "예적금 계좌에서는 이체를 이용할 수 없습니다."
-            : undefined,
-        };
-      });
+          return {
+            id: acc.id,
+            title: isDeposit ? "WON통장" : "WON적금통장",
+            bank: "우리",
+            accountNumber: formatAccountNumber(acc.accountNumber),
+            accountName: acc.accountName,
+            badge: "한도제한",
+            balance: formatBalance(acc.balance),
+            rawBalance: acc.balance,
+            transferAvailable: isDeposit,
+            type: isDeposit ? "deposit" : "savings",
+            disabledMessage: !isDeposit
+              ? "예적금 계좌에서는 이체를 이용할 수 없습니다."
+              : undefined,
+          };
+        }
+      );
 
       setAccounts(transformed);
-      setDepositAccounts(transformed.filter((v) => v.type === "deposit"));
-      setSavingsAccounts(transformed.filter((v) => v.type === "savings"));
+      setDepositAccounts(transformed.filter((v: AccountCard) => v.type === "deposit"));
+      setSavingsAccounts(transformed.filter((v: AccountCard) => v.type === "savings"));
 
-      const sum = transformed.reduce((acc, cur) => acc + cur.rawBalance, 0);
+      const sum = transformed.reduce((acc: number, cur: AccountCard) => acc + cur.rawBalance, 0);
       setTotalBalance(sum);
     } catch (e: any) {
       setError(e.message || "오류가 발생했습니다.");
@@ -93,4 +94,3 @@ export function useAccountList(userId: number) {
     refetch: fetchData,
   };
 }
- 
