@@ -21,11 +21,11 @@ pipeline {
                 sh "docker rmi -f ${DOCKER_IMAGE} || true"
 
                 
-                sh """
+                sh '''
                 docker build \
                   --build-arg NEXT_PUBLIC_API_BASE_URL=${API_BASE} \
                   -t ${DOCKER_IMAGE} .
-                """
+                '''
             }
         }
 
@@ -36,10 +36,10 @@ pipeline {
                     usernameVariable: 'DOCKERHUB_USR',
                     passwordVariable: 'DOCKERHUB_PSW'
                 )]) {
-                    sh """
+                    sh '''
                     echo "${DOCKERHUB_PSW}" | docker login -u "${DOCKERHUB_USR}" --password-stdin
                     docker push ${DOCKER_IMAGE}
-                    """
+                    '''
                 }
             }
         }
@@ -47,13 +47,13 @@ pipeline {
         stage('Deploy to AWS') {
             steps {
                 sshagent(['aws-ssh-key']) {
-                    sh """
+                    sh '''
 ssh -o StrictHostKeyChecking=no ubuntu@${AWS_HOST} << EOF
 docker pull ${DOCKER_IMAGE}
 docker rm -f woori_frontend || true
 docker run -d --name woori_frontend -p 3000:3000 ${DOCKER_IMAGE}
 EOF
-                    """
+                    '''
                 }
             }
         }
