@@ -18,7 +18,8 @@ interface GetAutoPaymentListParams {
  * 자동이체 목록 조회 (페이지네이션)
  */
 export async function getAutoPaymentList(
-  params: GetAutoPaymentListParams
+  params: GetAutoPaymentListParams,
+  signal?: AbortSignal
 ): Promise<Page<AutoPayment>> {
   try {
     const queryParams = new URLSearchParams();
@@ -37,7 +38,8 @@ export async function getAutoPaymentList(
     }
 
     const response = await axiosInstance.get<ApiResponse<Page<AutoPayment>>>(
-      `${BASE_URL}/list/paged?${queryParams.toString()}`
+      `${BASE_URL}/list/paged?${queryParams.toString()}`,
+      { signal }
     );
 
     return response.data.data;

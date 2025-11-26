@@ -89,23 +89,18 @@ function AutomaticPaymentScenarioContent() {
     message: "",
   });
 
-  // 컴포넌트 마운트 상태 추적 (메모리 누수 방지)
-  const isMountedRef = useRef(true);
-
-useEffect(() => {
-    isMountedRef.current = true; // 재마운트 시 true로 리셋
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+  // Race condition 방지 (중복 데이터 로딩 방지)
+  const isFetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
    * 대표 계좌 조회
    * @param userId - 사용자 ID
+   * @param signal - AbortSignal
    * @returns 첫 번째 계좌 (대표계좌) 또는 undefined
    */
-  const getRepresentativeAccount = async (userId: number): Promise<EducationalAccount | undefined> => {
-    const accounts = await getAccountList(userId);
+  const getRepresentativeAccount = async (userId: number, signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
+    const accounts = await getAccountList(userId, signal);
 
     if (accounts.length === 0) {
       devError("[getRepresentativeAccount] 계좌가 없습니다.");
@@ -118,14 +113,15 @@ useEffect(() => {
   /**
    * 모든 자동이체 조회 (페이지네이션 처리)
    * @param accountId - 교육용 계좌 ID
+   * @param signal - AbortSignal
    * @returns 모든 페이지의 자동이체 목록
    */
-  const getAllAutoPayments = async (accountId: number): Promise<AutoPayment[]> => {
+  const getAllAutoPayments = async (accountId: number, signal?: AbortSignal): Promise<AutoPayment[]> => {
     const firstPage = await getAutoPaymentList({
       educationalAccountId: accountId,
       page: 0,
       size: AUTO_PAYMENT.PAGE_SIZE,
-    });
+    }, signal);
 
     const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
 
@@ -141,7 +137,7 @@ useEffect(() => {
         educationalAccountId: accountId,
         page: i + 1,
         size: AUTO_PAYMENT.PAGE_SIZE,
-      })
+      }, signal)
     );
 
     const remainingResults = await runPromisesInChunks(
@@ -161,8 +157,23 @@ useEffect(() => {
    * 첫 페이지를 먼저 표시하고, 나머지 페이지는 백그라운드에서 로드
    */
   const fetchData = useCallback(async () => {
+    // Race condition 방지: 이미 로딩 중이면 중복 실행 차단
+    if (isFetchingRef.current) {
+      devLog("[fetchData] 이미 로딩 중이므로 중복 실행 차단");
+      return;
+    }
+
+    // 이전 요청이 있으면 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // 새로운 AbortController 생성
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
-      if (!isMountedRef.current) return;
+      isFetchingRef.current = true;
       setIsLoading(true);
 
       // userId 파싱 (유효하지 않으면 현재 로그인 사용자 ID 사용)
@@ -174,16 +185,14 @@ useEffect(() => {
       }
 
       // 1. 대표 계좌 조회
-      const representativeAccount = await getRepresentativeAccount(currentUserId);
+      const representativeAccount = await getRepresentativeAccount(currentUserId, controller.signal);
 
       if (!representativeAccount) {
-        if (!isMountedRef.current) return;
         setIsLoading(false);
         return;
       }
 
       // 2. 계좌번호 뒷자리 4자리 추출
-      if (!isMountedRef.current) return;
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
@@ -192,11 +201,9 @@ useEffect(() => {
         educationalAccountId: representativeAccount.id,
         page: 0,
         size: AUTO_PAYMENT.PAGE_SIZE,
-      });
+      }, controller.signal);
 
       // 4. 첫 페이지 데이터를 즉시 화면에 표시 (로딩 종료)
-      if (!isMountedRef.current) return;
-
       if (firstPage.content.length > 0) {
         devLog(`[fetchData] 첫 페이지 ${firstPage.content.length}건 즉시 표시 (전체: ${firstPage.totalElements}건)`);
         const convertedFirstPage = firstPage.content.map(payment => {
@@ -224,7 +231,7 @@ useEffect(() => {
             educationalAccountId: representativeAccount.id,
             page: i + 1,
             size: AUTO_PAYMENT.PAGE_SIZE,
-          })
+          }, controller.signal)
         );
 
         const remainingResults = await runPromisesInChunks(
@@ -232,9 +239,7 @@ useEffect(() => {
           AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
         );
 
-        // 나머지 페이지 데이터를 기존 목록에 추가 (언마운트 체크)
-        if (!isMountedRef.current) return;
-
+        // 나머지 페이지 데이터를 기존 목록에 추가
         const allRemainingPayments = remainingResults.flatMap(r => r.content);
         const convertedRemaining = allRemainingPayments.map(payment =>
           convertToAutoTransferInfo(payment, representativeAccount)
@@ -245,11 +250,14 @@ useEffect(() => {
         // 첫 페이지 + 나머지 페이지 합치기
         setAutoTransferList(prev => [...prev, ...convertedRemaining]);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // AbortError는 무시 (정상적인 취소)
+      if (error.name === 'AbortError' || error.name === 'CanceledError') {
+        devLog("[fetchData] 요청이 취소되었습니다.");
+        return;
+      }
+
       devError("[fetchData] 데이터 조회 실패:", error);
-
-      if (!isMountedRef.current) return;
-
       setAutoTransferList([]);
 
       // ApiError인 경우 사용자 친화적인 메시지 사용
@@ -259,11 +267,20 @@ useEffect(() => {
 
       setErrorModal({ isOpen: true, message: errorMessage });
       setIsLoading(false);
+    } finally {
+      isFetchingRef.current = false;
     }
   }, [userId]);
 
   useEffect(() => {
     fetchData();
+
+    // Cleanup: 컴포넌트 언마운트 시 진행 중인 요청 취소
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchData]);
 
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침

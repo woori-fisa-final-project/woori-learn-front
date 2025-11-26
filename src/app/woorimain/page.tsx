@@ -262,49 +262,42 @@ export default function WooriMainPage() {
   const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
   const [isAccountLoading, setIsAccountLoading] = useState(true);
 
-  // 컴포넌트 마운트 상태 추적 (메모리 누수 방지)
-  const isMountedRef = useRef(true);
-
   useEffect(() => {
-    isMountedRef.current = true; // 재마운트 시 true로 리셋
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+    const controller = new AbortController();
 
-  /**
-   * 대표 계좌 조회
-   */
-  const fetchRepresentativeAccount = async () => {
-    try {
-      if (!isMountedRef.current) return;
-      setIsAccountLoading(true);
+    const fetchRepresentativeAccount = async () => {
+      try {
+        setIsAccountLoading(true);
 
-      const userId = getCurrentUserId();
-      const accounts = await getAccountList(userId);
+        const userId = getCurrentUserId();
+        const accounts = await getAccountList(userId, controller.signal);
 
-      if (!isMountedRef.current) return;
+        if (accounts.length === 0) {
+          devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
+          setRepresentativeAccount(null);
+          return;
+        }
 
-      if (accounts.length === 0) {
-        devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
+        setRepresentativeAccount(accounts[0]);
+      } catch (error: any) {
+        // AbortError는 무시 (정상적인 취소)
+        if (error.name === 'AbortError' || error.name === 'CanceledError') {
+          return;
+        }
+
+        devError("[fetchRepresentativeAccount] 대표 계좌 조회 실패:", error);
         setRepresentativeAccount(null);
-        return;
+      } finally {
+        setIsAccountLoading(false);
       }
+    };
 
-      setRepresentativeAccount(accounts[0]);
-    } catch (error) {
-      devError("[fetchRepresentativeAccount] 대표 계좌 조회 실패:", error);
-
-      if (!isMountedRef.current) return;
-      setRepresentativeAccount(null);
-    } finally {
-      if (!isMountedRef.current) return;
-      setIsAccountLoading(false);
-    }
-  };
-
-  useEffect(() => {
     fetchRepresentativeAccount();
+
+    // Cleanup: 컴포넌트 언마운트 시 진행 중인 요청 취소
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const handleNavigate = (route: string) => {
