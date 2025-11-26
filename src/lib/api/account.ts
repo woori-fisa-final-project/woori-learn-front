@@ -4,12 +4,13 @@ import type { ApiResponse } from "@/types/api";
 import { devError } from "@/utils/logger";
 
 /**
- * 사용자의 계좌 목록 조회 
+ * 사용자의 계좌 목록 조회
  */
-export async function getAccountList(userId: number): Promise<EducationalAccount[]> {
+export async function getAccountList(userId: number, signal?: AbortSignal): Promise<EducationalAccount[]> {
   try {
     const response = await axiosInstance.get<ApiResponse<EducationalAccount[]>>(
-      `/education/accounts/list/${userId}`
+      `/education/accounts/list/${userId}`,
+      { signal }
     );
 
     return response.data.data;
