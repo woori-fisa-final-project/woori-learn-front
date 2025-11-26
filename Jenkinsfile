@@ -15,53 +15,45 @@ pipeline {
             }
         }
 
-        stage('Build & Deploy on AWS') {
+        stage('Docker Build') {
+            steps {
+                // 🔥 기존 latest 이미지 삭제 → <none> 생성 원천 차단
+                sh "docker rmi -f ${DOCKER_IMAGE} || true"
+
+                // ✨ 새 이미지 빌드
+                sh """
+                docker build \
+                  --build-arg NEXT_PUBLIC_API_BASE_URL=${API_BASE} \
+                  -t ${DOCKER_IMAGE} .
+                """
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-cred',
+                    usernameVariable: 'DOCKERHUB_USR',
+                    passwordVariable: 'DOCKERHUB_PSW'
+                )]) {
+                    sh """
+                    echo "${DOCKERHUB_PSW}" | docker login -u "${DOCKERHUB_USR}" --password-stdin
+                    docker push ${DOCKER_IMAGE}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to AWS') {
             steps {
                 sshagent(['aws-ssh-key']) {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'dockerhub-cred',
-                            usernameVariable: 'DOCKERHUB_USR',
-                            passwordVariable: 'DOCKERHUB_PSW'
-                        )
-                    ]) {
-
-                        sh '''
+                    sh """
 ssh -o StrictHostKeyChecking=no ubuntu@${AWS_HOST} << EOF
-
-echo "===== AWS 프론트 배포 시작 ====="
-
-# 1) 프로젝트 준비
-if [ ! -d "woori-learn-front" ]; then
-    git clone https://github.com/woori-fisa-final-project/woori-learn-front.git
-fi
-
-cd woori-learn-front
-git pull origin aws-test
-
-# 2) Docker Build
-docker build \
-  --build-arg NEXT_PUBLIC_API_BASE_URL=${API_BASE} \
-  -t ${DOCKER_IMAGE} .
-
-# 3) Docker Login & Push
-echo "${DOCKERHUB_PSW}" | docker login -u "${DOCKERHUB_USR}" --password-stdin
-docker push ${DOCKER_IMAGE}
-
-# 4) 기존 컨테이너 삭제 후 재시작
+docker pull ${DOCKER_IMAGE}
 docker rm -f woori_frontend || true
-
 docker run -d --name woori_frontend -p 3000:3000 ${DOCKER_IMAGE}
-
-# 5) Docker 정리
-docker image prune -f
-docker system prune -f
-
-echo "===== AWS 프론트 배포 완료 ====="
-
 EOF
-'''
-                    }
+                    """
                 }
             }
         }
