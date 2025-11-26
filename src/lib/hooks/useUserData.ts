@@ -3,7 +3,8 @@ import axiosInstance from "@/utils/axiosInstance";
 import { ApiError } from "@/utils/apiError";
 
 export function useUserData() {
-  // 사용자 이름과 보유 포인트를 제공하는 커스텀 훅입니다.
+  // 사용자 ID, 이름, 보유 포인트를 제공하는 커스텀 훅입니다.
+  const [userId, setUserId] = useState<number | null>(null); // 사용자 ID를 상태로 관리합니다.
   const [userName, setUserName] = useState(""); // 사용자 이름을 상태로 관리하며 기본값을 설정합니다.
   const [availablePoints, setAvailablePoints] = useState(0); // 보유 포인트를 상태로 관리합니다.
 
@@ -16,6 +17,7 @@ export function useUserData() {
         const response = await axiosInstance.get("/users/me");
         const data = response.data.data;
 
+        setUserId(data.id);
         setUserName(data.nickname);
         setAvailablePoints(data.point);
       } catch (error) {
@@ -30,5 +32,5 @@ export function useUserData() {
     loadUserData();
   }, []);
 
-  return { userName, availablePoints }; // 컴포넌트에서 이름, 포인트, 이름 업데이트 함수를 사용할 수 있도록 반환합니다.
+  return { userId, userName, availablePoints }; // 컴포넌트에서 ID, 이름, 포인트를 사용할 수 있도록 반환합니다.
 }

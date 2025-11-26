@@ -1,16 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { MENU_TAGS, SERVICE_MENU_ITEMS } from "@/constants/menu";
-
-type ServiceMenuSheetProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  userName?: string;
-  onNavigate: (route: string) => void;
-  onOpenNotice: (message: string) => void;
-};
 
 const TRANSITION_DURATION = 220;
 
@@ -43,17 +30,15 @@ export function ServiceMenuSheet({
 
   return (
     <div
-      className={`fixed inset-0 z-[60] flex justify-end bg-black/40 transition-opacity duration-200 ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
+      className={`fixed inset-0 z-[60] flex justify-end bg-black/40 transition-opacity duration-200 ${isVisible ? "opacity-100" : "opacity-0"
+        }`}
       role="dialog"
       aria-modal="true"
     >
       <button type="button" className="flex-1" aria-label="메뉴 닫기" onClick={onClose} />
       <div
-        className={`flex h-full w-2/3 max-w-[260px] flex-col bg-white shadow-2xl transition-transform duration-200 ${
-          isVisible ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`flex h-full w-2/3 max-w-[260px] flex-col bg-white shadow-2xl transition-transform duration-200 ${isVisible ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <header className="flex items-center justify-between px-[20px] pt-[24px] pb-[12px]">
           <button
@@ -122,5 +107,4 @@ export function ServiceMenuSheet({
     </div>
   );
 }
-
 

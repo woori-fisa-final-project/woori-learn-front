@@ -1,13 +1,13 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 라우터와 상태 훅을 활용할 수 있습니다.
 
 import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터를 사용합니다.
-import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다.
+import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다. (실제 로그인한 사용자 이름 제공)
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
 import { getAccountList } from "@/lib/api/account";
-import { getCurrentUserId } from "@/utils/authUtils";
+import { getCurrentUserId, getCurrentUserName } from "@/utils/authUtils";
 import { formatAccountNumber } from "@/utils/accountUtils";
 import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
@@ -268,15 +268,21 @@ export default function WooriMainPage() {
     const fetchRepresentativeAccount = async () => {
       try {
         const userId = getCurrentUserId();
-        const accounts = await getAccountList(userId, controller.signal);
+        // API가 이미 해당 userId의 계좌만 반환하므로 추가 필터링 불필요
+        const allAccounts = await getAccountList(userId, controller.signal);
 
-        if (accounts.length === 0) {
-          devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
+        if (allAccounts.length === 0) {
+          devError(`[fetchRepresentativeAccount] userId ${userId}의 계좌가 없습니다.`);
           setRepresentativeAccount(null);
           return;
         }
 
-        setRepresentativeAccount(accounts[0]);
+        // 교육용 계좌 중 ID가 가장 작은 계좌를 대표계좌로 선택
+        const representativeAccount = allAccounts.reduce((minAccount, currentAccount) =>
+          currentAccount.id < minAccount.id ? currentAccount : minAccount
+        );
+
+        setRepresentativeAccount(representativeAccount);
       } catch (error: any) {
         // AbortError는 무시 (정상적인 취소)
         if (error.name === 'AbortError' || error.name === 'CanceledError') {
