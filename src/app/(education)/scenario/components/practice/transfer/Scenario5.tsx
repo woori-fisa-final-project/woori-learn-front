@@ -1,10 +1,9 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 바텀 시트 상호작용을 처리합니다.
 
 import { useEffect, useState, useRef } from "react"; // 비밀번호 입력 상태와 실패 횟수를 관리하기 위해 React 훅을 사용합니다.
-import Button from "@/components/common/Button"; // 바텀 시트 하단의 확인 버튼을 렌더링합니다.
 import NumericKeypad from "@/components/common/NumericKeypad"; // 숫자 패드 UI를 제공하는 공통 컴포넌트입니다.
 
-const REQUIRED_PASSWORD = "1234"; // 시나리오에서 사용되는 고정 비밀번호 값입니다.
+const REQUIRED_PASSWORD = "1111"; // 시나리오에서 사용되는 고정 비밀번호 값입니다.
 
 type Scenario5Props = {
   onSuccess: (password: string) => void | Promise<void>; // 비밀번호 검증에 성공했을 때 호출되는 콜백입니다. 입력된 비밀번호를 전달합니다.

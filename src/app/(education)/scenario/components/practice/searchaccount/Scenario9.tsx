@@ -1,140 +1,140 @@
-/*
-  1) 시나리오 8 → accountNumber 넘겨옴
-      ↓
-  2) useAccountInfo() → 계좌 1개 정보 조회
-      ↓
-  3) useTransactionFetch() → 해당 계좌의 거래내역 조회
-      ↓
-  4) useTransactionFilters() → 필터 적용/해제 관리
-      ↓
-  5) useTransactionTransform() → “정렬 + 필터 결과 + 월별 그룹” 만든다
-      ↓
-  6) TransactionList 컴포넌트로 렌더링
-*/
+"use client";                                                                                                                             
+                                                                                                                                            
+  import { useEffect, useState } from "react";
+  import { useRouter, useSearchParams } from "next/navigation";
+  import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
+  import { useAccountInfo } from "../../../../../searchaccount-scenario/components/hooks/useAccountInfo";
+  import { useTransactionFetch } from "../../../../../searchaccount-scenario/components/hooks/useTransactionFetch";
+  import { useTransactionFilters } from "../../../../../searchaccount-scenario/components/hooks/useTransactionFilters";
+  import { useTransactionTransform } from "../../../../../searchaccount-scenario/components/hooks/useTransactionTransform";
+  import TransactionHeader from "../../../../../searchaccount-scenario/components/components/TransactionHeader";
+  import TransactionSummary from "../../../../../searchaccount-scenario/components/components/TransactionSummary";
+  import TransactionList from "../../../../../searchaccount-scenario/components/components/TransactionList";
+  import FilterBottomSheet from "../../../../../searchaccount-scenario/components/components/FilterBottomSheet";
+  import type { Transaction } from "@/types";
 
-"use client";
+  export const TRANSACTION_STORAGE_KEY = "searchaccount:lastTransaction";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
+  type Scenario9Props = {
+    onOpenFilter?: () => void;
+    onApplyFilter?: () => void;
+    onSelectTransaction?: (tx: Transaction) => void;
+    onBackToList?: () => void;
+  };
 
-import { useAccountInfo } from "../../../../../searchaccount-scenario/components/hooks/useAccountInfo";
-import { useTransactionFetch } from "../../../../../searchaccount-scenario/components/hooks/useTransactionFetch";
-import { useTransactionFilters } from "../../../../../searchaccount-scenario/components/hooks/useTransactionFilters";
-import { useTransactionTransform } from "../../../../../searchaccount-scenario/components/hooks/useTransactionTransform";
+  export default function Scenario9({
+    onOpenFilter,
+    onApplyFilter,
+    onSelectTransaction,
+    onBackToList,
+  }: Scenario9Props) {
+    const router = useRouter();
+    const params = useSearchParams();
+    const accountNumber = params.get("accountNumber") ?? "";
 
-import TransactionHeader from "../../../../../searchaccount-scenario/components/components/TransactionHeader";
-import TransactionSummary from "../../../../../searchaccount-scenario/components/components/TransactionSummary";
-import TransactionList from "../../../../../searchaccount-scenario/components/components/TransactionList";
-import FilterBottomSheet from "../../../../../searchaccount-scenario/components/components/FilterBottomSheet";
+    const { setOnBack, setTitle } = useScenarioHeader();
 
-export const TRANSACTION_STORAGE_KEY = "searchaccount:lastTransaction";
+    const { accountInfo, loadAccountInfo, error: accountError } = useAccountInfo(accountNumber);
+    const { transactions, fetchTransactions, error: txError } = useTransactionFetch();
 
-export default function Scenario9() {
-  const router = useRouter();
-  const params = useSearchParams();
-  const accountNumber = params.get("accountNumber") ?? "";
+    const {
+      filterState,
+      appliedFilters,
+      draftFilters,
+      setDraftFilters,
+      updatePeriod,
+      applyFilters,
+      resetFilters,
+    } = useTransactionFilters();
 
-  const { setOnBack, setTitle } = useScenarioHeader();
+    const transformed = useTransactionTransform(transactions, appliedFilters);
 
-  const { accountInfo, loadAccountInfo, error: accountError } =
-    useAccountInfo(accountNumber);
+    const [openFilter, setOpenFilter] = useState(false);
 
-  const { transactions, fetchTransactions, error: txError } =
-    useTransactionFetch();
+    useEffect(() => {
+      setTitle("거래내역조회");
+      setOnBack(() => () => {
+        if (onBackToList) {
+          onBackToList();
+          return;
+        }
+        router.push("/searchaccount-scenario");
+      });
 
-  const {
-    filterState,
-    appliedFilters,
-    draftFilters,
-    setDraftFilters,
-    updatePeriod,
-    applyFilters,
-    resetFilters,
-  } = useTransactionFilters();
-
-  const transformed = useTransactionTransform(
-    transactions,
-    appliedFilters,
-    //accountInfo
-  );
-
-  const [openFilter, setOpenFilter] = useState(false);
-
-  useEffect(() => {
-    setTitle("거래내역조회");
-    setOnBack(() => () => router.push("/searchaccount-scenario"));
-
-    (async () => {
-      const info = await loadAccountInfo();
-      if (info) {
-        const params = new URLSearchParams();
-        params.append("accountId", String(info.id));
-        params.append("period", "3M"); // default
-        params.append("type", "ALL");
-
-        await fetchTransactions(info.id, params);
+      if (!accountNumber) {
+        return;
       }
-    })();
 
-    return () => setOnBack(null);
-  }, [accountNumber, loadAccountInfo, fetchTransactions, router, setOnBack, setTitle]);
+      (async () => {
+        const info = await loadAccountInfo();
+        if (info) {
+          const qs = new URLSearchParams();
+          qs.append("accountId", String(info.id));
+          qs.append("period", "3M");
+          qs.append("type", "ALL");
+          await fetchTransactions(info.id, qs);
+        }
+      })();
 
-  if (accountError || txError) {
+      return () => setOnBack(null);
+    }, [accountNumber, fetchTransactions, loadAccountInfo, onBackToList, router, setOnBack, setTitle]);
+
+    if (accountError || txError) {
+      return (
+        <div className="flex min-h-[100dvh] items-center justify-center">
+          <p className="text-red-500">
+            {accountError ?? txError ?? "오류가 발생했습니다."}
+          </p>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center">
-        <p className="text-red-500">
-          {accountError ?? txError ?? "오류가 발생했습니다."}
-        </p>
+      <div className="px-[20px] pb-[32px]">
+        {accountInfo && <TransactionHeader account={accountInfo} />}
+
+        <TransactionSummary
+          filters={filterState}
+          onOpen={() => {
+            onOpenFilter?.();
+            setOpenFilter(true);
+          }}
+          totalAmount={transformed.totalAmount}
+          appliedRange={transformed.rangeText}
+        />
+
+        <TransactionList
+          grouped={transformed.grouped}
+          onSelect={(t) => {
+            sessionStorage.setItem(
+              TRANSACTION_STORAGE_KEY,
+              JSON.stringify({
+                id: t.id,
+                accountId: t.accountId,
+                date: t.date,
+                time: t.time,
+                amount: t.amount,
+                description: t.description,
+              }),
+            );
+            onSelectTransaction?.(t);
+          }}
+        />
+
+        <FilterBottomSheet
+          open={openFilter}
+          onClose={() => setOpenFilter(false)}
+          draft={draftFilters}
+          setDraft={setDraftFilters}
+          updatePeriod={updatePeriod}
+          onReset={resetFilters}
+          onApply={async () => {
+            if (!accountInfo) return;
+            await applyFilters(accountInfo, fetchTransactions);
+            onApplyFilter?.();
+            setOpenFilter(false);
+          }}
+        />
       </div>
     );
   }
-
-  return (
-    <div className="px-[20px] pb-[32px]">
-      {accountInfo && <TransactionHeader account={accountInfo} />}
-
-      <TransactionSummary
-        filters={filterState}
-        onOpen={() => setOpenFilter(true)}
-        totalAmount={transformed.totalAmount}
-        appliedRange={transformed.rangeText}
-      />
-
-      <TransactionList
-        grouped={transformed.grouped}
-        onSelect={(t) => {
-        
-          sessionStorage.setItem(
-            TRANSACTION_STORAGE_KEY,
-            JSON.stringify({
-              id: t.id,
-              accountId: t.accountId,  
-              date: t.date,
-              time: t.time,
-              amount: t.amount,
-              description: t.description,
-            })
-          );
-
-    // 화면 이동
-    router.push(`/searchaccount-scenario?step=10&id=${t.id}`);
-  }}
-/>
-
-      <FilterBottomSheet
-        open={openFilter}
-        onClose={() => setOpenFilter(false)}
-        draft={draftFilters}
-        setDraft={setDraftFilters}
-        updatePeriod={updatePeriod}
-        onReset={resetFilters}
-        onApply={async () => {
-        if (!accountInfo) return;
-        await applyFilters(accountInfo, fetchTransactions);
-        setOpenFilter(false);  
-        }}
-      />
-    </div>
-  );
-}

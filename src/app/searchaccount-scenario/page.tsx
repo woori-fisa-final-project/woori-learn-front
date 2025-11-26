@@ -1,41 +1,99 @@
-"use client"; // 클라이언트 훅(useRouter 등)을 사용하기 위해 클라이언트 컴포넌트로 선언합니다.
+"use client";                                                                                                                             
+                                                                                                                                            
+  import { Suspense, useEffect, useRef } from "react";
+  import { useSearchParams } from "next/navigation";
+  import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
+  import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
+  import OverlayStep from "@/components/scenario/step/OverlayStep";
+  import ModalStep from "@/components/scenario/step/ModalStep";
+  import DialogStep from "@/components/scenario/step/DialogStep";
 
-import { Suspense } from "react";
-import Scenario8 from "../(education)/scenario/components/practice/searchaccount/Scenario8"; // 실제 검색형 계좌 시나리오 화면을 담당하는 컴포넌트를 가져옵니다.
-import Scenario9 from "../(education)/scenario/components/practice/searchaccount/Scenario9"; // 거래내역 조회 시나리오 화면을 추가로 렌더링하기 위해 불러옵니다.
-import Scenario10 from "../(education)/scenario/components/practice/searchaccount/Scenario10"; // 거래내역 상세 시나리오 화면을 추가로 렌더링합니다.
-import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow"; // 계좌/금액 등 공유 상태를 제공하는 컨텍스트 프로바이더를 불러옵니다.
-import { useSearchParams } from "next/navigation"; // URL 쿼리 파라미터를 읽어 어떤 시나리오를 보여줄지 결정합니다.
+  import ChoiceStep from "@/components/scenario/step/ChoiceStep";
+  import ScenarioContainer from "./components/ScenarioContainer";
+  function SearchAccountScenarioContent() {
+    const searchParams = useSearchParams();
+    const { currentStep, previousStep, nextStep, resume, goToStep } = useScenarioEngine();
 
-/**
- * `/searchaccount-scenario` 경로를 단일 진입점으로 노출하기 위한 페이지 컴포넌트입니다.
- * `step` 쿼리 파라미터를 사용해 시나리오 8(계좌 목록)과 9(거래내역 조회)를 전환합니다.
- */
-function SearchAccountScenarioContent() {
-  const searchParams = useSearchParams(); // 현재 URL의 쿼리 파라미터를 읽습니다.
-  const step = searchParams.get("step"); // step 값이 "9"인 경우 거래내역 조회 화면을 노출합니다.
+    const lastLoadedRef = useRef<{ scenarioId: number; stepId: number } | null>(null);
 
-  const scenarios: { [key: string]: React.ReactNode } = {
-    "9": <Scenario9 />,
-    "10": <Scenario10 />,
-  };
+    const scenarioIdParam = searchParams.get("scenarioId");
+    const stepIdParam = searchParams.get("stepId");
 
-  return (
-    <TransferFlowProvider>
-      {/* 이체 시나리오와 동일한 컨텍스트를 재사용하여 계좌 정보 연동을 유지합니다. */}
-      {(step && scenarios[step]) || <Scenario8 />}
-    </TransferFlowProvider>
-  );
-}
+    useEffect(() => {
+      const scenarioId = Number(scenarioIdParam ?? 1);
+      const stepId = stepIdParam ? Number(stepIdParam) : 1035;
 
-export default function SearchAccountScenarioPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
-      </div>
-    }>
-      <SearchAccountScenarioContent />
-    </Suspense>
-  );
-}
+      const isSame =
+        lastLoadedRef.current?.scenarioId === scenarioId &&
+        lastLoadedRef.current?.stepId === stepId;
+      if (isSame) return;
+
+      lastLoadedRef.current = { scenarioId, stepId };
+      void resume(scenarioId, stepId);
+    }, [resume, scenarioIdParam, stepIdParam]);
+
+    useEffect(() => {
+      if (currentStep) {
+        console.log("[searchaccount] currentStep:", currentStep.id, currentStep.type);
+      }
+    }, [currentStep]);
+
+    const handlePracticeNext = async () => {
+      if (currentStep?.type === "PRACTICE" && currentStep.id != null) {
+        await nextStep(currentStep.id);
+      }
+    };
+
+    const handleBackgroundNext = async () => {
+      if (currentStep?.id != null) {
+        await nextStep(currentStep.id);
+      }
+    };
+
+    const handleChoiceNext = (nextStepId: number) => {
+      goToStep(nextStepId);
+    };
+
+    return (
+      <>
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">로딩 중...</div>}>
+          <ScenarioContainer currentStep={currentStep} onPracticeNext={handlePracticeNext} />
+        </Suspense>
+
+        {currentStep && currentStep.type !== "PRACTICE" && (
+          <>
+            {currentStep.type === "OVERLAY" && (
+              <OverlayStep
+                content={currentStep.content}
+                previousStep={previousStep}
+                onBackgroundClick={handleBackgroundNext}
+              />
+            )}
+            {currentStep.type === "MODAL" && (
+              <ModalStep content={currentStep.content} onBackgroundClick={handleBackgroundNext} />
+            )}
+            {currentStep.type === "DIALOG" && (
+              <DialogStep
+                content={currentStep.content}
+                previousStep={previousStep}
+                onBackgroundClick={handleBackgroundNext}
+              />
+            )}
+            {currentStep.type === "CHOICE" && (
+              <ChoiceStep content={currentStep.content} previousStep={previousStep} onChoose={handleChoiceNext} />
+            )}
+          </>
+        )}
+      </>
+    );
+  }
+
+  export default function SearchAccountScenarioPage() {
+    return (
+      <TransferFlowProvider>
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">로딩 중...</div>}>
+          <SearchAccountScenarioContent />
+        </Suspense>
+      </TransferFlowProvider>
+    );
+  }

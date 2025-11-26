@@ -13,12 +13,19 @@ export interface AccountInfo {
   balance: number;
 }
 
+const normalizeDigits = (value: string) => value.replace(/\D/g, "");
+
 export function useAccountInfo(displayAccountNumber: string) {
   const [accountInfo, setInfo] = useState<AccountInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadAccountInfo = useCallback(async () => {
     try {
+      const targetDigits = normalizeDigits(displayAccountNumber);
+      if (!targetDigits) {
+        throw new Error("계좌번호가 전달되지 않았습니다.");
+      }
+
       const userId = 1;
       const res = await fetch(`/education/accounts/list/${userId}`);
       if (!res.ok) throw new Error("계좌 조회 실패");
@@ -26,12 +33,11 @@ export function useAccountInfo(displayAccountNumber: string) {
       const json = await res.json();
       const list = json.data;
 
-      let selected = list.find(
-        (acc: any) =>
-          formatAccountNumber(acc.accountNumber) === displayAccountNumber
+      const selected = list.find(
+        (acc: any) => normalizeDigits(acc.accountNumber) === targetDigits
       );
 
-       if (!selected) {
+      if (!selected) {
         throw new Error("일치하는 계좌를 찾을 수 없습니다.");
       }
 
