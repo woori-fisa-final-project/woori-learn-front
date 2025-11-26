@@ -172,6 +172,9 @@ function AutomaticPaymentScenarioContent() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    // 첫 페이지 로딩 성공 여부 플래그
+    let firstPageLoaded = false;
+
     try {
       isFetchingRef.current = true;
       setIsLoading(true);
@@ -211,8 +214,10 @@ function AutomaticPaymentScenarioContent() {
           return convertToAutoTransferInfo(payment, representativeAccount);
         });
         setAutoTransferList(convertedFirstPage);
+        firstPageLoaded = true; // 첫 페이지 로딩 성공
       } else {
         setAutoTransferList([]);
+        firstPageLoaded = true; // 빈 목록도 성공으로 간주
       }
 
       // 로딩 상태 종료 - 첫 페이지를 사용자에게 즉시 보여줌
@@ -224,31 +229,45 @@ function AutomaticPaymentScenarioContent() {
       if (totalRemainingPages > 0) {
         devLog(`[fetchData] 백그라운드에서 나머지 ${totalRemainingPages}페이지 로드 시작`);
 
-        // 나머지 페이지들을 청크 단위로 조회
-        const remainingPromises = Array.from(
-          { length: totalRemainingPages },
-          (_, i) => () => getAutoPaymentList({
-            educationalAccountId: representativeAccount.id,
-            page: i + 1,
-            size: AUTO_PAYMENT.PAGE_SIZE,
-          }, controller.signal)
-        );
+        try {
+          // 나머지 페이지들을 청크 단위로 조회
+          const remainingPromises = Array.from(
+            { length: totalRemainingPages },
+            (_, i) => () => getAutoPaymentList({
+              educationalAccountId: representativeAccount.id,
+              page: i + 1,
+              size: AUTO_PAYMENT.PAGE_SIZE,
+            }, controller.signal)
+          );
 
-        const remainingResults = await runPromisesInChunks(
-          remainingPromises,
-          AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
-        );
+          const remainingResults = await runPromisesInChunks(
+            remainingPromises,
+            AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+          );
 
-        // 나머지 페이지 데이터를 기존 목록에 추가
-        const allRemainingPayments = remainingResults.flatMap(r => r.content);
-        const convertedRemaining = allRemainingPayments.map(payment =>
-          convertToAutoTransferInfo(payment, representativeAccount)
-        );
+          // 나머지 페이지 데이터를 기존 목록에 추가
+          const allRemainingPayments = remainingResults.flatMap(r => r.content);
+          const convertedRemaining = allRemainingPayments.map(payment =>
+            convertToAutoTransferInfo(payment, representativeAccount)
+          );
 
-        devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
+          devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
 
-        // 첫 페이지 + 나머지 페이지 합치기
-        setAutoTransferList(prev => [...prev, ...convertedRemaining]);
+          // 첫 페이지 + 나머지 페이지 합치기
+          setAutoTransferList(prev => [...prev, ...convertedRemaining]);
+        } catch (backgroundError: any) {
+          // 백그라운드 로딩 실패: 첫 페이지는 유지하고 에러만 로깅
+          if (backgroundError.name !== 'AbortError' && backgroundError.name !== 'CanceledError') {
+            devError("[fetchData] 백그라운드 페이지 로드 실패 (첫 페이지 데이터는 유지):", backgroundError);
+
+            // 사용자에게 일부 데이터만 로드되었음을 알림
+            const errorMessage = isApiError(backgroundError)
+              ? `일부 데이터 로드 실패: ${backgroundError.message}`
+              : "일부 자동이체 데이터를 불러오지 못했습니다.";
+
+            setErrorModal({ isOpen: true, message: errorMessage });
+          }
+        }
       }
     } catch (error: any) {
       // AbortError는 무시 (정상적인 취소)
@@ -258,7 +277,11 @@ function AutomaticPaymentScenarioContent() {
       }
 
       devError("[fetchData] 데이터 조회 실패:", error);
-      setAutoTransferList([]);
+
+      // 첫 페이지 로딩 실패 시에만 목록 비우기
+      if (!firstPageLoaded) {
+        setAutoTransferList([]);
+      }
 
       // ApiError인 경우 사용자 친화적인 메시지 사용
       const errorMessage = isApiError(error)

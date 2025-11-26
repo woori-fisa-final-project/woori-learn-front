@@ -267,8 +267,6 @@ export default function WooriMainPage() {
 
     const fetchRepresentativeAccount = async () => {
       try {
-        setIsAccountLoading(true);
-
         const userId = getCurrentUserId();
         const accounts = await getAccountList(userId, controller.signal);
 
