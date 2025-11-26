@@ -45,7 +45,8 @@ export default function HomePage() {
     setIsModalOpen(false); // 모달을 닫습니다.
   };
 
-  const serviceCards = [ // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
+  const serviceCards = [
+    // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
     {
       title: "조회·이체",
       bgColor: "bg-[#2677CC]",
@@ -111,7 +112,9 @@ export default function HomePage() {
         bgColor: completed ? "bg-[#2F6FE0]" : "bg-[#C3C3C3]",
         textColor: "text-gray-500",
         iconSrc: completed ? "/images/maincheck2.png" : "/images/maincheck.png",
-        iconAlt: completed ? `${cfg.scenarioTitle} 완료` : `${cfg.scenarioTitle} 진행 중`,
+        iconAlt: completed
+          ? `${cfg.scenarioTitle} 완료`
+          : `${cfg.scenarioTitle} 진행 중`,
         iconClassName: completed ? "bg-[#0043CE]" : "bg-[#C3C3C3]",
       };
     }),
@@ -121,10 +124,14 @@ export default function HomePage() {
       label: "마무리 퀴즈",
       bgColor: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
       textColor: allScenariosCompleted ? "text-[#0B8A46]" : "text-gray-400",
-      iconSrc: allScenariosCompleted ? "/images/maincheck3.png" : "/images/maincheck.png",
-      iconAlt: allScenariosCompleted ? "마무리 퀴즈 완료" : "마무리 퀴즈 진행 예정",
+      iconSrc: allScenariosCompleted
+        ? "/images/maincheck3.png"
+        : "/images/maincheck.png",
+      iconAlt: allScenariosCompleted
+        ? "마무리 퀴즈 완료"
+        : "마무리 퀴즈 진행 예정",
       iconClassName: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
-    }
+    },
   ];
 
   return (
@@ -133,12 +140,27 @@ export default function HomePage() {
         {/* 상단 로고와 프로필 영역 */}
         <div className="flex w-full items-center justify-between">
           <div className="relative h-[58px] w-[100px]">
-            <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={100} height={58} />
+            <Image
+              alt="로고"
+              className="h-full w-full object-contain"
+              src={logoImage}
+              width={100}
+              height={58}
+            />
           </div>
 
-          <button onClick={handleProfileClick} className="flex cursor-pointer flex-col items-center gap-1">
+          <button
+            onClick={handleProfileClick}
+            className="flex cursor-pointer flex-col items-center gap-1"
+          >
             <div className="relative h-7 w-7">
-              <Image alt="프로필" className="h-full w-full object-contain" src={profileIcon} width={28} height={28} />
+              <Image
+                alt="프로필"
+                className="h-full w-full object-contain"
+                src={profileIcon}
+                width={28}
+                height={28}
+              />
             </div>
             <p className="text-[12px] text-gray-400">내 정보</p>
           </button>
@@ -161,16 +183,21 @@ export default function HomePage() {
             steps={progressSteps}
             lineColorClassName="bg-[#376FDB]"
             showEndCaps={false}
-            
           />
         </div>
 
         {/* 교육별 진행도 카드 리스트 */}
         <div className="mt-0 w-full pb-[35px]">
-          <h2 className="mb-4 text-[18px] font-bold text-gray-600">교육별 진행도</h2>
+          <h2 className="mb-4 text-[18px] font-bold text-gray-600">
+            교육별 진행도
+          </h2>
           <div className="flex flex-col gap-[12px]">
             {progressCards.map((card) => (
-              <ProgressCard key={card.title} title={card.title} progress={card.progress} />
+              <ProgressCard
+                key={card.title}
+                title={card.title}
+                progress={card.progress}
+              />
             ))}
           </div>
         </div>

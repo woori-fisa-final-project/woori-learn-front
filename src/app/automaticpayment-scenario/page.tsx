@@ -6,7 +6,7 @@ import Scenario11, {
 import Scenario12 from "./components/Scenario12";
 import Scenario18, { type Scenario18Detail } from "./components/Scenario18";
 import Scenario19 from "./components/Scenario19";
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
@@ -89,6 +89,15 @@ function AutomaticPaymentScenarioContent() {
     message: "",
   });
 
+  // 컴포넌트 마운트 상태 추적 (메모리 누수 방지)
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   /**
    * 대표 계좌 조회
    * @param userId - 사용자 ID
@@ -152,6 +161,7 @@ function AutomaticPaymentScenarioContent() {
    */
   const fetchData = useCallback(async () => {
     try {
+      if (!isMountedRef.current) return;
       setIsLoading(true);
 
       // userId 파싱 (유효하지 않으면 현재 로그인 사용자 ID 사용)
@@ -166,11 +176,13 @@ function AutomaticPaymentScenarioContent() {
       const representativeAccount = await getRepresentativeAccount(currentUserId);
 
       if (!representativeAccount) {
+        if (!isMountedRef.current) return;
         setIsLoading(false);
         return;
       }
 
       // 2. 계좌번호 뒷자리 4자리 추출
+      if (!isMountedRef.current) return;
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
@@ -182,6 +194,8 @@ function AutomaticPaymentScenarioContent() {
       });
 
       // 4. 첫 페이지 데이터를 즉시 화면에 표시 (로딩 종료)
+      if (!isMountedRef.current) return;
+
       if (firstPage.content.length > 0) {
         devLog(`[fetchData] 첫 페이지 ${firstPage.content.length}건 즉시 표시 (전체: ${firstPage.totalElements}건)`);
         const convertedFirstPage = firstPage.content.map(payment => {
@@ -217,7 +231,9 @@ function AutomaticPaymentScenarioContent() {
           AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
         );
 
-        // 나머지 페이지 데이터를 기존 목록에 추가
+        // 나머지 페이지 데이터를 기존 목록에 추가 (언마운트 체크)
+        if (!isMountedRef.current) return;
+
         const allRemainingPayments = remainingResults.flatMap(r => r.content);
         const convertedRemaining = allRemainingPayments.map(payment =>
           convertToAutoTransferInfo(payment, representativeAccount)
@@ -230,6 +246,9 @@ function AutomaticPaymentScenarioContent() {
       }
     } catch (error) {
       devError("[fetchData] 데이터 조회 실패:", error);
+
+      if (!isMountedRef.current) return;
+
       setAutoTransferList([]);
 
       // ApiError인 경우 사용자 친화적인 메시지 사용

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터를 사용합니다.
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다.
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
@@ -262,14 +262,27 @@ export default function WooriMainPage() {
   const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
   const [isAccountLoading, setIsAccountLoading] = useState(true);
 
+  // 컴포넌트 마운트 상태 추적 (메모리 누수 방지)
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   /**
    * 대표 계좌 조회
    */
   const fetchRepresentativeAccount = async () => {
     try {
+      if (!isMountedRef.current) return;
       setIsAccountLoading(true);
+
       const userId = getCurrentUserId();
       const accounts = await getAccountList(userId);
+
+      if (!isMountedRef.current) return;
 
       if (accounts.length === 0) {
         devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
@@ -280,8 +293,11 @@ export default function WooriMainPage() {
       setRepresentativeAccount(accounts[0]);
     } catch (error) {
       devError("[fetchRepresentativeAccount] 대표 계좌 조회 실패:", error);
+
+      if (!isMountedRef.current) return;
       setRepresentativeAccount(null);
     } finally {
+      if (!isMountedRef.current) return;
       setIsAccountLoading(false);
     }
   };

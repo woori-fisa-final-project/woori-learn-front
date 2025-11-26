@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { formatAccountNumber, formatBalance } from "../utils/accountFormatter";
 import type { AccountResponse, AccountCard } from "@/types";
 
-
 export function useAccountList(userId: number) {
   const [accounts, setAccounts] = useState<AccountCard[]>([]);
   const [depositAccounts, setDepositAccounts] = useState<AccountCard[]>([]);
@@ -67,10 +66,10 @@ export function useAccountList(userId: number) {
       });
 
       setAccounts(transformed);
-      setDepositAccounts(transformed.filter((v) => v.type === "deposit"));
-      setSavingsAccounts(transformed.filter((v) => v.type === "savings"));
+      setDepositAccounts(transformed.filter((v: AccountCard) => v.type === "deposit"));
+      setSavingsAccounts(transformed.filter((v: AccountCard) => v.type === "savings"));
 
-      const sum = transformed.reduce((acc, cur) => acc + cur.rawBalance, 0);
+      const sum = transformed.reduce((acc: number, cur: AccountCard) => acc + cur.rawBalance, 0);
       setTotalBalance(sum);
     } catch (e: any) {
       setError(e.message || "오류가 발생했습니다.");
@@ -93,4 +92,3 @@ export function useAccountList(userId: number) {
     refetch: fetchData,
   };
 }
- 
