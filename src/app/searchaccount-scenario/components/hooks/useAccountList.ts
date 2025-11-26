@@ -1,4 +1,4 @@
-// 전체 계좌 목록 조회
+// 전체 계좌 목록 조회 (JWT 토큰 기반)
 // 홈 화면 전체 계좌 목록 조회 (입출금/예적금 구분 포함)
 
 "use client";
@@ -6,8 +6,10 @@
 import { useState, useEffect } from "react";
 import { formatAccountNumber, formatBalance } from "../utils/accountFormatter";
 import type { AccountResponse, AccountCard } from "@/types";
+import { getAccountList } from "@/lib/api/account";
+import { devError } from "@/utils/logger";
 
-export function useAccountList(userId: number) {
+export function useAccountList() {
   const [accounts, setAccounts] = useState<AccountCard[]>([]);
   const [depositAccounts, setDepositAccounts] = useState<AccountCard[]>([]);
   const [savingsAccounts, setSavingsAccounts] = useState<AccountCard[]>([]);
@@ -17,21 +19,18 @@ export function useAccountList(userId: number) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    console.log("[계좌목록] API 요청 시작", { userId });
+    console.log("[계좌목록] API 요청 시작 (JWT 토큰 기반)");
 
     try {
       setLoading(true);
       setError(null);
 
-      const url = `http://localhost:8080/education/accounts/list/${userId}`;
-      //const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/education/accounts/list/${userId}`;
-      console.log(`GET ${url}`);
+      // JWT 토큰 기반 계좌 목록 조회
+      const result = await getAccountList();
 
-      const res = await fetch(url);
+      console.log("[API Response]", result);
 
-      console.log("[API Raw Response]", res);
-
-      if (res.status === 204) {
+      if (!result || result.length === 0) {
         setAccounts([]);
         setDepositAccounts([]);
         setSavingsAccounts([]);
@@ -39,13 +38,7 @@ export function useAccountList(userId: number) {
         return;
       }
 
-      if (!res.ok) throw new Error("계좌 정보를 불러오지 못했습니다.");
-
-      const result = await res.json();
-
-      if (!result.data) throw new Error("응답 구조가 잘못되었습니다.");
-
-      const transformed: AccountCard[] = result.data.map((acc: AccountResponse, idx: number) => {
+      const transformed: AccountCard[] = result.map((acc: AccountResponse, idx: number) => {
         const isDeposit = idx === 0;
 
         return {
@@ -72,7 +65,14 @@ export function useAccountList(userId: number) {
       const sum = transformed.reduce((acc: number, cur: AccountCard) => acc + cur.rawBalance, 0);
       setTotalBalance(sum);
     } catch (e: any) {
-      setError(e.message || "오류가 발생했습니다.");
+      devError("[useAccountList] 계좌 목록 조회 실패:", e);
+
+      // 403 에러 처리 (권한 없음)
+      if (e.response?.status === 403) {
+        setError("해당 계좌에 대한 접근 권한이 없습니다.");
+      } else {
+        setError(e.message || "오류가 발생했습니다.");
+      }
     } finally {
       setLoading(false);
     }

@@ -7,14 +7,13 @@ import Scenario12 from "./components/Scenario12";
 import Scenario18, { type Scenario18Detail } from "./components/Scenario18";
 import Scenario19 from "./components/Scenario19";
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
 import { formatAccountNumber, getAccountSuffix } from "@/utils/accountUtils";
 import { getBankName } from "@/utils/bankUtils";
-import { getCurrentUserId } from "@/utils/authUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 import { devLog, devError } from "@/utils/logger";
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
@@ -65,9 +64,7 @@ function convertToAutoTransferInfo(
 }
 
 function AutomaticPaymentScenarioContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const userId = searchParams.get("user_id");
 
   // 화면 상태 관리
   const [currentScreen, setCurrentScreen] = useState<Screen>("list");
@@ -94,20 +91,24 @@ function AutomaticPaymentScenarioContent() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
-   * 대표 계좌 조회
-   * @param userId - 사용자 ID
+   * 대표 계좌 조회 (JWT 토큰 기반)
    * @param signal - AbortSignal
-   * @returns 첫 번째 계좌 (대표계좌) 또는 undefined
+   * @returns ID가 가장 작은 계좌 (대표계좌) 또는 undefined
    */
-  const getRepresentativeAccount = async (userId: number, signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
-    const accounts = await getAccountList(userId, signal);
+  const getRepresentativeAccount = async (signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
+    const accounts = await getAccountList(signal);
 
     if (accounts.length === 0) {
       devError("[getRepresentativeAccount] 계좌가 없습니다.");
       return undefined;
     }
 
-    return accounts[0];
+    // 교육용 계좌 중 ID가 가장 작은 계좌를 대표계좌로 선택 (메인 페이지와 동일한 로직)
+    const representativeAccount = accounts.reduce((minAccount, currentAccount) =>
+      currentAccount.id < minAccount.id ? currentAccount : minAccount
+    );
+
+    return representativeAccount;
   };
 
   /**
@@ -179,16 +180,8 @@ function AutomaticPaymentScenarioContent() {
       isFetchingRef.current = true;
       setIsLoading(true);
 
-      // userId 파싱 (유효하지 않으면 현재 로그인 사용자 ID 사용)
-      const parsedUserId = userId ? parseInt(userId) : NaN;
-      const currentUserId = !isNaN(parsedUserId) ? parsedUserId : getCurrentUserId();
-
-      if (userId && isNaN(parsedUserId)) {
-        devError("[fetchData] 유효하지 않은 userId:", userId);
-      }
-
-      // 1. 대표 계좌 조회
-      const representativeAccount = await getRepresentativeAccount(currentUserId, controller.signal);
+      // 1. 대표 계좌 조회 (JWT 토큰 기반)
+      const representativeAccount = await getRepresentativeAccount(controller.signal);
 
       if (!representativeAccount) {
         setIsLoading(false);
@@ -293,7 +286,7 @@ function AutomaticPaymentScenarioContent() {
     } finally {
       isFetchingRef.current = false;
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -334,7 +327,7 @@ function AutomaticPaymentScenarioContent() {
       // 자동이체 상세 정보와 계좌 정보를 병렬로 조회 (성능 개선)
       const [payment, accountsResult] = await Promise.allSettled([
         getAutoPaymentDetail(autoPaymentId),
-        getAccountList(getCurrentUserId()),
+        getAccountList(),
       ]);
 
       // payment 조회 실패 시 에러 처리
@@ -395,7 +388,7 @@ function AutomaticPaymentScenarioContent() {
       // 해지 후 최신 정보와 계좌 정보를 병렬로 조회 (성능 개선)
       const [updatedPayment, accountsResult] = await Promise.allSettled([
         getAutoPaymentDetail(selectedAutoPaymentId),
-        getAccountList(getCurrentUserId()),
+        getAccountList(),
       ]);
 
       // 업데이트된 payment 조회 실패 시 에러 처리

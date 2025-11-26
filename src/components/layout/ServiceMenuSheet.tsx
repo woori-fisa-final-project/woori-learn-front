@@ -1,3 +1,14 @@
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { SERVICE_MENU_ITEMS, MENU_TAGS } from "@/constants/menu";
+
+interface ServiceMenuSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userName?: string;
+  onNavigate: (path: string) => void;
+  onOpenNotice: (message: string) => void;
+}
 
 const TRANSITION_DURATION = 220;
 
