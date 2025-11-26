@@ -92,7 +92,8 @@ function AutomaticPaymentScenarioContent() {
   // 컴포넌트 마운트 상태 추적 (메모리 누수 방지)
   const isMountedRef = useRef(true);
 
-  useEffect(() => {
+useEffect(() => {
+    isMountedRef.current = true; // 재마운트 시 true로 리셋
     return () => {
       isMountedRef.current = false;
     };

@@ -266,6 +266,7 @@ export default function WooriMainPage() {
   const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true; // 재마운트 시 true로 리셋
     return () => {
       isMountedRef.current = false;
     };
