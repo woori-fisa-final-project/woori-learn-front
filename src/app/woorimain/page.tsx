@@ -6,6 +6,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
+import { getAccountList } from "@/lib/api/account";
+import { getCurrentUserId } from "@/utils/authUtils";
+import { formatAccountNumber } from "@/utils/accountUtils";
+import type { EducationalAccount } from "@/types/account";
+import { devError } from "@/utils/logger";
 
 type NavItem = {
   label: string;
@@ -75,13 +80,38 @@ function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu
 }
 
 function AccountCard({
+  account,
+  isLoading,
   onTransfer,
   onViewAll,
 }: {
+  account: EducationalAccount | null;
+  isLoading: boolean;
   onTransfer: () => void;
   onViewAll: () => void;
 }) {
   // 대표 계좌 요약 카드입니다.
+  if (isLoading) {
+    return (
+      <section className="rounded-[16px] bg-white p-5 shadow-sm">
+        <p className="text-center text-[14px] text-gray-500">계좌 정보를 불러오는 중...</p>
+      </section>
+    );
+  }
+
+  // 계좌가 없을 경우 기본 메시지 표시
+  if (!account) {
+    return (
+      <section className="rounded-[16px] bg-white p-5 shadow-sm">
+        <p className="text-center text-[14px] text-gray-500">등록된 계좌가 없습니다.</p>
+      </section>
+    );
+  }
+
+  const formattedAccountNumber = formatAccountNumber(account.accountNumber);
+  const formattedBalance = `${account.balance.toLocaleString()}원`;
+  const bankName = account.bankName ?? "우리은행";
+
   return (
     <section className="rounded-[16px] bg-white p-5 shadow-sm">
       <div className="flex items-center gap-[10px]">
@@ -92,16 +122,16 @@ function AccountCard({
           width={80}
           height={20}
         />
-        <p className="text-[18px] font-semibold text-gray-900">WON 통장</p>
+        <p className="text-[18px] font-semibold text-gray-900">{account.accountName}</p>
       </div>
       <div className="mt-[14px] flex items-center justify-between">
-        <p className="text-[13px] text-gray-600">우리 1002-166-728332</p>
+        <p className="text-[13px] text-gray-600">{bankName} {formattedAccountNumber}</p>
         <span className="rounded-full px-[10px] py-[4px] text-[11px] text-gray-700 border border-gray-300">
           한도제한
         </span>
       </div>
       <div className="mt-[18px] flex items-center justify-between">
-        <p className="text-[26px] font-bold text-gray-900">0원</p>
+        <p className="text-[26px] font-bold text-gray-900">{formattedBalance}</p>
         <button
           type="button"
           onClick={onTransfer}
@@ -228,6 +258,38 @@ export default function WooriMainPage() {
   const [noticeMessage, setNoticeMessage] = useState("");
   const [isNoticeOpen, setNoticeOpen] = useState(false);
 
+  // 대표 계좌 상태 관리
+  const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
+  const [isAccountLoading, setIsAccountLoading] = useState(true);
+
+  /**
+   * 대표 계좌 조회
+   */
+  const fetchRepresentativeAccount = async () => {
+    try {
+      setIsAccountLoading(true);
+      const userId = getCurrentUserId();
+      const accounts = await getAccountList(userId);
+
+      if (accounts.length === 0) {
+        devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
+        setRepresentativeAccount(null);
+        return;
+      }
+
+      setRepresentativeAccount(accounts[0]);
+    } catch (error) {
+      devError("[fetchRepresentativeAccount] 대표 계좌 조회 실패:", error);
+      setRepresentativeAccount(null);
+    } finally {
+      setIsAccountLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRepresentativeAccount();
+  }, []);
+
   const handleNavigate = (route: string) => {
     router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
   };
@@ -268,6 +330,8 @@ export default function WooriMainPage() {
           <div className="space-y-[24px] pb-[24px]">
             {/* 대표 계좌 카드 */}
             <AccountCard
+              account={representativeAccount}
+              isLoading={isAccountLoading}
               onTransfer={handleTransfer}
               onViewAll={handleViewAllAccounts}
             />

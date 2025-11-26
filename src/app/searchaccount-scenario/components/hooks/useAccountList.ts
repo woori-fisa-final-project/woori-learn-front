@@ -46,7 +46,7 @@ export function useAccountList(userId: number) {
 
       if (!result.data) throw new Error("응답 구조가 잘못되었습니다.");
 
-      const transformed = result.data.map((acc: AccountResponse, idx: number) => {
+      const transformed: AccountCard[] = result.data.map((acc: AccountResponse, idx: number) => {
         const isDeposit = idx === 0;
 
         return {

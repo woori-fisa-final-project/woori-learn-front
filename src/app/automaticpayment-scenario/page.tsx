@@ -147,7 +147,8 @@ function AutomaticPaymentScenarioContent() {
   };
 
   /**
-   * 자동이체 목록 데이터 조회 및 상태 업데이트
+   * 자동이체 목록 데이터 조회 및 상태 업데이트 (Progressive Loading)
+   * 첫 페이지를 먼저 표시하고, 나머지 페이지는 백그라운드에서 로드
    */
   const fetchData = useCallback(async () => {
     try {
@@ -173,19 +174,59 @@ function AutomaticPaymentScenarioContent() {
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 3. 모든 자동이체 목록 조회 (페이지네이션 처리)
-      const allPayments = await getAllAutoPayments(representativeAccount.id);
+      // 3. 첫 페이지만 먼저 조회
+      const firstPage = await getAutoPaymentList({
+        educationalAccountId: representativeAccount.id,
+        page: 0,
+        size: AUTO_PAYMENT.PAGE_SIZE,
+      });
 
-      // 4. 조회된 모든 자동이체를 화면용 데이터로 변환
-      if (allPayments.length > 0) {
-        devLog(`[fetchData] 자동이체 ${allPayments.length}건 조회 완료`);
-        const convertedList = allPayments.map(payment => {
+      // 4. 첫 페이지 데이터를 즉시 화면에 표시 (로딩 종료)
+      if (firstPage.content.length > 0) {
+        devLog(`[fetchData] 첫 페이지 ${firstPage.content.length}건 즉시 표시 (전체: ${firstPage.totalElements}건)`);
+        const convertedFirstPage = firstPage.content.map(payment => {
           devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);
         });
-        setAutoTransferList(convertedList);
+        setAutoTransferList(convertedFirstPage);
       } else {
         setAutoTransferList([]);
+      }
+
+      // 로딩 상태 종료 - 첫 페이지를 사용자에게 즉시 보여줌
+      setIsLoading(false);
+
+      // 5. 나머지 페이지가 있다면 백그라운드에서 로드
+      const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
+
+      if (totalRemainingPages > 0) {
+        devLog(`[fetchData] 백그라운드에서 나머지 ${totalRemainingPages}페이지 로드 시작`);
+
+        // 나머지 페이지들을 청크 단위로 조회
+        const remainingPromises = Array.from(
+          { length: totalRemainingPages },
+          (_, i) => () => getAutoPaymentList({
+            educationalAccountId: representativeAccount.id,
+            page: i + 1,
+            size: AUTO_PAYMENT.PAGE_SIZE,
+          })
+        );
+
+        const remainingResults = await runPromisesInChunks(
+          remainingPromises,
+          AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+        );
+
+        // 나머지 페이지 데이터를 기존 목록에 추가
+        const allRemainingPayments = remainingResults.flatMap(r => r.content);
+        const convertedRemaining = allRemainingPayments.map(payment =>
+          convertToAutoTransferInfo(payment, representativeAccount)
+        );
+
+        devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
+
+        // 첫 페이지 + 나머지 페이지 합치기
+        setAutoTransferList(prev => [...prev, ...convertedRemaining]);
       }
     } catch (error) {
       devError("[fetchData] 데이터 조회 실패:", error);
@@ -197,7 +238,6 @@ function AutomaticPaymentScenarioContent() {
         : "자동이체 목록을 불러오는 데 실패했습니다.";
 
       setErrorModal({ isOpen: true, message: errorMessage });
-    } finally {
       setIsLoading(false);
     }
   }, [userId]);
