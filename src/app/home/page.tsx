@@ -168,8 +168,8 @@ export default function HomePage() {
 
         {/* 서비스 카드 그리드 */}
         <div>
-          <h2 className="mt-5 text-[18px] font-bold text-gray-600">
-            교육별 진행도
+          <h2 className="mt-8 text-[18px] font-bold text-gray-600">
+            교육 시나리오
           </h2>
           <ServiceCardGrid cards={serviceCards} className="mt-3" />
         </div>
