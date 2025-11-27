@@ -34,31 +34,31 @@ axiosInstance.interceptors.request.use(
     
     // 토큰이 만료되었으면 갱신 시도
     if(isTokenExpired(token)){
-      try {
-         // 이미 갱신 중이라면 기다림 (중복 요청 방지)
-         if (!isRefreshing) {
-            isRefreshing = true;
-            refreshPromise = (async () => {
-               const res = await axiosInstance.post("/auth/refresh", {}, { skipAuth: true });
-               const newAccessToken = res.data.data.accessToken;
-               useAuthStore.getState().setAccessToken(newAccessToken);
-               return newAccessToken;
-            })();
-         }
-         
-         // 갱신된 토큰을 받아옴
-         token = await refreshPromise;
-         isRefreshing = false;
-         refreshPromise = null;
+      
+       // 토큰 갱신이 진행중이지 않으면 -> 갱신 시작
+      if (!refreshPromise){
+        refreshPromise = (async () => {
+          try {
+            const res = await axiosInstance.post("/auth/refresh", {}, { skipAuth: true });
+            const newAccessToken = res.data.data.accessToken;
+            useAuthStore.getState().setAccessToken(newAccessToken);
+            return newAccessToken;
 
+          // 리프레시 실패 시 (로그인 만료 등)
+          } catch (error) {
+            useAuthStore.getState().clearTokens();
+            window.location.href = "/login";
+            throw new ApiError(401, "토큰 갱신 실패");
+          } finally {
+            isRefreshing = false;
+          }
+        })();
+      }
+
+      try {
+        // 갱신된 토큰을 받아옴
+        token = await refreshPromise;
       } catch (error) {
-        // 리프레시 실패 시 (로그인 만료 등)
-        isRefreshing = false;
-        refreshPromise = null;
-        // 여기서 에러를 던지면 요청 자체가 취소됨 -> 401 로그 안 찍힘 (그냥 JS 에러)
-        // 상황에 따라 로그인 페이지로 보내거나 함
-        useAuthStore.getState().clearTokens();
-        window.location.href = "/login";
         return Promise.reject(new ApiError(401, "토큰 갱신 실패"));
       }
     }
