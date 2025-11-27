@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ApiError } from "./apiError";
 import { useAuthStore } from "./tokenStorage";
+import { isTokenExpired } from "./jwtUtils";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
@@ -23,12 +24,45 @@ const axiosInstance = axios.create({
 
 // 🔥 요청 인터셉터
 axiosInstance.interceptors.request.use(
-  (config) => {
+  async (config) => {
     if (config.skipAuth) {
       config.headers.Authorization = undefined;
       return config;
     }
-    const token = useAuthStore.getState().accessToken;
+
+    let token = useAuthStore.getState().accessToken;
+    
+    // 토큰이 만료되었으면 갱신 시도
+    if(isTokenExpired(token)){
+      
+       // 토큰 갱신이 진행중이지 않으면 -> 갱신 시작
+      if (!refreshPromise){
+        refreshPromise = (async () => {
+          try {
+            const res = await axiosInstance.post("/auth/refresh", {}, { skipAuth: true });
+            const newAccessToken = res.data.data.accessToken;
+            useAuthStore.getState().setAccessToken(newAccessToken);
+            return newAccessToken;
+
+          // 리프레시 실패 시 (로그인 만료 등)
+          } catch (error) {
+            useAuthStore.getState().clearTokens();
+            window.location.href = "/login";
+            throw new ApiError(401, "토큰 갱신 실패");
+          } finally {
+            isRefreshing = false;
+          }
+        })();
+      }
+
+      try {
+        // 갱신된 토큰을 받아옴
+        token = await refreshPromise;
+      } catch (error) {
+        return Promise.reject(new ApiError(401, "토큰 갱신 실패"));
+      }
+    }
+
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -52,10 +86,11 @@ axiosInstance.interceptors.response.use(
       error.response.data?.message ?? "알 수 없는 오류가 발생했습니다.";
 
     // 401 에러 중 access token 토큰 만료 에러 발생 시
+    // 혹시 모를 경우를 대비해 남겨둠
     const isJwtExpired =
       error.response &&
       error.response.status === 401 &&
-      (code === 40101 || code === 40102);
+      (code === 40101 || code === 40102 || code === 40103);
 
     if (
       isJwtExpired &&

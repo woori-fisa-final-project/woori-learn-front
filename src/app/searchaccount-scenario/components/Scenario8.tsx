@@ -48,7 +48,7 @@ export default function Scenario8() {
     isLoading,
     error,
     refetch,
-  } = useAccountList(1);
+  } = useAccountList();
 
   const [isAlertModalOpen, setAlertModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");

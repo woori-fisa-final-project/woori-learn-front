@@ -7,21 +7,20 @@ import Scenario12 from "./components/Scenario12";
 import Scenario18, { type Scenario18Detail } from "./components/Scenario18";
 import Scenario19 from "./components/Scenario19";
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
-import { formatAccountNumber, getAccountSuffix } from "@/utils/accountUtils";
+import { formatAccountNumber, getAccountSuffix, getRepresentativeAccount } from "@/utils/accountUtils";
 import { getBankName } from "@/utils/bankUtils";
-import { getCurrentUserId } from "@/utils/authUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 import { devLog, devError } from "@/utils/logger";
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
 import { AUTO_PAYMENT } from "@/lib/constants";
-import { isApiError } from "@/types/errors";
+import { isApiError, isAbortError } from "@/types/errors";
 import { runPromisesInChunks } from "@/utils/promiseUtils";
 
 // 화면 타입 정의
@@ -61,9 +60,7 @@ function convertToAutoTransferInfo(
 }
 
 function AutomaticPaymentScenarioContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const userId = searchParams.get("user_id");
 
   // 화면 상태 관리
   const [currentScreen, setCurrentScreen] = useState<Screen>("list");
@@ -90,20 +87,22 @@ function AutomaticPaymentScenarioContent() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
-   * 대표 계좌 조회 (첫 번째 계좌 기반)
+   * 대표 계좌 조회 및 가져오기 (JWT 토큰 기반)
+   * @param signal - AbortSignal
+   * @returns ID가 가장 작은 계좌 (대표계좌) 또는 undefined
    */
-  const getRepresentativeAccount = async (
-    userId: number,
+  const fetchRepresentativeAccount = async (
     signal?: AbortSignal
   ): Promise<EducationalAccount | undefined> => {
-    const accounts = await getAccountList(userId, signal);
+    const accounts = await getAccountList(signal);
 
-    if (accounts.length === 0) {
-      devError("[getRepresentativeAccount] 계좌가 없습니다.");
-      return undefined;
+    const representativeAccount = getRepresentativeAccount(accounts);
+
+    if (!representativeAccount) {
+      devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
     }
 
-    return accounts[0];
+    return representativeAccount;
   };
 
   /**
@@ -176,20 +175,8 @@ function AutomaticPaymentScenarioContent() {
       isFetchingRef.current = true;
       setIsLoading(true);
 
-      // user_id 파라미터 있으면 사용, 아니면 현재 로그인 사용자 ID 사용
-      const parsedUserId = userId ? parseInt(userId) : NaN;
-      const currentUserId =
-        !isNaN(parsedUserId) ? parsedUserId : getCurrentUserId();
-
-      if (userId && isNaN(parsedUserId)) {
-        devError("[fetchData] 유효하지 않은 userId:", userId);
-      }
-
-      // 1) 대표 계좌 조회
-      const representativeAccount = await getRepresentativeAccount(
-        currentUserId,
-        controller.signal
-      );
+      // 1. 대표 계좌 조회 (JWT 토큰 기반)
+      const representativeAccount = await fetchRepresentativeAccount(controller.signal);
 
       if (!representativeAccount) {
         setIsLoading(false);
@@ -251,16 +238,13 @@ function AutomaticPaymentScenarioContent() {
             convertToAutoTransferInfo(p, representativeAccount)
           );
 
-          setAutoTransferList((prev) => [...prev, ...convertedRemaining]);
-        } catch (backgroundError: any) {
-          if (
-            backgroundError.name !== "AbortError" &&
-            backgroundError.name !== "CanceledError"
-          ) {
-            devError(
-              "[fetchData] 백그라운드 로드 실패:",
-              backgroundError
-            );
+          devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
+
+          setAutoTransferList(prev => [...prev, ...convertedRemaining]);
+        } catch (backgroundError: unknown) {
+          // 백그라운드 로딩 실패: 첫 페이지는 유지하고 에러만 로깅
+          if (!isAbortError(backgroundError)) {
+            devError("[fetchData] 백그라운드 페이지 로드 실패 (첫 페이지 데이터는 유지):", backgroundError);
 
             const message = isApiError(backgroundError)
               ? backgroundError.message
@@ -270,9 +254,11 @@ function AutomaticPaymentScenarioContent() {
           }
         }
       }
-    } catch (error: any) {
-      if (error.name === "AbortError" || error.name === "CanceledError") {
-        devLog("[fetchData] 요청 취소됨");
+
+    } catch (error: unknown) {
+      // AbortError는 무시 (정상적인 취소)
+      if (isAbortError(error)) {
+        devLog("[fetchData] 요청이 취소되었습니다.");
         return;
       }
 
@@ -291,7 +277,7 @@ function AutomaticPaymentScenarioContent() {
     } finally {
       isFetchingRef.current = false;
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -328,7 +314,7 @@ function AutomaticPaymentScenarioContent() {
       // 상세 정보 + 계좌 정보 병렬 조회
       const [payment, accountsResult] = await Promise.allSettled([
         getAutoPaymentDetail(autoPaymentId),
-        getAccountList(getCurrentUserId()),
+        getAccountList(),
       ]);
 
       if (payment.status === "rejected") {
@@ -387,7 +373,7 @@ function AutomaticPaymentScenarioContent() {
 
       const [updatedPayment, accountsResult] = await Promise.allSettled([
         getAutoPaymentDetail(selectedAutoPaymentId),
-        getAccountList(getCurrentUserId()),
+        getAccountList(),
       ]);
 
       if (updatedPayment.status === "rejected") {
