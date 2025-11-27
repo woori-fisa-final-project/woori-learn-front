@@ -22,7 +22,7 @@ export function useUserData() {
         setUserId(data.id);
         setUserName(data.nickname);
         setAvailablePoints(data.point);
-        setAccount(data.account ?? null);
+        setAccount(data.account);
       } catch (error) {
         if (error instanceof ApiError) {
           console.error("사용자 정보를 불러오는 중 오류:", error.message);
@@ -35,5 +35,5 @@ export function useUserData() {
     loadUserData();
   }, []);
 
-  return { userName, availablePoints, account }; // 컴포넌트에서 이름, 포인트, 계좌 정보를 사용할 수 있도록 반환합니다.
+  return { userName, availablePoints, account }; // 컴포넌트에서 이름, 포인트, 이름 업데이트 함수를 사용할 수 있도록 반환합니다.
 }

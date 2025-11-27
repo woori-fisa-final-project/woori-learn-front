@@ -28,22 +28,14 @@ export default function ProfilePage() {
   };
 
   const handleAccountOpen = async () => {
-    // 1) 먼저 모달을 "진행 중" 상태로 연다
+    // 1) 먼저 "진행 중" 모달 열기
     setAccountModalStatus("processing");
     setIsAccountModalOpen(true);
 
-    try {
-      // 2) 서버로 계좌 개설 URL 요청
-      const res = await axiosInstance.get("/api/account/url");
-      const { redirectUrl } = res.data;
-
-      // 3) 은행 서버로 이동 (여기서 실제 계좌 개설 진행)
-      router.push(redirectUrl);
-    } catch (error) {
-      console.error("계좌 개설 URL 요청 실패:", error);
-      alert("계좌 개설 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-      setIsAccountModalOpen(false);
-    }
+    // 2) 은행 이동 대신 타이머로 가짜 처리
+    setTimeout(() => {
+      setAccountModalStatus("success");
+    }, 2000); // 2초 후 성공 화면으로 전환
   };
 
   const handlePointTransfer = () => {
@@ -299,7 +291,7 @@ export default function ProfilePage() {
               className="w-full font-semibold"
               onClick={() => {
                 setIsAccountModalOpen(false);
-                router.replace("/mypage"); // 계좌 정보 새로고침
+                window.location.reload();
               }}
             >
               확인
