@@ -167,8 +167,12 @@ export default function HomePage() {
         </div>
 
         {/* 서비스 카드 그리드 */}
-        <ServiceCardGrid cards={serviceCards} className="mt-10" />
-
+        <div>
+          <h2 className="mt-5 text-[18px] font-bold text-gray-600">
+            교육별 진행도
+          </h2>
+          <ServiceCardGrid cards={serviceCards} className="mt-3" />
+        </div>
         {/* 전체 달성률 제목 */}
         <div className="mt-8 w-full">
           <h2 className="text-[18px] font-bold text-gray-600">전체 달성률</h2>
@@ -187,7 +191,7 @@ export default function HomePage() {
         </div>
 
         {/* 교육별 진행도 카드 리스트 */}
-        <div className="mt-0 w-full pb-[35px]">
+        <div className="mt-0 w-full pb-[25px]">
           <h2 className="mb-4 text-[18px] font-bold text-gray-600">
             교육별 진행도
           </h2>

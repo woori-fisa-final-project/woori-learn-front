@@ -186,26 +186,6 @@ export default function ProfilePage() {
         </p>
 
         <div className="flex w-full flex-col gap-2">
-          {account ? (
-            <div className="w-full h-[70px] bg-primary-50 rounded-lg p-4 flex flex-col justify-center">
-              <p className="text-[14px] text-primary-600 font-semibold">
-                내 계좌번호
-              </p>
-              <p className="text-[16px] text-gray-800 font-bold">
-                {account.accountNumber}
-              </p>
-            </div>
-          ) : (
-            <button
-              onClick={handleAccountOpen}
-              className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 hover:bg-gray-50"
-            >
-              <p className="text-[16px] font-medium text-gray-600">
-                계좌 개설하기
-              </p>
-            </button>
-          )}
-
           <button
             onClick={handlePointTransfer}
             className="flex h-[50px] w-full items-center rounded-[5px] bg-white pl-0 transition-colors hover:bg-gray-50"
