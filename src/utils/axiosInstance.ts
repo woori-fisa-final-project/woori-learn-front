@@ -10,7 +10,6 @@ declare module "axios" {
   }
 }
 
-let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
 
 const axiosInstance = axios.create({
@@ -22,50 +21,66 @@ const axiosInstance = axios.create({
   },
 });
 
+// 토큰 갱신 전용 axios 인스턴스
+const refreshAxios = axios.create({
+  baseURL: "",
+  withCredentials: true,
+  headers: { "Content-Type": "application/json" },
+});
+
+// 토큰 갱신 함수
+const getRefreshToken = async (): Promise<string> => {
+  // 이미 갱신 중이라면 그 Promise를 재활용
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  // 갱신 시작
+  refreshPromise = (async () => {
+    try {
+      const res = await refreshAxios.post("/auth/refresh", {}, { skipAuth: true });
+      const newAccessToken = res.data.data.accessToken;
+      useAuthStore.getState().setAccessToken(newAccessToken);
+      return newAccessToken;
+    } catch (error) {
+      // 갱신 실패 시 로그아웃
+      useAuthStore.getState().clearTokens();
+      window.location.href = "/login";
+      throw new ApiError(401, "토큰 갱신 실패");
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
 // 🔥 요청 인터셉터
 axiosInstance.interceptors.request.use(
   async (config) => {
+    // skipAuth 옵션이 있으면 토큰 없이 요청
     if (config.skipAuth) {
       config.headers.Authorization = undefined;
       return config;
     }
 
+    // 저장소에서 토큰 가져오기
     let token = useAuthStore.getState().accessToken;
     
-    // 토큰이 만료되었으면 갱신 시도
-    if(isTokenExpired(token)){
-      
-       // 토큰 갱신이 진행중이지 않으면 -> 갱신 시작
-      if (!refreshPromise){
-        refreshPromise = (async () => {
-          try {
-            const res = await axiosInstance.post("/auth/refresh", {}, { skipAuth: true });
-            const newAccessToken = res.data.data.accessToken;
-            useAuthStore.getState().setAccessToken(newAccessToken);
-            return newAccessToken;
-
-          // 리프레시 실패 시 (로그인 만료 등)
-          } catch (error) {
-            useAuthStore.getState().clearTokens();
-            window.location.href = "/login";
-            throw new ApiError(401, "토큰 갱신 실패");
-          } finally {
-            isRefreshing = false;
-          }
-        })();
-      }
-
+    // 토큰이 없거나 토큰이 만료되었으면 갱신 시도
+    if(token && isTokenExpired(token)){
       try {
         // 갱신된 토큰을 받아옴
-        token = await refreshPromise;
+        token = await getRefreshToken();
       } catch (error) {
         return Promise.reject(new ApiError(401, "토큰 갱신 실패"));
       }
     }
-
+    // 토큰이 있으면 헤더에 추가
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -75,12 +90,13 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config ?? {};
 
     if (!error.response) {
       return Promise.reject(new ApiError(-1, "네트워크 오류가 발생했습니다."));
     }
 
+    // 서버에서 내려준 에러 코드 & 메시지
     const code = error.response.data?.code ?? -1;
     const message =
       error.response.data?.message ?? "알 수 없는 오류가 발생했습니다.";
@@ -92,56 +108,28 @@ axiosInstance.interceptors.response.use(
       error.response.status === 401 &&
       (code === 40101 || code === 40102 || code === 40103);
 
+    // 토큰 만료 & 재요청이 아닌 경우
     if (
       isJwtExpired &&
       !originalRequest._retry &&
       originalRequest.url !== "/auth/refresh" // 무한 루프 방지
     ) {
       originalRequest._retry = true;
-
       try {
-        if (isRefreshing) {
-          const newAccessToken = await refreshPromise;
-
-          // 기존 요청에 새 토큰 추가
-          if (originalRequest.headers) {
-            originalRequest.headers[
-              "Authorization"
-            ] = `Bearer ${newAccessToken}`;
-          }
-
-          return axiosInstance(originalRequest); // 기존 요청 재시도
-        }
-
-        // refresh token을 이용한 요청 진행중
-        isRefreshing = true;
-
         // refresh token으로 access token 갱신
-        refreshPromise = (async () => {
-          const refreshResponse = await axiosInstance.post(
-            `/auth/refresh`,
-            {},
-            { skipAuth: true }
-          );
+        const newAccessToken = await getRefreshToken();
 
-          const { accessToken } = refreshResponse.data.data;
+        // 갱신된 토큰으로 원래 요청 재시도
+        const retryRequest = {
+          ...originalRequest,
+          headers: {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${newAccessToken}`
+          },
+        };
 
-          // access token 갱신
-          const { setAccessToken } = useAuthStore.getState();
-          setAccessToken(accessToken);
+        return axiosInstance(retryRequest);
 
-          return accessToken;
-        })();
-
-        const newAccessToken = await refreshPromise;
-
-        // 기존 요청 헤더 갱신
-        if (originalRequest.headers) {
-          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-        }
-
-        // 기존 요청 재시도
-        return axiosInstance(originalRequest);
       } catch (refreshError) {
         // refresh token도 실패하면 로그인으로
         useAuthStore.getState().clearTokens();
@@ -149,9 +137,6 @@ axiosInstance.interceptors.response.use(
           window.location.href = "/login";
         }
         return Promise.reject(new ApiError(401, "토큰 갱신 실패"));
-      } finally {
-        isRefreshing = false;
-        refreshPromise = null;
       }
     }
 
