@@ -38,6 +38,16 @@ export function useAccountList() {
         return;
       }
 
+      // ⚠️ 런타임 검증: 계좌가 정확히 2개인지 확인
+      // 이 검증은 idx === 0 로직의 취약성을 조기 발견하기 위한 임시 방편입니다.
+      if (result.length !== 2) {
+        devError(
+          `[useAccountList] 예상치 못한 계좌 개수: ${result.length}개. ` +
+          `idx === 0 로직은 계좌가 정확히 2개(입출금 1개, 예적금 1개)일 때만 작동합니다. ` +
+          `백엔드 API에 accountType 필드 추가가 시급합니다.`
+        );
+      }
+
       const transformed: AccountCard[] = result.map((acc, idx: number) => {
         // ⚠️ CRITICAL ISSUE: 계좌 종류를 배열 인덱스로 판단하는 것은 매우 취약합니다.
         //
@@ -68,6 +78,14 @@ export function useAccountList() {
         // const isDeposit = acc.accountType === "DEPOSIT";
         // ```
         const isDeposit = idx === 0;
+
+        // 런타임 로그: 디버깅용 (배포 시 제거 가능)
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `[계좌 매핑] idx=${idx}, accountName=${acc.accountName}, ` +
+            `type=${isDeposit ? "deposit" : "savings"}`
+          );
+        }
 
         return {
           id: acc.id,
