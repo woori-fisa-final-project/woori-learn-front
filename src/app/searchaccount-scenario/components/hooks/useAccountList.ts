@@ -39,22 +39,28 @@ export function useAccountList() {
         return;
       }
 
-      const transformed: AccountCard[] = result.map((acc) => {
+      const transformed: AccountCard[] = result.map((acc, idx) => {
         // 백엔드의 accountType 필드를 사용하여 계좌 유형 판단
-        const isDeposit = acc.accountType === "DEPOSIT";
+        // CHECKING = 입출금 계좌, SAVINGS = 예적금 계좌, DEPOSIT = 적금 (현재 미사용)
+        // accountType이 없으면 첫 번째 계좌를 입출금 계좌로 간주 (fallback)
+        const isChecking = acc.accountType
+          ? acc.accountType === "CHECKING"
+          : idx === 0;
+
+        console.log(`[계좌 ${idx}] accountType: ${acc.accountType}, isChecking: ${isChecking}, accountNumber: ${acc.accountNumber}`);
 
         return {
           id: acc.id,
-          title: isDeposit ? "WON통장" : "WON적금통장",
+          title: isChecking ? "WON통장" : "WON적금통장",
           bank: "우리",
           accountNumber: formatAccountNumber(acc.accountNumber),
           accountName: acc.accountName,
           badge: "한도제한",
           balance: formatBalance(acc.balance),
           rawBalance: acc.balance,
-          transferAvailable: isDeposit,
-          type: isDeposit ? "deposit" : "savings",
-          disabledMessage: !isDeposit
+          transferAvailable: isChecking,
+          type: isChecking ? "deposit" : "savings",
+          disabledMessage: !isChecking
             ? "예적금 계좌에서는 이체를 이용할 수 없습니다."
             : undefined,
         };
