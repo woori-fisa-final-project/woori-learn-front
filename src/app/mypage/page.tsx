@@ -97,6 +97,7 @@ export default function ProfilePage() {
   }, []);
 
   // 로그인 상태 확인 → 없으면 로그인 페이지로 강제 이동
+  // TODO : 효민 언니 코드 보고 필요없으면 지울 부분
   useEffect(() => {
     const accessToken = useAuthStore.getState().accessToken;
     if (!accessToken) {
