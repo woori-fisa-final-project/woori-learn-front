@@ -7,7 +7,7 @@ import Image from "next/image";
 import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
 import { getAccountList } from "@/lib/api/account";
-import { formatAccountNumber, getRepresentativeAccount as findRepresentativeAccount } from "@/utils/accountUtils";
+import { formatAccountNumber, getRepresentativeAccount } from "@/utils/accountUtils";
 import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
 
@@ -269,7 +269,7 @@ export default function WooriMainPage() {
         // JWT 토큰 기반으로 현재 사용자의 계좌 목록 조회
         const allAccounts = await getAccountList(controller.signal);
 
-        const representativeAccount = findRepresentativeAccount(allAccounts);
+        const representativeAccount = getRepresentativeAccount(allAccounts);
 
         if (!representativeAccount) {
           devError(`[fetchRepresentativeAccount] 계좌가 없습니다.`);

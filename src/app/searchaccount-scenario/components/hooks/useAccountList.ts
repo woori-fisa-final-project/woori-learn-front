@@ -39,9 +39,34 @@ export function useAccountList() {
       }
 
       const transformed: AccountCard[] = result.map((acc, idx: number) => {
-        // FIXME: 계좌 종류를 배열 인덱스로 판단하는 것은 위험합니다.
-        // 비즈니스 규칙: 백엔드에서 항상 첫 번째 계좌는 입출금, 두 번째 계좌는 예적금으로 반환됨
-        // 향후 API 응답에 계좌 타입 필드(type: "deposit" | "savings")를 추가하여 명시적으로 처리하는 것을 권장합니다.
+        // ⚠️ CRITICAL ISSUE: 계좌 종류를 배열 인덱스로 판단하는 것은 매우 취약합니다.
+        //
+        // 현재 비즈니스 규칙 (암묵적 가정):
+        // - 백엔드에서 항상 첫 번째 계좌(idx=0)는 입출금 계좌
+        // - 두 번째 계좌(idx=1)는 예적금 계좌
+        //
+        // ❌ 문제점:
+        // 1. 백엔드 응답 순서가 변경되면 버그 발생
+        // 2. 새로운 계좌가 추가되면 로직이 깨짐
+        // 3. 계좌가 1개만 있거나 3개 이상이면 예상치 못한 동작
+        //
+        // ✅ 권장 해결 방안 (백엔드 API 개선):
+        // EdubankapiAccountDto에 accountType 필드 추가:
+        //
+        // ```java
+        // public record EdubankapiAccountDto(
+        //     Long id,
+        //     String accountName,
+        //     String accountNumber,
+        //     Integer balance,
+        //     String accountType  // "DEPOSIT" | "SAVINGS" 추가
+        // )
+        // ```
+        //
+        // 프론트엔드 수정:
+        // ```typescript
+        // const isDeposit = acc.accountType === "DEPOSIT";
+        // ```
         const isDeposit = idx === 0;
 
         return {

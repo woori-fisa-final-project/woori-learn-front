@@ -12,7 +12,7 @@ import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/l
 import { getAccountList } from "@/lib/api/account";
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
-import { formatAccountNumber, getAccountSuffix, getRepresentativeAccount as findRepresentativeAccount } from "@/utils/accountUtils";
+import { formatAccountNumber, getAccountSuffix, getRepresentativeAccount } from "@/utils/accountUtils";
 import { getBankName } from "@/utils/bankUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 import { devLog, devError } from "@/utils/logger";
@@ -91,17 +91,17 @@ function AutomaticPaymentScenarioContent() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
-   * 대표 계좌 조회 (JWT 토큰 기반)
+   * 대표 계좌 조회 및 가져오기 (JWT 토큰 기반)
    * @param signal - AbortSignal
    * @returns ID가 가장 작은 계좌 (대표계좌) 또는 undefined
    */
-  const getRepresentativeAccount = async (signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
+  const fetchRepresentativeAccount = async (signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
     const accounts = await getAccountList(signal);
 
-    const representativeAccount = findRepresentativeAccount(accounts);
+    const representativeAccount = getRepresentativeAccount(accounts);
 
     if (!representativeAccount) {
-      devError("[getRepresentativeAccount] 계좌가 없습니다.");
+      devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
     }
 
     return representativeAccount;
@@ -177,7 +177,7 @@ function AutomaticPaymentScenarioContent() {
       setIsLoading(true);
 
       // 1. 대표 계좌 조회 (JWT 토큰 기반)
-      const representativeAccount = await getRepresentativeAccount(controller.signal);
+      const representativeAccount = await fetchRepresentativeAccount(controller.signal);
 
       if (!representativeAccount) {
         setIsLoading(false);
