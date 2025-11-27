@@ -20,16 +20,12 @@ export function useAccountList() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    console.log("[계좌목록] API 요청 시작 (JWT 토큰 기반)");
-
     try {
       setLoading(true);
       setError(null);
 
       // JWT 토큰 기반 계좌 목록 조회
       const result = await getAccountList();
-
-      console.log("[API Response]", result);
 
       if (!result || result.length === 0) {
         setAccounts([]);
@@ -46,8 +42,6 @@ export function useAccountList() {
         const isChecking = acc.accountType
           ? acc.accountType === "CHECKING"
           : idx === 0;
-
-        console.log(`[계좌 ${idx}] accountType: ${acc.accountType}, isChecking: ${isChecking}, accountNumber: ${acc.accountNumber}`);
 
         return {
           id: acc.id,
