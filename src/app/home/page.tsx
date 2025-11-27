@@ -7,6 +7,8 @@ import ProgressBar from "@/components/common/ProgressBar"; // 전체 진행도�
 import ProgressCard from "@/components/common/ProgressCard"; // 개별 교육 진행 상황을 카드 형태로 노출합니다.
 import Modal from "@/components/common/Modal"; // 준비 중 서비스 안내 모달 컴포넌트입니다.
 import Image from "next/image";
+import { SCENARIO_CONFIG } from "@/constants/scenario";
+import { useScenarioStatus } from "./useScenarioStatus";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -18,6 +20,14 @@ const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용�
 export default function HomePage() {
   const router = useRouter(); // 페이지 이동 처리를 위해 라우터 인스턴스를 가져옵니다.
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림 상태를 관리합니다.
+
+  const {
+    progressCards,
+    isLoadingStatus,
+    statusError,
+    isScenarioCompleted,
+    allScenariosCompleted,
+  } = useScenarioStatus();
 
   const handleProfileClick = () => {
     router.push("/mypage"); // 프로필 버튼 클릭 시 마이페이지로 이동합니다.
@@ -35,7 +45,8 @@ export default function HomePage() {
     setIsModalOpen(false); // 모달을 닫습니다.
   };
 
-  const serviceCards = [ // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
+  const serviceCards = [
+    // 홈 화면 상단 서비스 카드를 정의하고 ServiceCardGrid에 전달합니다.
     {
       title: "조회·이체",
       bgColor: "bg-[#2677CC]",
@@ -90,37 +101,38 @@ export default function HomePage() {
     },
   ];
 
-  const progressCards = [ // 각 교육 카테고리별 진행도 카드 데이터를 정의합니다.
-    { title: "거래내역 조회", progress: 100 },
-    { title: "공과금", progress: 100 },
-    { title: "예/적금", progress: 100 },
-    { title: "대출", progress: 10 },
+  // 진행 바에 사용할 단계들
+  const progressSteps = [
+    // 각 시나리오 단계
+    ...SCENARIO_CONFIG.map((cfg) => {
+      const completed = isScenarioCompleted(cfg.id);
+
+      return {
+        label: cfg.scenarioTitle as string,
+        bgColor: completed ? "bg-[#2F6FE0]" : "bg-[#C3C3C3]",
+        textColor: "text-gray-500",
+        iconSrc: completed ? "/images/maincheck2.png" : "/images/maincheck.png",
+        iconAlt: completed
+          ? `${cfg.scenarioTitle} 완료`
+          : `${cfg.scenarioTitle} 진행 중`,
+        iconClassName: completed ? "bg-[#0043CE]" : "bg-[#C3C3C3]",
+      };
+    }),
+
+    // 마무리 퀴즈 단계
+    {
+      label: "마무리 퀴즈",
+      bgColor: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
+      textColor: allScenariosCompleted ? "text-[#0B8A46]" : "text-gray-400",
+      iconSrc: allScenariosCompleted
+        ? "/images/maincheck3.png"
+        : "/images/maincheck.png",
+      iconAlt: allScenariosCompleted
+        ? "마무리 퀴즈 완료"
+        : "마무리 퀴즈 진행 예정",
+      iconClassName: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
+    },
   ];
-
-  const scenarioCompletion = progressCards.map((card) => card.progress >= 100);
-  const allScenariosCompleted = scenarioCompletion.every(Boolean);
-
-  const stepLabels = ["계좌이체", "공과금", "예/적금", "대출"];
-  const progressSteps = stepLabels.map((label, index) => {
-    const completed = scenarioCompletion[index];
-    return {
-      label,
-      bgColor: completed ? "bg-[#2F6FE0]" : "bg-[#C3C3C3]",
-      textColor: "text-gray-500",
-      iconSrc: completed ? "/images/maincheck2.png" : "/images/maincheck.png",
-      iconAlt: completed ? `${label} 완료` : `${label} 진행 중`,
-      iconClassName: completed ? "bg-[#0043CE]" : "bg-[#C3C3C3]",
-    };
-  });
-
-  progressSteps.push({
-    label: "마무리 퀴즈",
-    bgColor: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
-    textColor: allScenariosCompleted ? "text-[#0B8A46]" : "text-gray-400",
-    iconSrc: allScenariosCompleted ? "/images/maincheck3.png" : "/images/maincheck.png",
-    iconAlt: allScenariosCompleted ? "마무리 퀴즈 완료" : "마무리 퀴즈 진행 예정",
-    iconClassName: allScenariosCompleted ? "bg-[#198038]" : "bg-[#C3C3C3]",
-  });
 
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
@@ -128,12 +140,27 @@ export default function HomePage() {
         {/* 상단 로고와 프로필 영역 */}
         <div className="flex w-full items-center justify-between">
           <div className="relative h-[58px] w-[100px]">
-            <Image alt="로고" className="h-full w-full object-contain" src={logoImage} width={100} height={58} />
+            <Image
+              alt="로고"
+              className="h-full w-full object-contain"
+              src={logoImage}
+              width={100}
+              height={58}
+            />
           </div>
 
-          <button onClick={handleProfileClick} className="flex cursor-pointer flex-col items-center gap-1">
+          <button
+            onClick={handleProfileClick}
+            className="flex cursor-pointer flex-col items-center gap-1"
+          >
             <div className="relative h-7 w-7">
-              <Image alt="프로필" className="h-full w-full object-contain" src={profileIcon} width={28} height={28} />
+              <Image
+                alt="프로필"
+                className="h-full w-full object-contain"
+                src={profileIcon}
+                width={28}
+                height={28}
+              />
             </div>
             <p className="text-[12px] text-gray-400">내 정보</p>
           </button>
@@ -145,24 +172,32 @@ export default function HomePage() {
         {/* 전체 달성률 제목 */}
         <div className="mt-8 w-full">
           <h2 className="text-[18px] font-bold text-gray-600">전체 달성률</h2>
+          {statusError && (
+            <p className="mt-1 text-[12px] text-red-500">{statusError}</p>
+          )}
         </div>
 
         {/* 진행률 바 */}
-        <div>
+        <div className="overflow-x-auto">
           <ProgressBar
             steps={progressSteps}
             lineColorClassName="bg-[#376FDB]"
             showEndCaps={false}
-            
           />
         </div>
 
         {/* 교육별 진행도 카드 리스트 */}
         <div className="mt-0 w-full pb-[35px]">
-          <h2 className="mb-4 text-[18px] font-bold text-gray-600">교육별 진행도</h2>
+          <h2 className="mb-4 text-[18px] font-bold text-gray-600">
+            교육별 진행도
+          </h2>
           <div className="flex flex-col gap-[12px]">
             {progressCards.map((card) => (
-              <ProgressCard key={card.title} title={card.title} progress={card.progress} />
+              <ProgressCard
+                key={card.title}
+                title={card.title}
+                progress={card.progress}
+              />
             ))}
           </div>
         </div>

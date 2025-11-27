@@ -2,7 +2,7 @@ import axios from "axios";
 import { ApiError } from "./apiError";
 import { useAuthStore } from "./tokenStorage";
 
-declare module 'axios' {
+declare module "axios" {
   export interface AxiosRequestConfig {
     skipAuth?: boolean;
     _retry?: boolean;
@@ -24,13 +24,13 @@ const axiosInstance = axios.create({
 // 🔥 요청 인터셉터
 axiosInstance.interceptors.request.use(
   (config) => {
-     if (config.skipAuth) {
+    if (config.skipAuth) {
       config.headers.Authorization = undefined;
       return config;
     }
     const token = useAuthStore.getState().accessToken;
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
@@ -48,24 +48,31 @@ axiosInstance.interceptors.response.use(
     }
 
     const code = error.response.data?.code ?? -1;
-    const message = error.response.data?.message ?? "알 수 없는 오류가 발생했습니다.";
+    const message =
+      error.response.data?.message ?? "알 수 없는 오류가 발생했습니다.";
 
     // 401 에러 중 access token 토큰 만료 에러 발생 시
-    const isJwtExpired = error.response &&
+    const isJwtExpired =
+      error.response &&
       error.response.status === 401 &&
-      (code === 40101 || code === 40102)
+      (code === 40101 || code === 40102);
 
-    if (isJwtExpired && !originalRequest._retry && originalRequest.url !== '/auth/refresh' // 무한 루프 방지
+    if (
+      isJwtExpired &&
+      !originalRequest._retry &&
+      originalRequest.url !== "/auth/refresh" // 무한 루프 방지
     ) {
       originalRequest._retry = true;
 
       try {
-         if (isRefreshing) {
+        if (isRefreshing) {
           const newAccessToken = await refreshPromise;
-          
+
           // 기존 요청에 새 토큰 추가
           if (originalRequest.headers) {
-            originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+            originalRequest.headers[
+              "Authorization"
+            ] = `Bearer ${newAccessToken}`;
           }
 
           return axiosInstance(originalRequest); // 기존 요청 재시도
@@ -95,7 +102,7 @@ axiosInstance.interceptors.response.use(
 
         // 기존 요청 헤더 갱신
         if (originalRequest.headers) {
-          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
         }
 
         // 기존 요청 재시도
@@ -103,13 +110,11 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         // refresh token도 실패하면 로그인으로
         useAuthStore.getState().clearTokens();
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
-        return Promise.reject(
-          new ApiError(401, "토큰 갱신 실패")
-        );
-      }finally {
+        return Promise.reject(new ApiError(401, "토큰 갱신 실패"));
+      } finally {
         isRefreshing = false;
         refreshPromise = null;
       }
@@ -124,6 +129,5 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(new ApiError(-1, "네트워크 오류가 발생했습니다."));
   }
 );
-
 
 export default axiosInstance;

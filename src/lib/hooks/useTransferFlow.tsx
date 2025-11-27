@@ -47,7 +47,7 @@ const formatAccountNumber = (value: string) => { // 계좌번호를 3-3-6 형식
 
 const resolveRecipientName = (accountNumber: string) => { // 입력된 계좌번호를 기반으로 수취인 이름을 추론합니다.
   const normalized = digitsOnly(accountNumber); // 계좌번호에서 숫자만 추출하여 비교합니다.
-  return RECIPIENT_NAME_MAP[normalized] ?? "최누구"; // 매핑된 이름이 없으면 기본 이름을 반환합니다.
+  return RECIPIENT_NAME_MAP[normalized] ?? "유정호"; // 매핑된 이름이 없으면 기본 이름을 반환합니다.
 };
 
 const DEFAULT_STATE = { // 이체 시나리오 초기 상태를 한 곳에 모아둡니다.

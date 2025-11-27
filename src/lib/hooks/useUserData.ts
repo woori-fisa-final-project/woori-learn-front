@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getCurrentUser } from "@/lib/api/user.api";
 import { getAvailablePoints, setAvailablePoints as cachePoints } from "@/constants/points";
 
+
 /**
  * 사용자 데이터를 관리하는 커스텀 훅
  * 
@@ -53,11 +54,13 @@ export function useUserData() {
         setAvailablePoints(cachedPoints);
       } finally {
         setIsLoading(false);
+
       }
     };
 
     fetchUserData();
   }, []);
+
 
   const updateUserName = (name: string) => {
     setUserName(name);
@@ -73,4 +76,5 @@ export function useUserData() {
     error,
     updateUserName,
   };
+
 }
