@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ApiError } from "./apiError";
 import { useAuthStore } from "./tokenStorage";
+import { isTokenExpired } from "./jwtUtils";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
@@ -23,12 +24,45 @@ const axiosInstance = axios.create({
 
 // 🔥 요청 인터셉터
 axiosInstance.interceptors.request.use(
-  (config) => {
+  async (config) => {
     if (config.skipAuth) {
       config.headers.Authorization = undefined;
       return config;
     }
-    const token = useAuthStore.getState().accessToken;
+
+    let token = useAuthStore.getState().accessToken;
+    
+    // 토큰이 만료되었으면 갱신 시도
+    if(isTokenExpired(token)){
+      try {
+         // 이미 갱신 중이라면 기다림 (중복 요청 방지)
+         if (!isRefreshing) {
+            isRefreshing = true;
+            refreshPromise = (async () => {
+               const res = await axiosInstance.post("/auth/refresh", {}, { skipAuth: true });
+               const newAccessToken = res.data.data.accessToken;
+               useAuthStore.getState().setAccessToken(newAccessToken);
+               return newAccessToken;
+            })();
+         }
+         
+         // 갱신된 토큰을 받아옴
+         token = await refreshPromise;
+         isRefreshing = false;
+         refreshPromise = null;
+
+      } catch (error) {
+        // 리프레시 실패 시 (로그인 만료 등)
+        isRefreshing = false;
+        refreshPromise = null;
+        // 여기서 에러를 던지면 요청 자체가 취소됨 -> 401 로그 안 찍힘 (그냥 JS 에러)
+        // 상황에 따라 로그인 페이지로 보내거나 함
+        useAuthStore.getState().clearTokens();
+        window.location.href = "/login";
+        return Promise.reject(new ApiError(401, "토큰 갱신 실패"));
+      }
+    }
+
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -52,10 +86,11 @@ axiosInstance.interceptors.response.use(
       error.response.data?.message ?? "알 수 없는 오류가 발생했습니다.";
 
     // 401 에러 중 access token 토큰 만료 에러 발생 시
+    // 혹시 모를 경우를 대비해 남겨둠
     const isJwtExpired =
       error.response &&
       error.response.status === 401 &&
-      (code === 40101 || code === 40102);
+      (code === 40101 || code === 40102 || code === 40103);
 
     if (
       isJwtExpired &&
