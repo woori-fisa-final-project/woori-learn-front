@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { SERVICE_MENU_ITEMS, MENU_TAGS } from "@/constants/menu";
