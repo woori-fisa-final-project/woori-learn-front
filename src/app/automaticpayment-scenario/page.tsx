@@ -6,7 +6,7 @@ import Scenario11, {
 import Scenario12 from "./components/Scenario12";
 import Scenario18, { type Scenario18Detail } from "./components/Scenario18";
 import Scenario19 from "./components/Scenario19";
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
@@ -20,6 +20,9 @@ import { devLog, devError } from "@/utils/logger";
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
+import { AUTO_PAYMENT } from "@/lib/constants";
+import { isApiError } from "@/types/errors";
+import { runPromisesInChunks } from "@/utils/promiseUtils";
 
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
@@ -86,8 +89,94 @@ function AutomaticPaymentScenarioContent() {
     message: "",
   });
 
+  // Race condition 방지 (중복 데이터 로딩 방지)
+  const isFetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  /**
+   * 대표 계좌 조회
+   * @param userId - 사용자 ID
+   * @param signal - AbortSignal
+   * @returns 첫 번째 계좌 (대표계좌) 또는 undefined
+   */
+  const getRepresentativeAccount = async (userId: number, signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
+    const accounts = await getAccountList(userId, signal);
+
+    if (accounts.length === 0) {
+      devError("[getRepresentativeAccount] 계좌가 없습니다.");
+      return undefined;
+    }
+
+    return accounts[0];
+  };
+
+  /**
+   * 모든 자동이체 조회 (페이지네이션 처리)
+   * @param accountId - 교육용 계좌 ID
+   * @param signal - AbortSignal
+   * @returns 모든 페이지의 자동이체 목록
+   */
+  const getAllAutoPayments = async (accountId: number, signal?: AbortSignal): Promise<AutoPayment[]> => {
+    const firstPage = await getAutoPaymentList({
+      educationalAccountId: accountId,
+      page: 0,
+      size: AUTO_PAYMENT.PAGE_SIZE,
+    }, signal);
+
+    const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
+
+    // 첫 페이지만 있는 경우
+    if (totalRemainingPages === 0) {
+      return firstPage.content;
+    }
+
+    // 나머지 페이지들을 청크 단위로 조회
+    const remainingPromises = Array.from(
+      { length: totalRemainingPages },
+      (_, i) => () => getAutoPaymentList({
+        educationalAccountId: accountId,
+        page: i + 1,
+        size: AUTO_PAYMENT.PAGE_SIZE,
+      }, signal)
+    );
+
+    const remainingResults = await runPromisesInChunks(
+      remainingPromises,
+      AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+    );
+
+    // 모든 페이지의 content를 하나로 합치기
+    return [
+      ...firstPage.content,
+      ...remainingResults.flatMap(r => r.content)
+    ];
+  };
+
+  /**
+   * 자동이체 목록 데이터 조회 및 상태 업데이트 (Progressive Loading)
+   * 첫 페이지를 먼저 표시하고, 나머지 페이지는 백그라운드에서 로드
+   */
   const fetchData = useCallback(async () => {
+    // Race condition 방지: 이미 로딩 중이면 중복 실행 차단
+    if (isFetchingRef.current) {
+      devLog("[fetchData] 이미 로딩 중이므로 중복 실행 차단");
+      return;
+    }
+
+    // 이전 요청이 있으면 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // 새로운 AbortController 생성
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    // 첫 페이지 로딩 성공 여부 플래그
+    let firstPageLoaded = false;
+
     try {
+      isFetchingRef.current = true;
       setIsLoading(true);
 
       // userId 파싱 (유효하지 않으면 현재 로그인 사용자 ID 사용)
@@ -98,48 +187,123 @@ function AutomaticPaymentScenarioContent() {
         devError("[fetchData] 유효하지 않은 userId:", userId);
       }
 
-      // 1. 계좌 목록 조회
-      const accounts = await getAccountList(currentUserId);
+      // 1. 대표 계좌 조회
+      const representativeAccount = await getRepresentativeAccount(currentUserId, controller.signal);
 
-      if (!accounts || accounts.length === 0) {
-        devError("[fetchData] 계좌가 없습니다.");
+      if (!representativeAccount) {
         setIsLoading(false);
         return;
       }
 
-      // 2. 첫 번째 계좌(대표계좌) 선택
-      const representativeAccount = accounts[0];
-
-      // 3. 계좌번호 뒷자리 4자리 추출
+      // 2. 계좌번호 뒷자리 4자리 추출
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 4. 해당 계좌의 자동이체 목록 조회
-      const payments = await getAutoPaymentList({
+      // 3. 첫 페이지만 먼저 조회
+      const firstPage = await getAutoPaymentList({
         educationalAccountId: representativeAccount.id,
-      });
+        page: 0,
+        size: AUTO_PAYMENT.PAGE_SIZE,
+      }, controller.signal);
 
-      // 5. 모든 자동이체를 배열로 변환하여 표시
-      if (payments && payments.length > 0) {
-        devLog(`[fetchData] 자동이체 ${payments.length}건 조회`);
-        const convertedList = payments.map(payment => {
+      // 4. 첫 페이지 데이터를 즉시 화면에 표시 (로딩 종료)
+      if (firstPage.content.length > 0) {
+        devLog(`[fetchData] 첫 페이지 ${firstPage.content.length}건 즉시 표시 (전체: ${firstPage.totalElements}건)`);
+        const convertedFirstPage = firstPage.content.map(payment => {
           devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);
         });
-        setAutoTransferList(convertedList);
+        setAutoTransferList(convertedFirstPage);
+        firstPageLoaded = true; // 첫 페이지 로딩 성공
       } else {
         setAutoTransferList([]);
+        firstPageLoaded = true; // 빈 목록도 성공으로 간주
       }
-    } catch (error) {
-      devError("[fetchData] 데이터 조회 실패:", error);
-      setAutoTransferList([]);
-    } finally {
+
+      // 로딩 상태 종료 - 첫 페이지를 사용자에게 즉시 보여줌
       setIsLoading(false);
+
+      // 5. 나머지 페이지가 있다면 백그라운드에서 로드
+      const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
+
+      if (totalRemainingPages > 0) {
+        devLog(`[fetchData] 백그라운드에서 나머지 ${totalRemainingPages}페이지 로드 시작`);
+
+        try {
+          // 나머지 페이지들을 청크 단위로 조회
+          const remainingPromises = Array.from(
+            { length: totalRemainingPages },
+            (_, i) => () => getAutoPaymentList({
+              educationalAccountId: representativeAccount.id,
+              page: i + 1,
+              size: AUTO_PAYMENT.PAGE_SIZE,
+            }, controller.signal)
+          );
+
+          const remainingResults = await runPromisesInChunks(
+            remainingPromises,
+            AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+          );
+
+          // 나머지 페이지 데이터를 기존 목록에 추가
+          const allRemainingPayments = remainingResults.flatMap(r => r.content);
+          const convertedRemaining = allRemainingPayments.map(payment =>
+            convertToAutoTransferInfo(payment, representativeAccount)
+          );
+
+          devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
+
+          // 첫 페이지 + 나머지 페이지 합치기
+          setAutoTransferList(prev => [...prev, ...convertedRemaining]);
+        } catch (backgroundError: any) {
+          // 백그라운드 로딩 실패: 첫 페이지는 유지하고 에러만 로깅
+          if (backgroundError.name !== 'AbortError' && backgroundError.name !== 'CanceledError') {
+            devError("[fetchData] 백그라운드 페이지 로드 실패 (첫 페이지 데이터는 유지):", backgroundError);
+
+            // 사용자에게 일부 데이터만 로드되었음을 알림
+            const errorMessage = isApiError(backgroundError)
+              ? `일부 데이터 로드 실패: ${backgroundError.message}`
+              : "일부 자동이체 데이터를 불러오지 못했습니다.";
+
+            setErrorModal({ isOpen: true, message: errorMessage });
+          }
+        }
+      }
+    } catch (error: any) {
+      // AbortError는 무시 (정상적인 취소)
+      if (error.name === 'AbortError' || error.name === 'CanceledError') {
+        devLog("[fetchData] 요청이 취소되었습니다.");
+        return;
+      }
+
+      devError("[fetchData] 데이터 조회 실패:", error);
+
+      // 첫 페이지 로딩 실패 시에만 목록 비우기
+      if (!firstPageLoaded) {
+        setAutoTransferList([]);
+      }
+
+      // ApiError인 경우 사용자 친화적인 메시지 사용
+      const errorMessage = isApiError(error)
+        ? error.message
+        : "자동이체 목록을 불러오는 데 실패했습니다.";
+
+      setErrorModal({ isOpen: true, message: errorMessage });
+      setIsLoading(false);
+    } finally {
+      isFetchingRef.current = false;
     }
   }, [userId]);
 
   useEffect(() => {
     fetchData();
+
+    // Cleanup: 컴포넌트 언마운트 시 진행 중인 요청 취소
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchData]);
 
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침

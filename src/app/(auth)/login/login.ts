@@ -5,22 +5,29 @@ import { useAuthStore } from "@/utils/tokenStorage";
 interface LoginResponse {
   data: {
     accessToken: string;
+    role: string;
   };
 }
 
-export async function loginUser(id: string, password: string): Promise<LoginResponse> {
+export async function loginUser(
+  id: string,
+  password: string
+): Promise<LoginResponse> {
   if (!id.trim() || !password.trim()) {
     throw new ApiError(400, "아이디와 비밀번호를 입력해주세요.");
   }
-  
+
   try {
     const response = await axiosInstance.post(
-      "/auth/login", {
+      "/auth/login",
+      {
         userId: id,
         password,
-      },{
-      skipAuth: true
-    });
+      },
+      {
+        skipAuth: true,
+      }
+    );
 
     const { accessToken } = response.data.data;
 
