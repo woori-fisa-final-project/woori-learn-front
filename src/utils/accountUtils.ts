@@ -33,3 +33,20 @@ export function getAccountSuffix(accountNumber?: string | null): string {
 
   return numbers.slice(-4);
 }
+
+/**
+ * 계좌 목록에서 대표 계좌 찾기 (ID가 가장 작은 계좌)
+ * @param accounts 교육용 계좌 목록
+ * @returns 대표 계좌 (ID가 가장 작은 계좌) 또는 undefined (계좌가 없는 경우)
+ */
+export function getRepresentativeAccount<T extends { id: number }>(
+  accounts: T[]
+): T | undefined {
+  if (accounts.length === 0) {
+    return undefined;
+  }
+
+  return accounts.reduce((minAccount, currentAccount) =>
+    currentAccount.id < minAccount.id ? currentAccount : minAccount
+  );
+}

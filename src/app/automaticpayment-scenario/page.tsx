@@ -12,7 +12,7 @@ import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/l
 import { getAccountList } from "@/lib/api/account";
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
-import { formatAccountNumber, getAccountSuffix } from "@/utils/accountUtils";
+import { formatAccountNumber, getAccountSuffix, getRepresentativeAccount as findRepresentativeAccount } from "@/utils/accountUtils";
 import { getBankName } from "@/utils/bankUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 import { devLog, devError } from "@/utils/logger";
@@ -98,15 +98,11 @@ function AutomaticPaymentScenarioContent() {
   const getRepresentativeAccount = async (signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
     const accounts = await getAccountList(signal);
 
-    if (accounts.length === 0) {
-      devError("[getRepresentativeAccount] 계좌가 없습니다.");
-      return undefined;
-    }
+    const representativeAccount = findRepresentativeAccount(accounts);
 
-    // 교육용 계좌 중 ID가 가장 작은 계좌를 대표계좌로 선택 (메인 페이지와 동일한 로직)
-    const representativeAccount = accounts.reduce((minAccount, currentAccount) =>
-      currentAccount.id < minAccount.id ? currentAccount : minAccount
-    );
+    if (!representativeAccount) {
+      devError("[getRepresentativeAccount] 계좌가 없습니다.");
+    }
 
     return representativeAccount;
   };

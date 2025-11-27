@@ -38,7 +38,10 @@ export function useAccountList() {
         return;
       }
 
-      const transformed: AccountCard[] = result.map((acc: AccountResponse, idx: number) => {
+      const transformed: AccountCard[] = result.map((acc, idx: number) => {
+        // FIXME: 계좌 종류를 배열 인덱스로 판단하는 것은 위험합니다.
+        // 비즈니스 규칙: 백엔드에서 항상 첫 번째 계좌는 입출금, 두 번째 계좌는 예적금으로 반환됨
+        // 향후 API 응답에 계좌 타입 필드(type: "deposit" | "savings")를 추가하여 명시적으로 처리하는 것을 권장합니다.
         const isDeposit = idx === 0;
 
         return {

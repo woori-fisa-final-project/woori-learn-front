@@ -7,7 +7,7 @@ import Image from "next/image";
 import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
 import { getAccountList } from "@/lib/api/account";
-import { formatAccountNumber } from "@/utils/accountUtils";
+import { formatAccountNumber, getRepresentativeAccount as findRepresentativeAccount } from "@/utils/accountUtils";
 import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
 
@@ -269,16 +269,13 @@ export default function WooriMainPage() {
         // JWT 토큰 기반으로 현재 사용자의 계좌 목록 조회
         const allAccounts = await getAccountList(controller.signal);
 
-        if (allAccounts.length === 0) {
+        const representativeAccount = findRepresentativeAccount(allAccounts);
+
+        if (!representativeAccount) {
           devError(`[fetchRepresentativeAccount] 계좌가 없습니다.`);
           setRepresentativeAccount(null);
           return;
         }
-
-        // 교육용 계좌 중 ID가 가장 작은 계좌를 대표계좌로 선택
-        const representativeAccount = allAccounts.reduce((minAccount, currentAccount) =>
-          currentAccount.id < minAccount.id ? currentAccount : minAccount
-        );
 
         setRepresentativeAccount(representativeAccount);
       } catch (error: any) {
