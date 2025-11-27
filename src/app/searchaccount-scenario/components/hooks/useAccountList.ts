@@ -38,54 +38,9 @@ export function useAccountList() {
         return;
       }
 
-      // ⚠️ 런타임 검증: 계좌가 정확히 2개인지 확인
-      // 이 검증은 idx === 0 로직의 취약성을 조기 발견하기 위한 임시 방편입니다.
-      if (result.length !== 2) {
-        devError(
-          `[useAccountList] 예상치 못한 계좌 개수: ${result.length}개. ` +
-          `idx === 0 로직은 계좌가 정확히 2개(입출금 1개, 예적금 1개)일 때만 작동합니다. ` +
-          `백엔드 API에 accountType 필드 추가가 시급합니다.`
-        );
-      }
-
-      const transformed: AccountCard[] = result.map((acc, idx: number) => {
-        // ⚠️ CRITICAL ISSUE: 계좌 종류를 배열 인덱스로 판단하는 것은 매우 취약합니다.
-        //
-        // 현재 비즈니스 규칙 (암묵적 가정):
-        // - 백엔드에서 항상 첫 번째 계좌(idx=0)는 입출금 계좌
-        // - 두 번째 계좌(idx=1)는 예적금 계좌
-        //
-        // ❌ 문제점:
-        // 1. 백엔드 응답 순서가 변경되면 버그 발생
-        // 2. 새로운 계좌가 추가되면 로직이 깨짐
-        // 3. 계좌가 1개만 있거나 3개 이상이면 예상치 못한 동작
-        //
-        // ✅ 권장 해결 방안 (백엔드 API 개선):
-        // EdubankapiAccountDto에 accountType 필드 추가:
-        //
-        // ```java
-        // public record EdubankapiAccountDto(
-        //     Long id,
-        //     String accountName,
-        //     String accountNumber,
-        //     Integer balance,
-        //     String accountType  // "DEPOSIT" | "SAVINGS" 추가
-        // )
-        // ```
-        //
-        // 프론트엔드 수정:
-        // ```typescript
-        // const isDeposit = acc.accountType === "DEPOSIT";
-        // ```
-        const isDeposit = idx === 0;
-
-        // 런타임 로그: 디버깅용 (배포 시 제거 가능)
-        if (process.env.NODE_ENV === "development") {
-          console.log(
-            `[계좌 매핑] idx=${idx}, accountName=${acc.accountName}, ` +
-            `type=${isDeposit ? "deposit" : "savings"}`
-          );
-        }
+      const transformed: AccountCard[] = result.map((acc) => {
+        // 백엔드의 accountType 필드를 사용하여 계좌 유형 판단
+        const isDeposit = acc.accountType === "DEPOSIT";
 
         return {
           id: acc.id,
