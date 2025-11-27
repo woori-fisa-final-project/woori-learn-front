@@ -8,6 +8,7 @@ import { formatAccountNumber, formatBalance } from "../utils/accountFormatter";
 import type { AccountResponse, AccountCard } from "@/types";
 import { getAccountList } from "@/lib/api/account";
 import { devError } from "@/utils/logger";
+import { isApiError } from "@/types/errors";
 
 export function useAccountList() {
   const [accounts, setAccounts] = useState<AccountCard[]>([]);
@@ -65,14 +66,20 @@ export function useAccountList() {
 
       const sum = transformed.reduce((acc: number, cur: AccountCard) => acc + cur.rawBalance, 0);
       setTotalBalance(sum);
-    } catch (e: any) {
-      devError("[useAccountList] 계좌 목록 조회 실패:", e);
+    } catch (error: unknown) {
+      devError("[useAccountList] 계좌 목록 조회 실패:", error);
 
-      // 403 에러 처리 (권한 없음)
-      if (e.response?.status === 403) {
-        setError("해당 계좌에 대한 접근 권한이 없습니다.");
+      // ApiError 타입 가드를 사용한 안전한 에러 처리
+      if (isApiError(error)) {
+        // 403 에러 처리 (권한 없음)
+        if (error.status === 403) {
+          setError("해당 계좌에 대한 접근 권한이 없습니다.");
+        } else {
+          setError(error.message);
+        }
       } else {
-        setError(e.message || "오류가 발생했습니다.");
+        // 예상치 못한 에러 (네트워크 에러 등)
+        setError("오류가 발생했습니다. 다시 시도해주세요.");
       }
     } finally {
       setLoading(false);

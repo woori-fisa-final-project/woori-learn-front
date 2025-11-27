@@ -1,6 +1,7 @@
 import axiosInstance from "@/utils/axiosInstance";
 import type { ApiResponse } from "@/types/api";
 import { devError } from "@/utils/logger";
+import { isApiError } from "@/types/errors";
 
 /**
  * 계좌이체 요청 파라미터
@@ -40,26 +41,31 @@ export async function transferMoney(
     );
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     devError("[transferMoney] 계좌이체 실패:", error);
 
-    // 403 에러: 타인의 계좌에서 출금 시도
-    if (error.response?.status === 403) {
-      throw new Error("해당 계좌에서 출금할 권한이 없습니다.");
+    // ApiError 타입 가드를 사용한 안전한 에러 처리
+    if (isApiError(error)) {
+      // 403 에러: 타인의 계좌에서 출금 시도
+      if (error.status === 403) {
+        throw new Error("해당 계좌에서 출금할 권한이 없습니다.");
+      }
+
+      // 401 에러: 인증 실패
+      if (error.status === 401) {
+        throw new Error("인증이 필요합니다. 다시 로그인해주세요.");
+      }
+
+      // 400 에러: 잘못된 요청 (잔액 부족, 비밀번호 오류 등)
+      if (error.status === 400) {
+        throw new Error(error.backendMessage || "계좌이체에 실패했습니다.");
+      }
+
+      // 그 외 API 에러
+      throw new Error(error.message);
     }
 
-    // 401 에러: 인증 실패
-    if (error.response?.status === 401) {
-      throw new Error("인증이 필요합니다. 다시 로그인해주세요.");
-    }
-
-    // 400 에러: 잘못된 요청 (잔액 부족, 비밀번호 오류 등)
-    if (error.response?.status === 400) {
-      throw new Error(
-        error.response.data?.message || "계좌이체에 실패했습니다."
-      );
-    }
-
-    throw error;
+    // 네트워크 에러나 예상치 못한 에러
+    throw new Error("계좌이체 중 오류가 발생했습니다. 다시 시도해주세요.");
   }
 }

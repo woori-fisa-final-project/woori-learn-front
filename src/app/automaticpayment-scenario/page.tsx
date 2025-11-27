@@ -20,7 +20,7 @@ import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
 import { AUTO_PAYMENT } from "@/lib/constants";
-import { isApiError } from "@/types/errors";
+import { isApiError, isAbortError } from "@/types/errors";
 import { runPromisesInChunks } from "@/utils/promiseUtils";
 
 // 화면 타입 정의
@@ -244,9 +244,9 @@ function AutomaticPaymentScenarioContent() {
 
           // 첫 페이지 + 나머지 페이지 합치기
           setAutoTransferList(prev => [...prev, ...convertedRemaining]);
-        } catch (backgroundError: any) {
+        } catch (backgroundError: unknown) {
           // 백그라운드 로딩 실패: 첫 페이지는 유지하고 에러만 로깅
-          if (backgroundError.name !== 'AbortError' && backgroundError.name !== 'CanceledError') {
+          if (!isAbortError(backgroundError)) {
             devError("[fetchData] 백그라운드 페이지 로드 실패 (첫 페이지 데이터는 유지):", backgroundError);
 
             // 사용자에게 일부 데이터만 로드되었음을 알림
@@ -258,9 +258,9 @@ function AutomaticPaymentScenarioContent() {
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // AbortError는 무시 (정상적인 취소)
-      if (error.name === 'AbortError' || error.name === 'CanceledError') {
+      if (isAbortError(error)) {
         devLog("[fetchData] 요청이 취소되었습니다.");
         return;
       }

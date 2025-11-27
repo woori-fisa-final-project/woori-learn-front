@@ -8,6 +8,7 @@ import { transformApiTransaction } from "../utils/transactionFormatter";
 import axiosInstance from "@/utils/axiosInstance";
 import type { ApiResponse } from "@/types/api";
 import { devError } from "@/utils/logger";
+import { isApiError } from "@/types/errors";
 
 export function useTransactionFetch() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -27,14 +28,21 @@ export function useTransactionFetch() {
 
         setTransactions(mapped);
         setError(null);
-      } catch (e: any) {
-        devError("[useTransactionFetch] 거래내역 조회 실패:", e);
+      } catch (error: unknown) {
+        devError("[useTransactionFetch] 거래내역 조회 실패:", error);
 
-        // 403 에러 처리 (권한 없음)
-        if (e.response?.status === 403) {
-          setError("해당 계좌에 대한 접근 권한이 없습니다.");
+        // ApiError 타입 가드를 사용한 안전한 에러 처리
+        if (isApiError(error)) {
+          // 403 에러 처리 (권한 없음)
+          if (error.status === 403) {
+            setError("해당 계좌에 대한 접근 권한이 없습니다.");
+          } else {
+            setError(error.message);
+          }
+        } else if (error instanceof Error) {
+          setError(error.message);
         } else {
-          setError(e.message || "거래내역 조회 실패");
+          setError("거래내역 조회 실패");
         }
 
         setTransactions([]);

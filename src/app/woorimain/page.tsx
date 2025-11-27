@@ -10,6 +10,7 @@ import { getAccountList } from "@/lib/api/account";
 import { formatAccountNumber, getRepresentativeAccount } from "@/utils/accountUtils";
 import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
+import { isAbortError } from "@/types/errors";
 
 type NavItem = {
   label: string;
@@ -278,9 +279,9 @@ export default function WooriMainPage() {
         }
 
         setRepresentativeAccount(representativeAccount);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // AbortError는 무시 (정상적인 취소)
-        if (error.name === 'AbortError' || error.name === 'CanceledError') {
+        if (isAbortError(error)) {
           return;
         }
 
