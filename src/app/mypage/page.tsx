@@ -41,6 +41,7 @@ export default function ProfilePage() {
       router.push(redirectUrl);
     } catch (error) {
       console.error("계좌 개설 URL 요청 실패:", error);
+      alert("계좌 개설 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
       setIsAccountModalOpen(false);
     }
   };
@@ -92,6 +93,14 @@ export default function ProfilePage() {
     if (status === "account-created") {
       setAccountModalStatus("success");
       setIsAccountModalOpen(true);
+    }
+  }, []);
+
+  // 로그인 상태 확인 → 없으면 로그인 페이지로 강제 이동
+  useEffect(() => {
+    const accessToken = useAuthStore.getState().accessToken;
+    if (!accessToken) {
+      router.replace("/login");
     }
   }, []);
 
