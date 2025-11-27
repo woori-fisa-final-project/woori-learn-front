@@ -13,8 +13,8 @@ let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  // baseURL: "", // 테스트용으로 proxy 설정
+  // baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: "", // 테스트용으로 proxy 설정
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

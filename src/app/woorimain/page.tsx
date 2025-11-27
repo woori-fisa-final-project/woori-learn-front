@@ -8,6 +8,11 @@ import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
+import { getAccountList } from "@/lib/api/account";
+import { formatAccountNumber, getRepresentativeAccount } from "@/utils/accountUtils";
+import type { EducationalAccount } from "@/types/account";
+import { devError } from "@/utils/logger";
+import { isAbortError } from "@/types/errors";
 
 type NavItem = {
   label: string;
@@ -77,13 +82,38 @@ function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu
 }
 
 function AccountCard({
+  account,
+  isLoading,
   onTransfer,
   onViewAll,
 }: {
+  account: EducationalAccount | null;
+  isLoading: boolean;
   onTransfer: (e?: React.MouseEvent) => void;
   onViewAll: () => void;
 }) {
   // 대표 계좌 요약 카드입니다.
+  if (isLoading) {
+    return (
+      <section className="rounded-[16px] bg-white p-5 shadow-sm">
+        <p className="text-center text-[14px] text-gray-500">계좌 정보를 불러오는 중...</p>
+      </section>
+    );
+  }
+
+  // 계좌가 없을 경우 기본 메시지 표시
+  if (!account) {
+    return (
+      <section className="rounded-[16px] bg-white p-5 shadow-sm">
+        <p className="text-center text-[14px] text-gray-500">등록된 계좌가 없습니다.</p>
+      </section>
+    );
+  }
+
+  const formattedAccountNumber = formatAccountNumber(account.accountNumber);
+  const formattedBalance = `${account.balance.toLocaleString()}원`;
+  const bankName = account.bankName ?? "우리은행";
+
   return (
     <section className="rounded-[16px] bg-white p-5 shadow-sm">
       <div className="flex items-center gap-[10px]">
@@ -94,16 +124,16 @@ function AccountCard({
           width={80}
           height={20}
         />
-        <p className="text-[18px] font-semibold text-gray-900">WON 통장</p>
+        <p className="text-[18px] font-semibold text-gray-900">{account.accountName}</p>
       </div>
       <div className="mt-[14px] flex items-center justify-between">
-        <p className="text-[13px] text-gray-600">우리 1002-166-728332</p>
+        <p className="text-[13px] text-gray-600">{bankName} {formattedAccountNumber}</p>
         <span className="rounded-full px-[10px] py-[4px] text-[11px] text-gray-700 border border-gray-300">
           한도제한
         </span>
       </div>
       <div className="mt-[18px] flex items-center justify-between">
-        <p className="text-[26px] font-bold text-gray-900">0원</p>
+        <p className="text-[26px] font-bold text-gray-900">{formattedBalance}</p>
         <button
           id="nextbtn"
           type="button"
@@ -208,16 +238,14 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
             className="flex flex-col items-center gap-[6px]"
           >
             <span
-              className={`text-[18px] ${
-                item.active ? "text-[#2482C5]" : "text-gray-400"
-              }`}
+              className={`text-[18px] ${item.active ? "text-[#2482C5]" : "text-gray-400"
+                }`}
             >
               {item.icon}
             </span>
             <span
-              className={`text-[11px] font-semibold ${
-                item.active ? "text-[#2482C5]" : "text-gray-400"
-              }`}
+              className={`text-[11px] font-semibold ${item.active ? "text-[#2482C5]" : "text-gray-400"
+                }`}
             >
               {item.label}
             </span>
@@ -252,6 +280,48 @@ export default function WooriMainPage() {
     }
   }, [resume, searchParams]);
 
+  // 대표 계좌 상태 관리
+  const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
+  const [isAccountLoading, setIsAccountLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchRepresentativeAccount = async () => {
+      try {
+        // JWT 토큰 기반으로 현재 사용자의 계좌 목록 조회
+        const allAccounts = await getAccountList(controller.signal);
+
+        const representativeAccount = getRepresentativeAccount(allAccounts);
+
+        if (!representativeAccount) {
+          devError(`[fetchRepresentativeAccount] 계좌가 없습니다.`);
+          setRepresentativeAccount(null);
+          return;
+        }
+
+        setRepresentativeAccount(representativeAccount);
+      } catch (error: unknown) {
+        // AbortError는 무시 (정상적인 취소)
+        if (isAbortError(error)) {
+          return;
+        }
+
+        devError("[fetchRepresentativeAccount] 대표 계좌 조회 실패:", error);
+        setRepresentativeAccount(null);
+      } finally {
+        setIsAccountLoading(false);
+      }
+    };
+
+    fetchRepresentativeAccount();
+
+    // Cleanup: 컴포넌트 언마운트 시 진행 중인 요청 취소
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
   const handleNavigate = (route: string) => {
     router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
   };
@@ -270,7 +340,7 @@ export default function WooriMainPage() {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     // 이체 버튼 클릭 시: 현재 step이 PRACTICE이고 content.button === "nextbtn"이면
     // transfer-scenario 페이지로 이동하면서 nextStep 호출하여 다음 스텝을 오버레이로 표시
     if (currentStep?.type === "PRACTICE" && currentStep.content?.button === "nextbtn") {
@@ -282,11 +352,11 @@ export default function WooriMainPage() {
         return;
       }
     }
-    
+
     router.push("/transfer-scenario?scenarioId=1&stepId=1013&scenarioStep=2");
   };
 
-  
+
 
   const handleViewAllAccounts = () => {
     router.push("/searchaccount-scenario"); // 전체 계좌 조회 시나리오 페이지로 이동합니다.
@@ -312,6 +382,8 @@ export default function WooriMainPage() {
           <div className="space-y-[24px] pb-[24px]">
             {/* 대표 계좌 카드 */}
             <AccountCard
+              account={representativeAccount}
+              isLoading={isAccountLoading}
               onTransfer={handleTransfer}
               onViewAll={handleViewAllAccounts}
             />

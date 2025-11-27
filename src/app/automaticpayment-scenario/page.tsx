@@ -6,22 +6,21 @@ import Scenario11, {
 import Scenario12 from "./components/Scenario12";
 import Scenario18, { type Scenario18Detail } from "./components/Scenario18";
 import Scenario19 from "./components/Scenario19";
-import { useEffect, useState, useCallback, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
 import { getAccountList } from "@/lib/api/account";
 import type { AutoPayment } from "@/types/autoPayment";
 import type { EducationalAccount } from "@/types/account";
-import { formatAccountNumber, getAccountSuffix } from "@/utils/accountUtils";
+import { formatAccountNumber, getAccountSuffix, getRepresentativeAccount } from "@/utils/accountUtils";
 import { getBankName } from "@/utils/bankUtils";
-import { getCurrentUserId } from "@/utils/authUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 import { devLog, devError } from "@/utils/logger";
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
 import { AUTO_PAYMENT } from "@/lib/constants";
-import { isApiError } from "@/types/errors";
+import { isApiError, isAbortError } from "@/types/errors";
 import { runPromisesInChunks } from "@/utils/promiseUtils";
 
 // 화면 타입 정의
@@ -65,9 +64,7 @@ function convertToAutoTransferInfo(
 }
 
 function AutomaticPaymentScenarioContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const userId = searchParams.get("user_id");
 
   // 화면 상태 관리
   const [currentScreen, setCurrentScreen] = useState<Screen>("list");
@@ -89,33 +86,33 @@ function AutomaticPaymentScenarioContent() {
     message: "",
   });
 
-  /**
-   * 대표 계좌 조회
-   * @param userId - 사용자 ID
-   * @returns 첫 번째 계좌 (대표계좌) 또는 undefined
-   */
-  const getRepresentativeAccount = async (userId: number): Promise<EducationalAccount | undefined> => {
-    const accounts = await getAccountList(userId);
+  const isFetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-    if (accounts.length === 0) {
-      devError("[getRepresentativeAccount] 계좌가 없습니다.");
-      return undefined;
+  const fetchRepresentativeAccount = async (signal?: AbortSignal): Promise<EducationalAccount | undefined> => {
+    const accounts = await getAccountList(signal);
+
+    const representativeAccount = getRepresentativeAccount(accounts);
+
+    if (!representativeAccount) {
+      devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
     }
 
-    return accounts[0];
+    return representativeAccount;
   };
 
   /**
    * 모든 자동이체 조회 (페이지네이션 처리)
    * @param accountId - 교육용 계좌 ID
+   * @param signal - AbortSignal
    * @returns 모든 페이지의 자동이체 목록
    */
-  const getAllAutoPayments = async (accountId: number): Promise<AutoPayment[]> => {
+  const getAllAutoPayments = async (accountId: number, signal?: AbortSignal): Promise<AutoPayment[]> => {
     const firstPage = await getAutoPaymentList({
       educationalAccountId: accountId,
       page: 0,
       size: AUTO_PAYMENT.PAGE_SIZE,
-    });
+    }, signal);
 
     const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
 
@@ -131,7 +128,7 @@ function AutomaticPaymentScenarioContent() {
         educationalAccountId: accountId,
         page: i + 1,
         size: AUTO_PAYMENT.PAGE_SIZE,
-      })
+      }, signal)
     );
 
     const remainingResults = await runPromisesInChunks(
@@ -147,23 +144,34 @@ function AutomaticPaymentScenarioContent() {
   };
 
   /**
-   * 자동이체 목록 데이터 조회 및 상태 업데이트
+   * 자동이체 목록 데이터 조회 및 상태 업데이트 (Progressive Loading)
+   * 첫 페이지를 먼저 표시하고, 나머지 페이지는 백그라운드에서 로드
    */
   const fetchData = useCallback(async () => {
+    // Race condition 방지: 이미 로딩 중이면 중복 실행 차단
+    if (isFetchingRef.current) {
+      devLog("[fetchData] 이미 로딩 중이므로 중복 실행 차단");
+      return;
+    }
+
+    // 이전 요청이 있으면 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // 새로운 AbortController 생성
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    // 첫 페이지 로딩 성공 여부 플래그
+    let firstPageLoaded = false;
+
     try {
+      isFetchingRef.current = true;
       setIsLoading(true);
 
-      // userId 파싱 (유효하지 않으면 현재 로그인 사용자 ID 사용)
-      const parsedUserId = userId ? parseInt(userId) : NaN;
-      const currentUserId = !isNaN(parsedUserId) ? parsedUserId : getCurrentUserId();
-
-      if (userId && isNaN(parsedUserId)) {
-        devError("[fetchData] 유효하지 않은 userId:", userId);
-      }
-
-      // 1. 대표 계좌 조회
-      const representativeAccount = await getRepresentativeAccount(currentUserId);
-
+      // 1. 대표 계좌 조회 (JWT 토큰 기반)
+      const representativeAccount = await fetchRepresentativeAccount(controller.signal);
       if (!representativeAccount) {
         setIsLoading(false);
         return;
@@ -173,23 +181,89 @@ function AutomaticPaymentScenarioContent() {
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
 
-      // 3. 모든 자동이체 목록 조회 (페이지네이션 처리)
-      const allPayments = await getAllAutoPayments(representativeAccount.id);
+      // 3. 첫 페이지만 먼저 조회
+      const firstPage = await getAutoPaymentList({
+        educationalAccountId: representativeAccount.id,
+        page: 0,
+        size: AUTO_PAYMENT.PAGE_SIZE,
+      }, controller.signal);
 
-      // 4. 조회된 모든 자동이체를 화면용 데이터로 변환
-      if (allPayments.length > 0) {
-        devLog(`[fetchData] 자동이체 ${allPayments.length}건 조회 완료`);
-        const convertedList = allPayments.map(payment => {
+      // 4. 첫 페이지 데이터를 즉시 화면에 표시 (로딩 종료)
+      if (firstPage.content.length > 0) {
+        devLog(`[fetchData] 첫 페이지 ${firstPage.content.length}건 즉시 표시 (전체: ${firstPage.totalElements}건)`);
+        const convertedFirstPage = firstPage.content.map(payment => {
           devLog(`- ID ${payment.id}: ${payment.processingStatus}`);
           return convertToAutoTransferInfo(payment, representativeAccount);
         });
-        setAutoTransferList(convertedList);
+        setAutoTransferList(convertedFirstPage);
+        firstPageLoaded = true; // 첫 페이지 로딩 성공
       } else {
         setAutoTransferList([]);
+        firstPageLoaded = true; // 빈 목록도 성공으로 간주
       }
-    } catch (error) {
+
+      // 로딩 상태 종료 - 첫 페이지를 사용자에게 즉시 보여줌
+      setIsLoading(false);
+
+      // 5. 나머지 페이지가 있다면 백그라운드에서 로드
+      const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
+
+      if (totalRemainingPages > 0) {
+        devLog(`[fetchData] 백그라운드에서 나머지 ${totalRemainingPages}페이지 로드 시작`);
+
+        try {
+          // 나머지 페이지들을 청크 단위로 조회
+          const remainingPromises = Array.from(
+            { length: totalRemainingPages },
+            (_, i) => () => getAutoPaymentList({
+              educationalAccountId: representativeAccount.id,
+              page: i + 1,
+              size: AUTO_PAYMENT.PAGE_SIZE,
+            }, controller.signal)
+          );
+
+          const remainingResults = await runPromisesInChunks(
+            remainingPromises,
+            AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+          );
+
+          // 나머지 페이지 데이터를 기존 목록에 추가
+          const allRemainingPayments = remainingResults.flatMap(r => r.content);
+          const convertedRemaining = allRemainingPayments.map(payment =>
+            convertToAutoTransferInfo(payment, representativeAccount)
+          );
+
+          devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
+
+          // 첫 페이지 + 나머지 페이지 합치기
+          setAutoTransferList(prev => [...prev, ...convertedRemaining]);
+        } catch (backgroundError: unknown) {
+          // 백그라운드 로딩 실패: 첫 페이지는 유지하고 에러만 로깅
+          if (!isAbortError(backgroundError)) {
+            devError("[fetchData] 백그라운드 페이지 로드 실패 (첫 페이지 데이터는 유지):", backgroundError);
+
+            // 사용자에게 일부 데이터만 로드되었음을 알림
+            const errorMessage = isApiError(backgroundError)
+              ? `일부 데이터 로드 실패: ${backgroundError.message}`
+              : "일부 자동이체 데이터를 불러오지 못했습니다.";
+
+            setErrorModal({ isOpen: true, message: errorMessage });
+          }
+        }
+      }
+    } catch (error: unknown) {
+      // AbortError는 무시 (정상적인 취소)
+      if (isAbortError(error)) {
+        devLog("[fetchData] 요청이 취소되었습니다.");
+        return;
+      }
+
       devError("[fetchData] 데이터 조회 실패:", error);
-      setAutoTransferList([]);
+
+      // 첫 페이지 로딩 실패 시에만 목록 비우기
+      if (!firstPageLoaded) {
+        setAutoTransferList([]);
+      }
 
       // ApiError인 경우 사용자 친화적인 메시지 사용
       const errorMessage = isApiError(error)
@@ -197,13 +271,21 @@ function AutomaticPaymentScenarioContent() {
         : "자동이체 목록을 불러오는 데 실패했습니다.";
 
       setErrorModal({ isOpen: true, message: errorMessage });
-    } finally {
       setIsLoading(false);
+    } finally {
+      isFetchingRef.current = false;
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchData();
+
+    // Cleanup: 컴포넌트 언마운트 시 진행 중인 요청 취소
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchData]);
 
   // 페이지가 다시 포커스를 받을 때 데이터 새로고침
@@ -234,7 +316,7 @@ function AutomaticPaymentScenarioContent() {
       // 자동이체 상세 정보와 계좌 정보를 병렬로 조회 (성능 개선)
       const [payment, accountsResult] = await Promise.allSettled([
         getAutoPaymentDetail(autoPaymentId),
-        getAccountList(getCurrentUserId()),
+        getAccountList(),
       ]);
 
       // payment 조회 실패 시 에러 처리
@@ -295,7 +377,7 @@ function AutomaticPaymentScenarioContent() {
       // 해지 후 최신 정보와 계좌 정보를 병렬로 조회 (성능 개선)
       const [updatedPayment, accountsResult] = await Promise.allSettled([
         getAutoPaymentDetail(selectedAutoPaymentId),
-        getAccountList(getCurrentUserId()),
+        getAccountList(),
       ]);
 
       // 업데이트된 payment 조회 실패 시 에러 처리

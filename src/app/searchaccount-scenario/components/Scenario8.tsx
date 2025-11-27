@@ -33,6 +33,7 @@ type Scenario8Props = {
   onPickDepositAccount?: (acc: AccountCard) => void | Promise<void>; // PRACTICE(1036)
 };
 
+// 상단 퀵 필터 버튼용 상수
 const QUICK_FILTERS = [
   { label: "입출금", value: "deposit" },
   { label: "우리금융그룹", value: "woori-group" },
@@ -50,11 +51,12 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
     isLoading,
     error,
     refetch,
-  } = useAccountList(1);
+  } = useAccountList();
 
   const [isAlertModalOpen, setAlertModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
+  // 총금액 토글 / 퀵필터 상태
   const [showTotal, setShowTotal] = useState(true);
   const [activeFilter, setActiveFilter] =
     useState<"deposit" | "woori-group">("deposit");
@@ -68,6 +70,7 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
   useEffect(() => {
     setTitle("전체계좌");
     setOnBack(() => () => router.push("/woorimain"));
+
     return () => {
       setTitle("");
       setOnBack(null);
@@ -93,7 +96,9 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[390px] flex-col">
+      {/* 메인 컨텐츠 */}
       <main className="flex-1 overflow-y-auto px-[20px] pb-[40px]">
+        {/* 상단 탭 (계좌 / 카드 / 페이) + 은행 선택 + 새로고침 */}
         <section className="mt-[16px] flex items-center justify-between">
           <nav className="flex items-center gap-[12px] text-[15px] font-semibold">
             <button className="rounded-[16px] bg-[#2F6FD9] px-[14px] py-[6px] text-white">
@@ -104,13 +109,16 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
           </nav>
 
           <div className="flex items-center gap-[8px]">
+            {/* 은행 선택 (UI만, 아직 기능 X) */}
             <button
               type="button"
               className="flex items-center gap-[4px] rounded-[16px] border border-gray-200 px-[10px] py-[4px] text-[12px] text-gray-600"
             >
-              우리 <span className="text-[10px]">▼</span>
+              우리
+              <span className="text-[10px]">▼</span>
             </button>
 
+            {/* 새로고침 버튼 */}
             <button
               type="button"
               aria-label="새로고침"
@@ -122,6 +130,7 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
           </div>
         </section>
 
+        {/* 총금액 + 토글 스위치 + 큰 금액 표시 */}
         <section className="mt-[16px]">
           <div className="flex items-center justify-between text-[13px] text-gray-500">
             <div className="flex items-center gap-[4px]">
@@ -129,6 +138,7 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
               <span className="text-[12px] text-gray-400">?</span>
             </div>
 
+            {/* 토글 */}
             <button
               type="button"
               onClick={() => setShowTotal((prev) => !prev)}
@@ -146,10 +156,13 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
             className={`mt-[8px] text-[28px] font-bold ${showTotal ? "text-gray-900" : "text-gray-300"
               }`}
           >
-            {showTotal ? `${totalBalance.toLocaleString("ko-KR")}원` : "0원"}
+            {showTotal
+              ? `${totalBalance.toLocaleString("ko-KR")}원`
+              : "0원"}
           </p>
         </section>
 
+        {/* 퀵 필터 (입출금 / 우리금융그룹) */}
         <section className="mt-[16px] flex gap-[10px]">
           {QUICK_FILTERS.map((filter) => {
             const isActive = activeFilter === filter.value;
@@ -161,8 +174,8 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
                   setActiveFilter(filter.value as "deposit" | "woori-group")
                 }
                 className={`rounded-[16px] px-[16px] py-[8px] text-[13px] font-medium ${isActive
-                  ? "bg-[#2F6FD9] text-white"
-                  : "bg-[#F3F4F6] text-gray-600"
+                    ? "bg-[#2F6FD9] text-white"
+                    : "bg-[#F3F4F6] text-gray-600"
                   }`}
               >
                 {filter.label}
@@ -171,7 +184,9 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
           })}
         </section>
 
+        {/* 입출금 / 예적금 리스트 */}
         <section className="mt-[24px] space-y-[24px]">
+          {/* 입출금 */}
           {depositAccounts.length > 0 && (
             <CategoryBlock
               title={`입출금 ${depositAccounts.length}`}
@@ -181,23 +196,26 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
                   void onPickDepositAccount(acc);
                   return;
                 }
+
                 router.push(
                   `/searchaccount-scenario?step=9&accountId=${acc.id}&accountNumber=${acc.accountNumber}`
                 );
               }}
             />
           )}
-
+          {/* 예적금 */}
           {savingsAccounts.length > 0 && (
             <CategoryBlock
               title={`예적금 ${savingsAccounts.length}`}
               accounts={savingsAccounts}
               onTransfer={(acc: AccountCard) => {
+                // 예적금은 기본 이체 불가 → 안내 모달
                 openModal(acc.disabledMessage);
               }}
             />
           )}
 
+          {/* 계좌 없음 */}
           {accounts.length === 0 && (
             <div className="mt-10 text-center text-gray-500">
               등록된 계좌가 없습니다.
@@ -206,7 +224,12 @@ export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {
         </section>
       </main>
 
-      <Modal isOpen={isAlertModalOpen} onClose={closeModal} onConfirm={closeModal}>
+      {/* 안내 모달 */}
+      <Modal
+        isOpen={isAlertModalOpen}
+        onClose={closeModal}
+        onConfirm={closeModal}
+      >
         <AlertModalContent message={alertMessage} onClose={closeModal} />
       </Modal>
     </div>

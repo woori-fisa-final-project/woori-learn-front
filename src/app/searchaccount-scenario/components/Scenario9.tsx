@@ -21,6 +21,7 @@ import { useAccountInfo } from "./hooks/useAccountInfo";
 import { useTransactionFetch } from "./hooks/useTransactionFetch";
 import { useTransactionFilters } from "./hooks/useTransactionFilters";
 import { useTransactionTransform } from "./hooks/useTransactionTransform";
+
 import TransactionHeader from "./components/TransactionHeader";
 import TransactionSummary from "./components/TransactionSummary";
 import TransactionList from "./components/TransactionList";
@@ -63,7 +64,11 @@ export default function Scenario9({
     resetFilters,
   } = useTransactionFilters();
 
-  const transformed = useTransactionTransform(transactions, appliedFilters);
+  const transformed = useTransactionTransform(
+    transactions,
+    appliedFilters,
+    //accountInfo
+  );
 
   const [openFilter, setOpenFilter] = useState(false);
 
@@ -74,11 +79,12 @@ export default function Scenario9({
     (async () => {
       const info = await loadAccountInfo();
       if (info) {
-        const p = new URLSearchParams();
-        p.append("accountId", String(info.id));
-        p.append("period", "3M");
-        p.append("type", "ALL");
-        await fetchTransactions(info.id, p);
+        const params = new URLSearchParams();
+        params.append("accountId", String(info.id));
+        params.append("period", "3M"); // default
+        params.append("type", "ALL");
+
+        await fetchTransactions(info.id, params);
       }
     })();
 
@@ -102,8 +108,8 @@ export default function Scenario9({
       <TransactionSummary
         filters={filterState}
         onOpen={() => {
-          void onOpenFilter?.(); // ✅ PRACTICE 1039 트리거
-          setOpenFilter(true);
+          void onOpenFilter?.();
+          setOpenFilter(true)
         }}
         totalAmount={transformed.totalAmount}
         appliedRange={transformed.rangeText}
@@ -124,7 +130,6 @@ export default function Scenario9({
             })
           );
 
-          // ✅ 이동은 컨테이너가 처리(있으면)
           if (onPickTransaction) {
             void onPickTransaction(t);
             return;
@@ -145,7 +150,7 @@ export default function Scenario9({
           if (!accountInfo) return;
           await applyFilters(accountInfo, fetchTransactions);
           setOpenFilter(false);
-          await onApplyFilter?.(); // ✅ PRACTICE 1040 트리거
+          await onApplyFilter?.();
         }}
       />
     </div>
