@@ -1,6 +1,16 @@
+/**
+ * @deprecated 이 파일은 더 이상 사용되지 않습니다.
+ * 대신 @/lib/api/account.ts의 getAccountList를 사용하세요.
+ *
+ * 이 파일은 JWT 토큰 기반 인증으로 마이그레이션되기 전의 구버전 코드입니다.
+ * 향후 삭제 예정입니다.
+ */
+
 import { EducationalAccount } from "@/types/account";
 
 /**
+ * @deprecated 이 함수는 더 이상 사용되지 않습니다. @/lib/api/account.ts의 getAccountList를 사용하세요.
+ *
  * 사용자의 계좌 목록 조회
  * 백엔드 응답: { code, message, data: [...] } 형태의 객체
  * 예:

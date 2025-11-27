@@ -1,16 +1,15 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { MENU_TAGS, SERVICE_MENU_ITEMS } from "@/constants/menu";
+import { SERVICE_MENU_ITEMS, MENU_TAGS } from "@/constants/menu";
 
-type ServiceMenuSheetProps = {
+interface ServiceMenuSheetProps {
   isOpen: boolean;
   onClose: () => void;
   userName?: string;
-  onNavigate: (route: string) => void;
+  onNavigate: (path: string) => void;
   onOpenNotice: (message: string) => void;
-};
+}
 
 const TRANSITION_DURATION = 220;
 
@@ -122,5 +121,4 @@ export function ServiceMenuSheet({
     </div>
   );
 }
-
 
