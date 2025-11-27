@@ -6,13 +6,26 @@ type DialogStepProps = {
   centerAlign?: boolean;
   onBackgroundClick?: () => void;
   previousStep?: ScenarioStep | null;
+
+  onRestartFromBeginning?: () => void; // 처음부터 다시하기
+  onRestartFromWrongPart?: () => void; // 틀린 부분부터 다시하기
 };
 
 // 말풍선 디자인 규칙:
 // - Weebee: 좌측 정렬, 배경 #FFFCF6, 테두리 #E7C873 2px, rounded-[14px], tail 포함
 // - user: 동일 스타일(상단 빈 타원형 X), 우측 정렬
-export default function DialogStep({ content, centerAlign = true, onBackgroundClick, previousStep }: DialogStepProps) {
+export default function DialogStep({
+  content,
+  centerAlign = true,
+  onBackgroundClick,
+  previousStep,
+  onRestartFromBeginning,
+  onRestartFromWrongPart,
+}: DialogStepProps) {
   const isWeebee = content.character === "wibee";
+
+  // badEnding=true일 때만 버튼 노출
+  const isBadEnding = content?.meta?.badEnding === true;
 
   // 이전 step이 위비(wibee) DIALOG 또는 OVERLAY인지 확인
   const showPreviousWeebeeDialog =
@@ -23,14 +36,55 @@ export default function DialogStep({ content, centerAlign = true, onBackgroundCl
   const balloonBase =
     "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";
 
+  const BTN_SIZE = {
+    sm: "h-[58px] text-[14px] font-normal",
+    md: "h-[55px] text-[16px]",
+    lg: "h-[60px] text-[16px]",
+  } as const;
+
+  const BTN_COMMON =
+    "w-full rounded-[14px] font-semibold";
+  const LEFT_BTN =
+    "bg-white text-[#1F74FF] border border-white/70";
+  const RIGHT_BTN =
+    "bg-[#1F74FF] text-white border border-[#1F74FF]";
+
+
+  const BadEndingButtons = () => (
+    <div className="fixed bottom-[50px] left-0 right-0 z-[20000] flex w-full justify-center px-[20px]">
+      <div className="w-full max-w-[390px] grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRestartFromBeginning?.();
+          }}
+          className={`${BTN_COMMON} ${BTN_SIZE.md} ${LEFT_BTN}`}
+        >
+          처음부터 다시하기
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRestartFromWrongPart?.();
+          }}
+          className={`${BTN_COMMON} ${BTN_SIZE.md} ${RIGHT_BTN}`}
+        >
+          틀린 부분부터 다시하기
+        </button>
+      </div>
+    </div>
+  );
+
   // Weebee와 user 모두 같은 컴포넌트를 쓰지만,
   // Weebee는 중앙 레이아웃(위 말풍선, 아래 캐릭터), user는 우측 말풍선 레이아웃을 사용합니다.
   if (isWeebee) {
     const alignClass = centerAlign ? "items-center" : "items-start";
     const justifyClass = centerAlign ? "justify-center" : "justify-start";
-    
+
     return (
-      <div 
+      <div
         className="fixed inset-0 z-[9999] bg-gradient-to-b from-[#ffffff] to-[#549AE4] cursor-pointer"
         onClick={onBackgroundClick}
       >
@@ -48,13 +102,15 @@ export default function DialogStep({ content, centerAlign = true, onBackgroundCl
             className="z-1 flex h-[348px] w-[348px] items-center justify-center pointer-events-none"
           />
         </div>
+
+        {isBadEnding && <BadEndingButtons />}
       </div>
     );
   }
 
   // user 대사: 이전 위비 대화가 있으면 함께 표시
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] bg-gradient-to-b from-[#ffffff] to-[#549AE4] cursor-pointer"
       onClick={onBackgroundClick}
     >
@@ -77,12 +133,10 @@ export default function DialogStep({ content, centerAlign = true, onBackgroundCl
       )}
       {/* user 대화창 - ChoiceStep과 동일한 위치에 하단 고정, 가운데 정렬 */}
       <div className="fixed bottom-[50px] left-0 right-0 w-full h-[150px] z-[10000] flex flex-col items-center gap-3 px-[20px] bg-gradient-to-t from-[#549AE4] to-transparent pt-[20px]">
-        <div className={`${balloonBase} w-full max-w-[350px]`} style={{ height: "150px", display: "flex", alignItems: "center" }}>ㅋㅋ
+        <div className={`${balloonBase} w-full max-w-[350px]`} style={{ height: "150px", display: "flex", alignItems: "center" }}>
           <p>{content.text}</p>
         </div>
       </div>
     </div>
   );
 }
-
-

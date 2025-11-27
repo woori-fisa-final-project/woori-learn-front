@@ -8,7 +8,7 @@ import ModalStep from "@/components/scenario/step/ModalStep";
 type ScenarioRendererProps = {
   step: ScenarioStep | null;
   previousStep?: ScenarioStep | null;
-  onChoiceNext: (nextStepId: number) => void;
+  onNext: (nowStepId: number, answer?: number) => void | Promise<void>;
   onBackgroundClick?: () => void;
 };
 
@@ -19,7 +19,7 @@ type ScenarioRendererProps = {
 // CHOICE → ChoiceStep
 // MODAL → ModalStep
 // PRACTICE → PracticeStep
-export default function ScenarioRenderer({ step, previousStep, onChoiceNext, onBackgroundClick }: ScenarioRendererProps) {
+export default function ScenarioRenderer({ step, previousStep, onNext, onBackgroundClick }: ScenarioRendererProps) {
   if (!step) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -43,14 +43,24 @@ export default function ScenarioRenderer({ step, previousStep, onChoiceNext, onB
   }
 
   if (type === "CHOICE") {
-    return (
-      <ChoiceStep
-        content={content}
-        onChoose={onChoiceNext}
-        previousStep={previousStep ?? null}
-      />
-    );
-  }
+  return (
+    <ChoiceStep
+      content={content}
+      previousStep={previousStep ?? null}
+      onChoose={(nextStepId: number) => {
+        const choices = content?.choices as any[] | undefined;
+
+        // nextStepId로 몇 번째 선택지인지 찾아서 answer 인덱스로 변환
+        const answerIndex = Array.isArray(choices)
+          ? choices.findIndex((c) => c?.next === nextStepId)
+          : -1;
+
+        // answerIndex 못 찾으면 0번 선택으로 fallback
+        void onNext(step.id, answerIndex >= 0 ? answerIndex : 0);
+      }}
+    />
+  );
+}
 
   if (type === "MODAL") {
     return <ModalStep content={content} onBackgroundClick={onBackgroundClick} />;

@@ -23,6 +23,18 @@ export interface ScenarioData {
   steps: Record<number, ScenarioStep>;
 }
 
+export type ApiQuiz = {
+  id: number;
+  question: string;
+  options: string[];
+};
+
+export type NextStepApiData = {
+  status: string; // "QUIZ_REQUIRED" | "COMPLETED" | ...
+  step: { nowStepId: number } | null;
+  quiz: ApiQuiz | null;
+};
+
 // 백엔드 실제 응답
 export interface NextStepResponse {
   code: number;
@@ -36,7 +48,7 @@ export interface NextStepResponse {
       quizId: number | null;
       content: Record<string, any>;
     };
-    quiz: any | null;
+    quiz: ApiQuiz | null;
   };
 }
 

@@ -237,7 +237,7 @@ export default function WooriMainPage() {
   const [isNoticeOpen, setNoticeOpen] = useState(false);
 
   // 시나리오 엔진: woorimain 위에서 OVERLAY 단계(예: 1009)를 재생할 때 사용합니다.
-  const { currentStep, previousStep, nextStep, resume, goToStep } = useScenarioEngine();
+  const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
 
   // URL 쿼리에서 scenarioId, stepId를 읽어와 시나리오를 재개합니다.
   useEffect(() => {
@@ -283,7 +283,7 @@ export default function WooriMainPage() {
       }
     }
     
-    router.push("/transfer-scenario?scenarioId=1&stepId=1011&scenarioStep=2");
+    router.push("/transfer-scenario?scenarioId=1&stepId=1013&scenarioStep=2");
   };
 
   
@@ -349,9 +349,7 @@ export default function WooriMainPage() {
         <ScenarioRenderer
           step={currentStep}
           previousStep={previousStep}
-          onChoiceNext={(nextStepId) => {
-            goToStep(nextStepId);
-          }}
+          onNext={(nowStepId, answer) => nextStep(nowStepId, answer)}
           onBackgroundClick={async () => {
             // CHOICE 단계에서는 ChoiceStep 내부에서 onChoiceNext를 통해 이동하므로
             // 여기서는 일반 nextStep을 호출하지 않습니다.

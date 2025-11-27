@@ -53,7 +53,7 @@ export default function ScenarioDetailPage() {
   const scenarioId = Number(params?.scenarioId);
   const router = useRouter();
 
-  const { currentStep, previousStep, isLoading, error, nextStep, goToStep, resume } =
+  const { currentStep, previousStep, isLoading, error, nextStep, resume } =
     useScenarioEngine();
   const isGradientBackground =
     currentStep?.type === "DIALOG" ||
@@ -84,11 +84,6 @@ export default function ScenarioDetailPage() {
     if (currentStep?.id != null) {
       await nextStep(currentStep.id);
     }
-  };
-
-  const handleChoiceNext = (nextStepId: number) => {
-    // Choice에서 선택된 nextStepId로 즉시 이동합니다.
-    goToStep(nextStepId);
   };
 
   return (
@@ -129,7 +124,7 @@ export default function ScenarioDetailPage() {
               <ScenarioRenderer
                 step={currentStep}
                 previousStep={previousStep}
-                onChoiceNext={handleChoiceNext}
+                onNext={(nowStepId, answer) => nextStep(nowStepId, answer)}
                 onBackgroundClick={handleScreenClick}
               />
             )}

@@ -13,45 +13,80 @@ import Scenario6 from "./Scenario6";
 import Scenario7 from "./Scenario7";
 
 type ScenarioContainerProps = {
-  onScenarioStepChange?: (stepId: number) => void; // 시나리오 step 변경 콜백
-  onScenarioStepChangeWithResume?: (stepId: number) => Promise<void>; // 시나리오를 먼저 로드한 후 step 변경
-  // 시나리오 오버레이 코드추가
-  onPracticeNext: () => Promise<void> | void;
+  onPracticeNext: (nowStepId: number, answer?: number) => Promise<void> | void;
   onTransferResult?: (result: "success" | "fail") => void;
+  engineStepId?: number | null;
+  engineNextId?: number | null;
+  onExitToMain?: (nextStepId: number | null) => void;
 };
 
-export default function ScenarioContainer({onPracticeNext, onTransferResult}: ScenarioContainerProps) {
+export default function ScenarioContainer({ onPracticeNext, onTransferResult, engineStepId, engineNextId, onExitToMain }: ScenarioContainerProps) {
   const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
   const searchParams = useSearchParams(); // URL 쿼리 파라미터를 읽기 위해 사용합니다.
-  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, lastErrorType, setLastErrorType,} = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
+  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, lastErrorType, setLastErrorType, } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
   const [step, setStep] = useState<number>(1); // 현재 진행 중인 단계(1~7)를 관리합니다.
   const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false); // 은행 선택 바텀 시트 열림 여부를 저장합니다.
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState<boolean>(false); // 비밀번호 입력 바텀 시트 열림 여부를 저장합니다.
-
-  // 시나리오 오버레이 코드추가
   const practiceFlagsRef = useRef<Set<number>>(new Set());
 
-  // 시나리오 오버레이 코드추가
-  const callPracticeNextOnce = useCallback(
-    async (key: number) => {
-      if (practiceFlagsRef.current.has(key)) {
-        console.log("이미 처리한 PRACTICE 단계입니다. onPracticeNext 생략:", key);
-        return;
+  const PRACTICE_TO_UI: Record<number, { step: number; bankSheet?: boolean; passwordSheet?: boolean }> = {
+    1015: { step: 1 },
+    1016: { step: 2, bankSheet: true },
+    1017: { step: 3 },
+    1019: { step: 4 },
+    1024: { step: 5, passwordSheet: true },
+    1026: { step: 6 },
+    1028: { step: 7 },
+  };
+
+  const inFlightRef = useRef(false);
+  const handledStepIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    handledStepIdRef.current = null;
+    inFlightRef.current = false;
+
+    if (engineStepId == null) return;
+    const ui = PRACTICE_TO_UI[engineStepId];
+    if (!ui) return;
+
+    setStep(ui.step);
+    setBankSheetOpen(!!ui.bankSheet);
+    setPasswordSheetOpen(!!ui.passwordSheet);
+  }, [engineStepId]);
+
+  const completePractice = useCallback(
+    async (expectedStepId: number, answer?: number) => {
+      if (engineStepId == null) return;
+      if (engineStepId !== expectedStepId) return;
+
+      if (inFlightRef.current) return;
+      if (handledStepIdRef.current === expectedStepId) return;
+
+      inFlightRef.current = true;
+      handledStepIdRef.current = expectedStepId;
+
+      try {
+        await onPracticeNext(expectedStepId, answer);
+      } catch (e) {
+        // 실패했으면 다시 시도 가능하게 풀어줌
+        handledStepIdRef.current = null;
+        throw e;
+      } finally {
+        inFlightRef.current = false;
       }
-      practiceFlagsRef.current.add(key);
-      await onPracticeNext();
     },
-    [onPracticeNext]
+    [engineStepId, onPracticeNext]
   );
 
   // URL 쿼리에서 scenarioStep을 읽어와 초기 step 설정
   useEffect(() => {
     const scenarioStepParam = searchParams.get("scenarioStep");
-    if (scenarioStepParam) {
-      const scenarioStep = Number(scenarioStepParam);
-      if (!Number.isNaN(scenarioStep) && scenarioStep >= 1 && scenarioStep <= 7) {
-        setStep(scenarioStep);
-      }
+    if (!scenarioStepParam) return;
+
+    const scenarioStep = Number(scenarioStepParam);
+    if (!Number.isNaN(scenarioStep) && scenarioStep >= 1 && scenarioStep <= 7) {
+      setStep(scenarioStep);
     }
   }, [searchParams]);
 
@@ -148,9 +183,9 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
               setBankSheetOpen(true);
               goToStep(2);
               // 시나리오 오버레이 코드추가
-              await callPracticeNextOnce(1);
+              await completePractice(1015)
             }}
-            onContactTransfer={() => {}}
+            onContactTransfer={() => { }}
           />
         )}
         {clampedStep === 3 && (
@@ -159,7 +194,7 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
               // 계좌 번호 입력 후 다음 버튼 클릭 시 다음 페이지로 이동
               goToStep(4);
               // 시나리오 오버레이 코드추가
-              await callPracticeNextOnce(3);
+              await completePractice(1017);
             }}
             onBack={() => goToStep(1)}
           />
@@ -171,7 +206,7 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
               setPasswordSheetOpen(true);
               goToStep(5);
               // 시나리오 오버레이 코드추가
-              await callPracticeNextOnce(4);
+              await completePractice(1019);
             }}
             onBack={() => goToStep(3)}
           />
@@ -179,20 +214,19 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
         {clampedStep === 6 && (
           <Scenario6
             onConfirm={async () => {
-              // 1019 스텝 끝나고 이체 버튼 클릭 시 계좌번호와 금액 검증 후 성공/실패에 따라 분기
               const CORRECT_ACCOUNT = "110-123-456789";
               const CORRECT_AMOUNT = 500000;
-              
+
               // 계좌번호 정규화 (하이픈 제거하여 비교)
               const normalizedAccount = (accountNumber || "").replace(/-/g, "").trim();
               const normalizedCorrectAccount = CORRECT_ACCOUNT.replace(/-/g, "");
-              
+
               // 금액 비교 (숫자 타입으로 변환하여 비교)
               const numericAmount = Number(amount) || 0;
-              
+
               const isAccountCorrect = normalizedAccount === normalizedCorrectAccount;
               const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
-              
+
               // 디버깅: 실제 값 확인
               console.log("이체 검증:", {
                 accountNumber,
@@ -215,7 +249,7 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
               } else {
                 setLastErrorType("both");
               }
-              
+
               if (onTransferResult) {
                 if (isAccountCorrect && isAmountCorrect) {
                   onTransferResult("success");
@@ -232,9 +266,10 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
         )}
         {clampedStep === 7 && (
           <Scenario7
-            onRestart={() => {
+            onRestart={async () => {
+              await completePractice(1028);
+              onExitToMain?.(engineNextId ?? null);
               handleReset();
-              router.push("/woorimain");
             }}
           />
         )}
@@ -252,27 +287,31 @@ export default function ScenarioContainer({onPracticeNext, onTransferResult}: Sc
             setBankSheetOpen(false);
             goToStep(3);
             // 시나리오 오버레이 코드추가
-            await callPracticeNextOnce(5);
+            await completePractice(1016);
           }}
         />
       )}
 
       {/* 비밀번호 입력 시트 */}
-        {isPasswordSheetOpen && clampedStep === 5 && (
-          <Scenario5
-            onSuccess={async (password) => {
-              // 일반 이체에서는 비밀번호를 별도로 저장하지 않고 검증만 수행합니다.
-              setPasswordSheetOpen(false);
-              goToStep(6);
-              // 시나리오 오버레이 코드추가
-              await callPracticeNextOnce(6);
-            }}
-            onClose={() => {
-              setPasswordSheetOpen(false);
-              goToStep(4);
-            }}
-          />
-        )}
+      {isPasswordSheetOpen && clampedStep === 5 && (
+        <Scenario5
+          onSuccess={async () => {
+            setPasswordSheetOpen(false);
+            goToStep(6);
+            await completePractice(1024, 0);
+          }}
+          onMaxFail={async () => {
+            setPasswordSheetOpen(false);
+            goToStep(4);
+            await completePractice(1024, 1);
+          }}
+          onClose={() => {
+            setPasswordSheetOpen(false);
+            goToStep(4);
+          }}
+          maxAttempts={3}
+        />
+      )}
     </div>
   );
 }
