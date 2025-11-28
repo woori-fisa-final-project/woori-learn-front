@@ -38,7 +38,11 @@ const getRefreshToken = async (): Promise<string> => {
   // 갱신 시작
   refreshPromise = (async () => {
     try {
-      const res = await refreshAxios.post("/auth/refresh", {}, { skipAuth: true });
+      const res = await refreshAxios.post(
+        "/auth/refresh",
+        {},
+        { skipAuth: true }
+      );
       const newAccessToken = res.data.data.accessToken;
       useAuthStore.getState().setAccessToken(newAccessToken);
       return newAccessToken;
@@ -69,9 +73,9 @@ axiosInstance.interceptors.request.use(
 
     // 저장소에서 토큰 가져오기
     let token = useAuthStore.getState().accessToken;
-    
+
     // 토큰이 없거나 토큰이 만료되었으면 갱신 시도
-    if(token && isTokenExpired(token)){
+    if (!token || isTokenExpired(token)) {
       try {
         // 갱신된 토큰을 받아옴
         token = await getRefreshToken();
@@ -127,12 +131,11 @@ axiosInstance.interceptors.response.use(
           ...originalRequest,
           headers: {
             ...originalRequest.headers,
-            Authorization: `Bearer ${newAccessToken}`
+            Authorization: `Bearer ${newAccessToken}`,
           },
         };
 
         return axiosInstance(retryRequest);
-
       } catch (refreshError) {
         // refresh token도 실패하면 로그인으로
         useAuthStore.getState().clearTokens();
