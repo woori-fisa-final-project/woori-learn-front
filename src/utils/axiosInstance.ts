@@ -43,9 +43,11 @@ const getRefreshToken = async (): Promise<string> => {
       useAuthStore.getState().setAccessToken(newAccessToken);
       return newAccessToken;
     } catch (error) {
-      // 갱신 실패 시 로그아웃
+      // 갱신 실패 시 토큰 삭제 & 로그아웃
       useAuthStore.getState().clearTokens();
-      window.location.href = "/login";
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
       throw new ApiError(401, "토큰 갱신 실패");
     } finally {
       refreshPromise = null;
@@ -58,6 +60,7 @@ const getRefreshToken = async (): Promise<string> => {
 // 🔥 요청 인터셉터
 axiosInstance.interceptors.request.use(
   async (config) => {
+    config.headers = config.headers ?? {};
     // skipAuth 옵션이 있으면 토큰 없이 요청
     if (config.skipAuth) {
       config.headers.Authorization = undefined;
