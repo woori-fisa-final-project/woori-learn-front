@@ -93,9 +93,21 @@ export default function Scenario15({
         <Button variant="secondary" size="sm" onClick={onEditSchedule}>
           날짜 재입력
         </Button>
-        <Button size="sm" onClick={onSubmit}>
-          등록하기
-        </Button>
+        
+        {/* 등록하기 버튼에 손가락 추가  */}
+        <div className="relative w-full">
+          
+          <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+            <span className="text-[30px]">👇</span>
+          </div>
+
+          <div className="w-full"> {/* Button 컴포넌트의 width 이슈 방지용 래퍼 */}
+            <Button size="sm" onClick={onSubmit}>
+              등록하기
+            </Button>
+          </div>
+        </div>
+
       </section>
     </div>
   );

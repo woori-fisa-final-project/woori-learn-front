@@ -11,6 +11,8 @@ import { getCurrentUserId } from "@/utils/authUtils";
 import { formatAccountNumber } from "@/utils/accountUtils";
 import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
+import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+
 
 type NavItem = {
   label: string;
@@ -23,6 +25,7 @@ type ServiceItem = {
   label: string;
   icon: string;
 };
+
 
 const NAV_ITEMS: NavItem[] = [
   { label: "상품", icon: "🛍️", route: "/products" },
@@ -257,6 +260,7 @@ export default function WooriMainPage() {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState("");
   const [isNoticeOpen, setNoticeOpen] = useState(false);
+  const {setSourceAccountNumber} = useTransferFlow();
 
   // 대표 계좌 상태 관리
   const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
@@ -311,7 +315,11 @@ export default function WooriMainPage() {
   };
 
   const handleTransfer = () => {
-    router.push("/transfer-scenario"); // 이체 시나리오 진입 페이지로 이동합니다.
+    if (representativeAccount) {
+      setSourceAccountNumber(representativeAccount.accountNumber);
+    }
+
+    router.push("/transfer-scenario");
   };
 
   const handleViewAllAccounts = () => {

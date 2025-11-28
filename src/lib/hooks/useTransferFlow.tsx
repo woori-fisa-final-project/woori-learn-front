@@ -1,56 +1,43 @@
+"use client";
+
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { useUserData } from "@/lib/hooks/useUserData";
+
 /**
- * [SECURITY UPDATE] Gemini feedback 적용
- * - Removed hardcoded account owner metadata
- * - Documented requirement to source user/session data securely
+ * ------------------------------------------------------------------
+ * 상수 및 유틸리티 함수
+ * ------------------------------------------------------------------
  */
-"use client"; // 이 훅은 브라우저 상태와 상호작용하므로 클라이언트 전용으로 선언합니다.
-import { ReactNode, createContext, useCallback, useContext, useMemo, useState } from "react"; // 컨텍스트 구성과 상태 관리를 위해 필요한 React API를 불러옵니다.
-import { useUserData } from "@/lib/hooks/useUserData"; // 현재 로그인한 사용자 정보를 가져오기 위해 사용자 데이터 훅을 사용합니다.
 
-const DEV_FALLBACK_ACCOUNT = process.env.NEXT_PUBLIC_DEV_SOURCE_ACCOUNT ?? ""; // 개발 환경에서 사용할 출금 계좌 번호 기본값입니다.
-const DEV_FALLBACK_USER_NAME = process.env.NEXT_PUBLIC_DEV_USER_NAME ?? "사용자"; // 개발 환경에서 사용할 사용자 이름 기본값입니다.
+// 개발 환경에서 사용자 정보가 없을 경우 사용할 기본값 (환경변수 또는 하드코딩)
+const DEV_FALLBACK_ACCOUNT = process.env.NEXT_PUBLIC_DEV_SOURCE_ACCOUNT ?? "";
+const DEV_FALLBACK_USER_NAME = process.env.NEXT_PUBLIC_DEV_USER_NAME ?? "사용자";
 
-// NOTE: This context should eventually pull from a secure user session provider.
-type TransferFlowContextValue = { // 이체 시나리오에서 공유할 상태와 동작을 정의합니다.
-  selectedBank: string | null;
-  setSelectedBank: (bank: string | null) => void;
-  accountNumber: string;
-  updateAccountNumber: (accountNumber: string) => void;
-  recipientName: string;
-  setRecipientName: (name: string) => void;
-  amount: number;
-  setAmount: (amount: number) => void;
-  currentUserName: string;
-  sourceAccountNumber: string;
-  setSourceAccountNumber: (value: string) => void;
-  resetFlow: () => void;
-};
-
-const TransferFlowContext = createContext<TransferFlowContextValue | undefined>(undefined); // 프로바이더가 없을 때 undefined를 반환하도록 설정합니다.
-
-const RECIPIENT_NAME_MAP: Record<string, string> = { // 특정 계좌번호를 입력했을 때 표시할 수취인 이름 매핑입니다.
+// 특정 계좌번호에 대한 수취인 이름 매핑 (하드코딩 된 테스트 데이터)
+const RECIPIENT_NAME_MAP: Record<string, string> = {
   "110123456789": "김집주",
 };
 
-const digitsOnly = (value: string) => value.replace(/\D/g, ""); // 입력값에서 숫자만 추출하여 형식화를 돕습니다.
+/** 문자열에서 숫자만 추출하는 유틸리티 */
+const digitsOnly = (value: string) => value.replace(/\D/g, "");
 
-const formatAccountNumber = (value: string) => { // 계좌번호를 3-3-6 형식으로 포맷팅합니다.
-  const digits = digitsOnly(value).slice(0, 12); // 숫자만 추출하고 최대 12자리로 제한합니다.
-  if (digits.length <= 3) {
-    return digits; // 3자리 이하일 때는 하이픈 없이 반환합니다.
-  }
-  if (digits.length <= 6) {
-    return `${digits.slice(0, 3)}-${digits.slice(3)}`; // 6자리 이하이면 3-3 구조로 반환합니다.
-  }
-  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`; // 나머지는 3-3-나머지 형식으로 분리합니다.
+/** 계좌번호 입력 시 자동으로 하이픈(-)을 포맷팅하는 함수 (3-3-6 자리 형식) */
+const formatAccountNumber = (value: string) => {
+  const digits = digitsOnly(value).slice(0, 12);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
-const resolveRecipientName = (accountNumber: string) => { // 입력된 계좌번호를 기반으로 수취인 이름을 추론합니다.
-  const normalized = digitsOnly(accountNumber); // 계좌번호에서 숫자만 추출하여 비교합니다.
-  return RECIPIENT_NAME_MAP[normalized] ?? "유정호"; // 매핑된 이름이 없으면 기본 이름을 반환합니다.
-};
-
-const DEFAULT_STATE = { // 이체 시나리오 초기 상태를 한 곳에 모아둡니다.
+// 상태 초기화를 위한 기본값 객체
+const DEFAULT_STATE = {
   selectedBank: null as string | null,
   accountNumber: "",
   recipientName: "",
@@ -58,40 +45,120 @@ const DEFAULT_STATE = { // 이체 시나리오 초기 상태를 한 곳에 모�
   sourceAccountNumber: DEV_FALLBACK_ACCOUNT,
 };
 
-export function TransferFlowProvider({ children }: { children: ReactNode }) { // 이체 시나리오 전반에 공유 상태를 제공하는 컨텍스트 프로바이더입니다.
-  const [selectedBank, setSelectedBank] = useState<string | null>(DEFAULT_STATE.selectedBank); // 사용자가 선택한 은행 정보를 상태로 저장합니다.
-  const [accountNumber, setAccountNumber] = useState(DEFAULT_STATE.accountNumber); // 입력 중인 계좌번호를 상태로 저장합니다.
-  const [recipientName, setRecipientName] = useState(DEFAULT_STATE.recipientName); // 수취인 이름을 상태로 관리합니다.
-  const [amount, setAmount] = useState(DEFAULT_STATE.amount); // 이체 금액을 상태로 저장합니다.
+/**
+ * ------------------------------------------------------------------
+ * Context 타입 정의
+ * ------------------------------------------------------------------
+ */
+type TransferFlowContextValue = {
+  // [1] 받는 분 정보 (수취인)
+  selectedBank: string | null;              // 선택된 은행
+  setSelectedBank: (bank: string | null) => void;
+  accountNumber: string;                    // 계좌번호
+  updateAccountNumber: (accountNumber: string) => void; // (포맷팅 포함된 업데이트 함수)
+  recipientName: string;                    // 예금주명
+  setRecipientName: (name: string) => void;
+  
+  // [2] 송금 정보
+  amount: number;                           // 보낼 금액
+  setAmount: (amount: number) => void;
+
+  // [3] 보내는 분 정보 (송금인)
+  currentUserName: string;                  // 현재 로그인한 사용자 이름
+  sourceAccountNumber: string;              // 출금할 내 계좌번호
+  setSourceAccountNumber: (value: string) => void;
+
+  // [4] 시나리오별 확장 데이터
+  /** Scenario5: 입력한 계좌 비밀번호 저장 */
+  enteredPassword: string;
+  setEnteredPassword: (pw: string) => void;
+
+  /** Scenario6 → 7: 송금 완료/실패 결과 데이터 전달 */
+  transferResult: any;
+  setTransferResult: (data: any) => void;
+
+  // [5] 유틸리티
+  resetFlow: () => void;                    // 모든 상태 초기화
+};
+
+const TransferFlowContext = createContext<TransferFlowContextValue | undefined>(undefined);
+
+/**
+ * ------------------------------------------------------------------
+ * Provider 컴포넌트
+ * : 송금 프로세스 전반의 상태를 관리하고 하위 컴포넌트에 제공합니다.
+ * ------------------------------------------------------------------
+ */
+export function TransferFlowProvider({ children }: { children: ReactNode }) {
+  // 1. 받는 분 정보 상태
+  const [selectedBank, setSelectedBank] = useState<string | null>(DEFAULT_STATE.selectedBank);
+  const [accountNumber, setAccountNumber] = useState(DEFAULT_STATE.accountNumber);
+  const [recipientName, setRecipientName] = useState(DEFAULT_STATE.recipientName);
+
+  // 2. 금액 상태
+  const [amount, setAmount] = useState(DEFAULT_STATE.amount);
+
+  // 3. 보내는 분 정보 상태
   const [sourceAccountNumber, setSourceAccountNumber] = useState(DEFAULT_STATE.sourceAccountNumber);
-  const { userName } = useUserData(); // 현재 로그인한 사용자의 이름을 불러옵니다.
+  const { userName } = useUserData(); // 커스텀 훅에서 사용자 이름 가져오기
 
-  const updateAccountNumber = useCallback((value: string) => { // 계좌번호 입력 시 형식을 자동으로 맞추는 함수입니다.
-    const formatted = formatAccountNumber(value); // 숫자만 추출해 규칙에 맞게 재조합합니다.
-    setAccountNumber(formatted); // 포맷팅된 값을 상태에 반영합니다.
+  // 4. 추가 시나리오용 상태
+  const [enteredPassword, setEnteredPassword] = useState(""); // 비밀번호 입력값
+  const [transferResult, setTransferResult] = useState(null); // 송금 결과 데이터
+
+  /**
+   * 계좌번호 업데이트 핸들러
+   * : 입력된 값에서 숫자만 추출한 뒤 하이픈 포맷을 적용하여 저장합니다.
+   */
+  const updateAccountNumber = useCallback((value: string) => {
+    const formatted = formatAccountNumber(value);
+    setAccountNumber(formatted);
   }, []);
 
-  const resetFlow = useCallback(() => { // 이체 시나리오를 초기 상태로 되돌리는 함수입니다.
-    setSelectedBank(DEFAULT_STATE.selectedBank); // 선택된 은행을 초기화합니다.
-    setAccountNumber(DEFAULT_STATE.accountNumber); // 입력된 계좌번호를 초기화합니다.
-    setRecipientName(DEFAULT_STATE.recipientName); // 수취인 이름을 초기화합니다.
-    setAmount(DEFAULT_STATE.amount); // 이체 금액을 0으로 초기화합니다.
+  /**
+   * 송금 프로세스 초기화
+   * : 송금이 완료되거나 취소되었을 때 모든 입력값을 기본값으로 되돌립니다.
+   */
+  const resetFlow = useCallback(() => {
+    // 기본 정보 초기화
+    setSelectedBank(DEFAULT_STATE.selectedBank);
+    setAccountNumber(DEFAULT_STATE.accountNumber);
+    setRecipientName(DEFAULT_STATE.recipientName);
+    setAmount(DEFAULT_STATE.amount);
     setSourceAccountNumber(DEFAULT_STATE.sourceAccountNumber);
+
+    // 추가 시나리오 데이터 초기화
+    setEnteredPassword("");
+    setTransferResult(null);
   }, []);
 
+  // Context Provider에 주입할 값 구성 (Memoization 적용)
   const contextValue = useMemo<TransferFlowContextValue>(
     () => ({
+      // 수취인 정보
       selectedBank,
       setSelectedBank,
       accountNumber,
       updateAccountNumber,
       recipientName,
       setRecipientName,
+
+      // 금액 정보
       amount,
       setAmount,
-      currentUserName: userName?.trim() || DEV_FALLBACK_USER_NAME, // 사용자 이름이 없거나 공백이면 개발용 기본값을 사용합니다.
+
+      // 송금인 정보
+      currentUserName: userName?.trim() || DEV_FALLBACK_USER_NAME,
       sourceAccountNumber,
       setSourceAccountNumber,
+
+      // 추가 시나리오 데이터
+      enteredPassword,
+      setEnteredPassword,
+      transferResult,
+      setTransferResult,
+
+      // 초기화 함수
       resetFlow,
     }),
     [
@@ -99,18 +166,28 @@ export function TransferFlowProvider({ children }: { children: ReactNode }) { //
       accountNumber,
       updateAccountNumber,
       recipientName,
-      setRecipientName,
       amount,
-      setAmount,
       userName,
       sourceAccountNumber,
+      enteredPassword,
+      transferResult,
       resetFlow,
     ]
   );
 
-  return <TransferFlowContext.Provider value={contextValue}>{children}</TransferFlowContext.Provider>;
+  return (
+    <TransferFlowContext.Provider value={contextValue}>
+      {children}
+    </TransferFlowContext.Provider>
+  );
 }
 
+/**
+ * ------------------------------------------------------------------
+ * 커스텀 훅: useTransferFlow
+ * : Provider 내부에서만 사용 가능하도록 안전장치가 포함되어 있습니다.
+ * ------------------------------------------------------------------
+ */
 export function useTransferFlow() {
   const context = useContext(TransferFlowContext);
   if (!context) {
@@ -118,4 +195,3 @@ export function useTransferFlow() {
   }
   return context;
 }
-

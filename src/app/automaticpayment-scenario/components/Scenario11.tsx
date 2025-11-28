@@ -161,12 +161,20 @@ export default function Scenario11({
               </div>
             )}
           </div>
+
           {/* 화면 하단의 고정 버튼으로 새로운 자동이체 등록 플로우를 시작한다. */}
-          <div className="mt-[24px] flex-shrink-0">
+          <div className="mt-[24px] flex-shrink-0 relative">
+            
+            {/* 메인 화면 등록 버튼 손가락 */}
+            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[30px]">👇</span>
+            </div>
+
             <Button size="md" onClick={handleRegister} fullWidth>
               자동이체 등록하기
             </Button>
           </div>
+
         </div>
       </main>
 
@@ -176,14 +184,24 @@ export default function Scenario11({
         onClose={handleCloseSheet}
         title="자동이체 유형선택"
       >
-        <nav className="flex flex-col">
-          <button
-            type="button"
-            onClick={() => handleSelectOption("krw")}
-            className="py-[16px] text-left text-[16px] text-gray-700 transition"
-          >
-            원화 자동이체 등록
-          </button>
+        {/* mt-[20px]를 추가하여 손가락이 제목에 가려지지 않게 여백 확보 */}
+        <nav className="flex flex-col mt-[20px]">
+          
+          <div className="relative">
+             {/* 바텀시트 내부 손가락 */}
+            <div className="absolute -top-[25px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[24px]">👇</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleSelectOption("krw")}
+              className="w-full py-[16px] text-left text-[16px] text-gray-700 transition"
+            >
+              원화 자동이체 등록
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => handleSelectOption("fx")}
@@ -257,4 +275,3 @@ function AutoTransferCard({
     </button>
   );
 }
-

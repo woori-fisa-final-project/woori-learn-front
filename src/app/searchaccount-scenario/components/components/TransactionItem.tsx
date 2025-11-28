@@ -5,27 +5,42 @@ import { Transaction } from "@/types";
 export default function TransactionItem({
   item,
   onSelect,
+  isFirst, // 부모(List)에서 넘겨준 값 받기
 }: {
   item: Transaction;
   onSelect: (t: Transaction) => void;
+  isFirst?: boolean; 
 }) {
   return (
     <li
-      className="cursor-pointer rounded-[16px] bg-white p-[18px] shadow-sm transition hover:bg-[#F6F8FC]"
+      // relative 필수 (손가락 위치 기준점)
+      className="relative cursor-pointer rounded-[16px] bg-white p-[18px] shadow-sm transition hover:bg-[#F6F8FC]"
       onClick={() => onSelect(item)}
     >
+      
+      {/* isFirst가 true일 때만 손가락 애니메이션 표시 */}
+      {isFirst && (
+        <div className="absolute -top-[25px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+          <span className="text-[28px]">👇</span>
+        </div>
+      )}
+
       <div className="flex justify-between text-[13px] text-gray-500">
-        <span>{item.date.replace(/-/g, ".")} {item.time}</span>
+        <span>
+          {item.date.replace(/-/g, ".")} {item.time}
+        </span>
       </div>
 
       <div className="mt-[10px] flex justify-between">
         <div>
           <p className="text-[15px] text-gray-900">{item.counterpartyName}</p>
-          <p className="text-[12px] text-gray-500 mt-1">{item.description}</p>
+          <p className="mt-1 text-[12px] text-gray-500">{item.description}</p>
         </div>
 
         <p
-          className={`text-[18px] font-semibold ${item.amount >= 0 ? "text-[#2F6FD9]" : "text-gray-900"}`}
+          className={`text-[18px] font-semibold ${
+            item.amount >= 0 ? "text-[#2F6FD9]" : "text-gray-900"
+          }`}
         >
           {item.amount >= 0
             ? `+${item.amount.toLocaleString()}원`

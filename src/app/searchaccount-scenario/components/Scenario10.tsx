@@ -123,17 +123,26 @@ export default function Scenario10() {
 
       <div className="mt-auto flex gap-[12px] pt-[24px]">
         <button 
-        type="button"
-        className="flex-1 rounded-[12px] border border-[#D3DCF0] py-[12px] text-[15px] font-medium text-[#2F6FD9]">
+          type="button"
+          className="flex-1 rounded-[12px] border border-[#D3DCF0] py-[12px] text-[15px] font-medium text-[#2F6FD9]"
+        >
           공유
         </button>
-        <button
-          type="button"
-          onClick={() => router.push("/quiz")}
-          className="flex-1 rounded-[12px] bg-[#2F6FD9] py-[12px] text-[15px] font-semibold text-white"
-        >
-          확인
-        </button>
+
+        {/* 확인 버튼을 감싸는 손가락 애니메이션 */}
+        <div className="relative flex-1">
+          <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+            <span className="text-[30px]">👇</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => router.push("/quiz")}
+            className="w-full rounded-[12px] bg-[#2F6FD9] py-[12px] text-[15px] font-semibold text-white"
+          >
+            확인
+          </button>
+        </div>
       </div>
     </div>
   );

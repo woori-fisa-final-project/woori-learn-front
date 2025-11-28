@@ -21,17 +21,27 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
   const [isChecked, setIsChecked] = useState(false);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
+  // ✅ [추가] 튜토리얼 단계 상태 (0: 약관클릭, 1: 모달확인, 2: 최종확인)
+  const [tutorialStep, setTutorialStep] = useState(0);
+
   const handleAgreementClick = () => {
     if (isChecked) {
       setIsChecked(false);
       return;
     }
     setDetailOpen(true);
+    
+    // ✅ [Step 0 -> 1] 약관을 클릭해서 모달을 열면 다음 단계로
+    if (tutorialStep === 0) {
+      setTutorialStep(1);
+    }
   };
 
   // 사용자가 직접 상세 보기 버튼을 눌렀을 때 모달을 연다.
   const openDetail = () => {
     setDetailOpen(true);
+    // (선택사항) 보기 버튼으로도 진행 가능하게 처리
+    if (tutorialStep === 0) setTutorialStep(1);
   };
 
   // 모달 닫기 버튼이나 배경을 통해 상세 화면을 닫는다.
@@ -51,6 +61,11 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
   const handleModalConfirm = () => {
     setDetailOpen(false);
     setIsChecked(true);
+
+    // ✅ [Step 1 -> 2] 모달 확인을 누르면 최종 단계로
+    if (tutorialStep === 1) {
+      setTutorialStep(2);
+    }
   };
 
   return (
@@ -66,7 +81,16 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
         </div>
 
         <div>
-          <div className="flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
+          {/* 👇 [수정됨] relative 추가하여 손가락 위치 기준점 잡기 */}
+          <div className="relative flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
+            
+            {/* ✨ [Step 0] 약관 버튼 가리키기 ✨ */}
+            {tutorialStep === 0 && (
+              <div className="absolute -top-[30px] left-[40%] -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+                <span className="text-[30px]">👇</span>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={handleAgreementClick}
@@ -99,14 +123,30 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[32px]">
         {/* 약관에 동의하기 전까지 비활성화되는 확인 버튼이다. */}
-        <Button onClick={handleConfirm} disabled={!isChecked}>
-          확인
-        </Button>
+        {/* 👇 [수정됨] relative 추가 */}
+        <div className="relative">
+          
+          {/* ✨ [Step 2] 최종 확인 버튼 가리키기 ✨ */}
+          {tutorialStep === 2 && isChecked && (
+            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[30px]">👇</span>
+            </div>
+          )}
+
+          <Button onClick={handleConfirm} disabled={!isChecked}>
+            확인
+          </Button>
+        </div>
       </div>
 
       {/* 약관 전문을 확인할 수 있는 모달을 조건부로 렌더링한다. */}
       {isDetailOpen && (
-        <TermsDetailModal onClose={closeDetail} onConfirm={handleModalConfirm} />
+        <TermsDetailModal 
+          onClose={closeDetail} 
+          onConfirm={handleModalConfirm}
+          // ✅ 모달 내부 손가락 표시 여부 전달
+          showFinger={tutorialStep === 1} 
+        />
       )}
     </div>
   );
@@ -116,9 +156,10 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
 type TermsDetailModalProps = {
   onClose: () => void;
   onConfirm: () => void;
+  showFinger: boolean; // ✅ [추가] 손가락 표시 여부 Prop
 };
 
-function TermsDetailModal({ onClose, onConfirm }: TermsDetailModalProps) {
+function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalProps) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-[18px]">
       <div className="flex h-[560px] w-full max-w-[380px] flex-col overflow-hidden rounded-[24px] bg-white">
@@ -165,10 +206,20 @@ function TermsDetailModal({ onClose, onConfirm }: TermsDetailModalProps) {
 
         {/* 모달 하단에서 약관 확인을 완료할 수 있는 버튼을 제공한다. */}
         <div className="border-t border-gray-100 px-[20px] pb-[24px] pt-[16px]">
-          <Button onClick={onConfirm}>확인</Button>
+          {/* 👇 [수정됨] relative 추가 */}
+          <div className="relative">
+            
+            {/* ✨ [Step 1] 모달 내부 확인 버튼 가리키기 ✨ */}
+            {showFinger && (
+              <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+                <span className="text-[30px]">👇</span>
+              </div>
+            )}
+
+            <Button onClick={onConfirm}>확인</Button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
