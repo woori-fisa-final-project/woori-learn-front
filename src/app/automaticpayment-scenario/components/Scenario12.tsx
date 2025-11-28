@@ -2,7 +2,6 @@
 
 // 자동이체 등록 플로우에서 필요한 React 훅과 유틸리티, 하위 시나리오 컴포넌트를 불러온다.
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 // 헤더 제어와 이체 흐름 상태 관리를 위해 내부 컨텍스트와 훅을 이용한다.
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
@@ -92,7 +91,7 @@ type Scenario12Props = {
 
 export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 자동이체 등록 흐름 전체를 제어하는 메인 페이지 컴포넌트이다.
-  const router = useRouter();
+  
   const { setTitle, setOnBack } = useScenarioHeader();
   const {
     setSelectedBank,

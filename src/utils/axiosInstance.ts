@@ -14,22 +14,18 @@ let refreshPromise: Promise<string> | null = null;
 const isServer = typeof window === 'undefined';
 
 const axiosInstance = axios.create({
-<<<<<<< HEAD
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-=======
-  baseURL:  process.env.NEXT_PUBLIC_API_BASE_URL,
->>>>>>> 2d25d0af04fd5d5a526f39dc17c31e287084f26e
+
+  baseURL: "",
+
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-<<<<<<< HEAD
-=======
 // 토큰 갱신 전용 axios 인스턴스
 const refreshAxios = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: "",
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
@@ -66,7 +62,7 @@ const getRefreshToken = async (): Promise<string> => {
 
   return refreshPromise;
 };
->>>>>>> 2d25d0af04fd5d5a526f39dc17c31e287084f26e
+
 
 // 🔥 요청 인터셉터
 axiosInstance.interceptors.request.use(

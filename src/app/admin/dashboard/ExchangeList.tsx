@@ -1,4 +1,6 @@
- import React, { useEffect, useMemo, useState } from "react";                                                                                                                      
+"use client";
+
+  import React, { useEffect, useMemo, useState } from "react";                                                                                                                      
   import ExchangeModal from "./ExchangeModal";
                                                                                                                                                                                     
   interface ExchangeItem {                                                                                                                                                          
@@ -14,8 +16,16 @@
   const API_BASE = ""; // 필요시 설정                                                                                                                                               
   const getAuthToken = () => localStorage.getItem("adminToken") || "";                                                                                                              
                                                                                                                                                                                     
-  const formatDate = (iso?: string) =>                                                                                                                                              
-    iso ? new Date(iso).toISOString().slice(0, 10) : "-";
+  const formatDate = (iso?: string) => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return d.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).replace(/\.\s?/g, "-").replace(/-$/, ""); 
+  // "2025. 11. 28." → "2025-11-28" 비슷하게 가공
+};
                                                                                                                                                                                     
   const mapDtoToItem = (d: any): ExchangeItem => ({                                                                                                                                 
     id: String(d.id),                                                                                                                                                               

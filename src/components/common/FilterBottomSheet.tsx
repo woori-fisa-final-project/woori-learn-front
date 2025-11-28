@@ -28,7 +28,7 @@ export default function FilterBottomSheet({
       setSelectedPeriod(initialFilters.period);
       setSelectedSort(initialFilters.sort);
       setSelectedStatus(initialFilters.status);
-      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }

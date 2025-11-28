@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useRef, Suspense } from 'react';
+import { useCallback, useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import QuizScreen, { type QuizContent } from '@/components/quiz/QuizScreen';
 import axiosInstance from '@/utils/axiosInstance';
@@ -10,25 +10,25 @@ import { useUserStore } from '@/lib/stores/userStore';
 import { setAvailablePoints as cachePoints } from '@/constants/points';
 
 /**
- * 외부 데이터가 QuizContent 타입인지 검증하는 타입 가드
- * @param data 검증할 데이터
- * @returns QuizContent 타입 여부
+ * ?��? ?�이?��? QuizContent ?�?�인지 검증하???�??가??
+ * @param data 검증할 ?�이??
+ * @returns QuizContent ?�???��?
  */
 function isQuizContent(data: unknown): data is QuizContent {
   if (!data || typeof data !== 'object') return false;
 
   const quiz = data as Record<string, unknown>;
 
-  // 필수 필드 검증
+  // ?�수 ?�드 검�?
   if (typeof quiz.id !== 'string') return false;
   if (typeof quiz.title !== 'string') return false;
   if (typeof quiz.prompt !== 'string') return false;
   if (typeof quiz.correctAnswerId !== 'string') return false;
 
-  // options 배열 검증
+  // options 배열 검�?
   if (!Array.isArray(quiz.options)) return false;
 
-  // 각 옵션의 구조 검증
+  // �??�션??구조 검�?
   return quiz.options.every((option: unknown) => {
     if (!option || typeof option !== 'object') return false;
     const opt = option as Record<string, unknown>;
@@ -39,7 +39,7 @@ function isQuizContent(data: unknown): data is QuizContent {
 function QuizContent() {
   const { setTitle } = useScenarioHeader();
   const searchParams = useSearchParams();
-  const quizId = searchParams.get('id') || '1'; // 기본값 1
+  const quizId = searchParams.get('id') || '1'; // 기본�?1
 
   const [quiz, setQuiz] = useState<QuizContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +48,6 @@ function QuizContent() {
   const [isDepositing, setIsDepositing] = useState(false);
   const [depositMessage, setDepositMessage] = useState<string | null>(null);
   const { availablePoints, setAvailablePoints } = useUserStore();
-  const inFlightRef = useRef(false);
 
   useEffect(() => {
     setTitle('Quiz');
@@ -67,41 +66,41 @@ function QuizContent() {
         setIsLoading(true);
         setError(null);
 
-        // JSON 파일에서 퀴즈 데이터 로드
+        // JSON ?�일?�서 ?�즈 ?�이??로드
         const response = await fetch('/data/quizzes.json');
 
         if (!response.ok) {
-          throw new Error(`퀴즈 데이터 로드 실패: ${response.status}`);
+          throw new Error(`?�즈 ?�이??로드 ?�패: ${response.status}`);
         }
 
         const data = await response.json();
 
-        // 데이터 구조 검증
+        // ?�이??구조 검�?
         if (!data || typeof data !== 'object' || !Array.isArray(data.quizzes)) {
-          throw new Error('퀴즈 데이터 형식이 올바르지 않습니다.');
+          throw new Error('?�즈 ?�이???�식???�바르�? ?�습?�다.');
         }
 
-        // ID로 퀴즈 찾기 (타입 단언 없이)
+        // ID�??�즈 찾기 (?�???�언 ?�이)
         const foundQuiz = data.quizzes.find((q: unknown) => {
           return q && typeof q === 'object' && 'id' in q && q.id === quizId;
         });
 
         if (!foundQuiz) {
-          throw new Error(`퀴즈 ID ${quizId}를 찾을 수 없습니다.`);
+          throw new Error(`?�즈 ID ${quizId}�?찾을 ???�습?�다.`);
         }
 
-        // 타입 가드로 검증
+        // ?�??가?�로 검�?
         if (!isQuizContent(foundQuiz)) {
-          devError('[QuizPage] 퀴즈 데이터 구조가 올바르지 않음:', foundQuiz);
-          throw new Error('퀴즈 데이터 구조가 올바르지 않습니다.');
+          devError('[QuizPage] ?�즈 ?�이??구조가 ?�바르�? ?�음:', foundQuiz);
+          throw new Error('?�즈 ?�이??구조가 ?�바르�? ?�습?�다.');
         }
 
-        devLog(`[QuizPage] 퀴즈 ${quizId} 로드 완료`);
+        devLog(`[QuizPage] ?�즈 ${quizId} 로드 ?�료`);
         setQuiz(foundQuiz);
       } catch (err) {
-        devError('[QuizPage] 퀴즈 로드 실패:', err);
+        devError('[QuizPage] ?�즈 로드 ?�패:', err);
         setError(
-          err instanceof Error ? err.message : '퀴즈를 불러올 수 없습니다.'
+          err instanceof Error ? err.message : '?�즈�?불러?????�습?�다.'
         );
       } finally {
         setIsLoading(false);
@@ -114,16 +113,11 @@ function QuizContent() {
   const handleSelectOption = useCallback(
     async (selectedQuizId: string, optionId: string) => {
       if (!quiz || quiz.id !== selectedQuizId) return;
-      if (quiz.id !== '2') return; // 해당 시나리오 퀴즈에만 포인트 적립
-      if (inFlightRef.current) return; // 즉시 잠금으로 중복 클릭 방지
-      inFlightRef.current = true;
-      if (hasDeposited || isDepositing) {
-        inFlightRef.current = false;
-        return;
-      }
+      if (quiz.id !== '2') return; // ?�당 ?�나리오 ?�즈?�만 ?�인???�립
+      if (hasDeposited || isDepositing) return;
 
       if (optionId !== quiz.correctAnswerId) {
-        setDepositMessage('정답을 선택하면 포인트가 적립돼요.');
+        setDepositMessage('?�답???�택?�면 ?�인?��? ?�립?�요.');
         return;
       }
 
@@ -149,17 +143,16 @@ function QuizContent() {
         setHasDeposited(true);
         setDepositMessage(
           rewarded
-            ? '시나리오 완료! 1000포인트 적립 완료.'
-            : '이미 보상을 받았습니다.'
+            ? '?�나리오 ?�료! 1000?�인???�립 ?�료.'
+            : '?��? 보상??받았?�니??'
         );
-        devLog('[QuizPage] 포인트 적립 완료 여부:', rewarded);
+        devLog('[QuizPage] ?�인???�립 ?�료 ?��?:', rewarded);
       } catch (err) {
         setHasDeposited(false);
-        setDepositMessage('포인트 적립에 실패했습니다. 다시 시도해주세요.');
-        devError('[QuizPage] 포인트 적립 실패:', err);
+        setDepositMessage('?�인???�립???�패?�습?�다. ?�시 ?�도?�주?�요.');
+        devError('[QuizPage] ?�인???�립 ?�패:', err);
       } finally {
         setIsDepositing(false);
-        inFlightRef.current = false; // 잠금 해제
       }
     },
     [quiz, hasDeposited, isDepositing]
@@ -168,7 +161,7 @@ function QuizContent() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p className="text-gray-500">퀴즈를 불러오는 중...</p>
+        <p className="text-gray-500">?�즈�?불러?�는 �?..</p>
       </div>
     );
   }
@@ -176,7 +169,7 @@ function QuizContent() {
   if (error || !quiz) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p className="text-gray-500">{error || '퀴즈를 불러올 수 없습니다.'}</p>
+        <p className="text-gray-500">{error || '?�즈�?불러?????�습?�다.'}</p>
       </div>
     );
   }
@@ -196,7 +189,7 @@ export default function QuizPage() {
     <Suspense
       fallback={
         <div className="flex h-screen items-center justify-center">
-          <p className="text-gray-500">퀴즈를 불러오는 중...</p>
+          <p className="text-gray-500">?�즈�?불러?�는 �?..</p>
         </div>
       }
     >
@@ -204,3 +197,4 @@ export default function QuizPage() {
     </Suspense>
   );
 }
+
