@@ -1,7 +1,7 @@
 "use client"; // 클라이언트 컴포넌트로 선언하여 상태 및 브라우저 API를 사용할 수 있도록 합니다.
 
 import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터 훅을 불러옵니다.
-import { useState, useEffect } from "react"; // 모달 열림 상태 등 컴포넌트 상태 관리를 위해 useState를 사용합니다.
+import { useState, useEffect, useRef } from "react"; // 모달 열림 상태 등 컴포넌트 상태 관리를 위해 useState를 사용합니다.
 import Modal from "@/components/common/Modal"; // 탈퇴 확인 모달을 표시하는 공통 컴포넌트입니다.
 import PageHeader from "@/components/common/PageHeader"; // 페이지 상단의 헤더 UI를 담당합니다.
 import PageContainer from "@/components/common/PageContainer"; // 페이지 전반 레이아웃을 감싸는 컨테이너입니다.
@@ -22,12 +22,13 @@ export default function ProfilePage() {
   const [accountModalStatus, setAccountModalStatus] = useState<
     "processing" | "success"
   >("processing");
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleBack = () => {
     router.push("/home"); // 뒤로가기 시 홈 화면으로 이동합니다.
   };
 
-  const handleAccountOpen = async () => {
+  const handleAccountOpen = () => {
     // 1) 먼저 "진행 중" 모달 열기
     setAccountModalStatus("processing");
     setIsAccountModalOpen(true);
@@ -37,6 +38,15 @@ export default function ProfilePage() {
       setAccountModalStatus("success");
     }, 2000); // 2초 후 성공 화면으로 전환
   };
+
+  // 🔥 컴포넌트 언마운트 시 타이머 정리 (메모리 누수 방지)
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const handlePointTransfer = () => {
     router.push("/points/list"); // 포인트 관련 내역/환전 페이지로 이동합니다.
@@ -74,19 +84,6 @@ export default function ProfilePage() {
       router.push("/login"); // 로그아웃 버튼 클릭 시 로그인 화면으로 이동합니다.
     }
   };
-
-  // //redirect 후 다시 MyPage로 돌아왔을 때 “완료 모달” 띄우기
-  // useEffect(() => {
-  //   // if (typeof window === "undefined") return;
-
-  //   const params = new URLSearchParams(window.location.search);
-  //   const status = params.get("status");
-
-  //   if (status === "account-created") {
-  //     setAccountModalStatus("success");
-  //     setIsAccountModalOpen(true);
-  //   }
-  // }, []);
 
   return (
     <PageContainer>

@@ -266,13 +266,6 @@ export default function PointExchangePage() {
             </ul>
           </div>
 
-          {/* {submitStatus === "success" && (
-            <div className="mt-4 w-full rounded-lg border border-green-200 bg-green-50 p-4">
-              <p className="text-center text-sm font-medium text-green-700">
-                환전 신청이 완료되었습니다.
-              </p>
-            </div>
-          )} */}
           {submitStatus === "error" && (
             <div className="mt-4 w-full rounded-lg border border-red-200 bg-red-50 p-4">
               <p className="text-center text-sm font-medium text-red-700">

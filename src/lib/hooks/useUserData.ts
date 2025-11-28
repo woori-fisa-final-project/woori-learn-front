@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"; // 사용자 이름과 포인트 정보를 상태로 관리하기 위해 React 훅을 사용합니다.
 import axiosInstance from "@/utils/axiosInstance";
 import { ApiError } from "@/utils/apiError";
-import { Account } from "@/types";
 
 export function useUserData() {
   // 사용자 ID, 이름, 보유 포인트를 제공하는 커스텀 훅입니다.
@@ -35,5 +34,5 @@ export function useUserData() {
     loadUserData();
   }, []);
 
-  return { userName, availablePoints, account }; // 컴포넌트에서 이름, 포인트, 이름 업데이트 함수를 사용할 수 있도록 반환합니다.
+  return { userName, availablePoints, account }; // 컴포넌트에서 사용자 이름, 보유 포인트, 계좌 정보를 사용할 수 있도록 반환합니다.
 }
