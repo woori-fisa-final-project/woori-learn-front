@@ -8,7 +8,7 @@ export function useUserData() {
   const [userId, setUserId] = useState<number | null>(null); // 사용자 ID를 상태로 관리합니다.
   const [userName, setUserName] = useState(""); // 사용자 이름을 상태로 관리하며 기본값을 설정합니다.
   const [availablePoints, setAvailablePoints] = useState(0); // 보유 포인트를 상태로 관리합니다.
-  const [account, setAccount] = useState<Account | null>(null); // account_number 저장할 account
+  const [account, setAccount] = useState<number | null>(null); // account_number 저장할 account
 
   useEffect(() => {
     // 컴포넌트 마운트 시 로컬 저장소에서 사용자 데이터를 불러옵니다.

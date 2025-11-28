@@ -88,15 +88,6 @@ export default function ProfilePage() {
     }
   }, []);
 
-  // 로그인 상태 확인 → 없으면 로그인 페이지로 강제 이동
-  // TODO : 효민 언니 코드 보고 필요없으면 지울 부분
-  useEffect(() => {
-    const accessToken = useAuthStore.getState().accessToken;
-    if (!accessToken) {
-      router.replace("/login");
-    }
-  }, []);
-
   return (
     <PageContainer>
       <PageHeader title="내 정보" onBack={handleBack} titleSize="lg" />{" "}
@@ -160,9 +151,7 @@ export default function ProfilePage() {
             <p className="text-[14px] text-gray-700 font-medium">계좌</p>
           </div>
           {account ? (
-            <p className="text-[16px] text-gray-800 font-semibold">
-              {account.accountNumber}
-            </p>
+            <p className="text-[16px] text-gray-800 font-semibold">{account}</p>
           ) : (
             <button
               onClick={handleAccountOpen}
