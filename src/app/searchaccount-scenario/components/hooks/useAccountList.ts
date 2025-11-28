@@ -9,6 +9,14 @@ import type { AccountResponse, AccountCard } from "@/types";
 import { getAccountList } from "@/lib/api/account";
 import { devError } from "@/utils/logger";
 import { isApiError } from "@/types/errors";
+import {
+  ACCOUNT_TYPE,
+  ACCOUNT_DISPLAY_TYPE,
+  ACCOUNT_TYPE_LABEL,
+  ACCOUNT_TRANSFER_DISABLED_MESSAGE,
+  isValidAccountType,
+  isTransferAvailable,
+} from "@/constants/account";
 
 export function useAccountList() {
   const [accounts, setAccounts] = useState<AccountCard[]>([]);
@@ -20,16 +28,12 @@ export function useAccountList() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    console.log("[계좌목록] API 요청 시작 (JWT 토큰 기반)");
-
     try {
       setLoading(true);
       setError(null);
 
       // JWT 토큰 기반 계좌 목록 조회
       const result = await getAccountList();
-
-      console.log("[API Response]", result);
 
       if (!result || result.length === 0) {
         setAccounts([]);
@@ -40,29 +44,57 @@ export function useAccountList() {
       }
 
       const transformed: AccountCard[] = result.map((acc) => {
-        // 백엔드의 accountType 필드를 사용하여 계좌 유형 판단
-        const isDeposit = acc.accountType === "DEPOSIT";
+        // accountType 필드 검증
+        if (!isValidAccountType(acc.accountType)) {
+          devError(
+            `[useAccountList] 유효하지 않은 accountType: ${acc.accountType}, accountNumber: ${acc.accountNumber}`
+          );
+          // accountType이 없거나 유효하지 않은 경우, 안전하게 이체 불가 계좌로 처리
+          return {
+            id: acc.id,
+            title: "알 수 없는 계좌",
+            bank: "우리",
+            accountNumber: formatAccountNumber(acc.accountNumber),
+            accountName: acc.accountName,
+            badge: "한도제한",
+            balance: formatBalance(acc.balance),
+            rawBalance: acc.balance,
+            transferAvailable: false,
+            type: ACCOUNT_DISPLAY_TYPE.SAVINGS,
+            disabledMessage: "계좌 유형을 확인할 수 없어 이체를 이용할 수 없습니다.",
+          };
+        }
+
+        // 정상적인 accountType 처리
+        const isChecking = isTransferAvailable(acc.accountType);
+        const displayType = isChecking
+          ? ACCOUNT_DISPLAY_TYPE.CHECKING
+          : ACCOUNT_DISPLAY_TYPE.SAVINGS;
 
         return {
           id: acc.id,
-          title: isDeposit ? "WON통장" : "WON적금통장",
+          title: ACCOUNT_TYPE_LABEL[acc.accountType],
           bank: "우리",
           accountNumber: formatAccountNumber(acc.accountNumber),
           accountName: acc.accountName,
           badge: "한도제한",
           balance: formatBalance(acc.balance),
           rawBalance: acc.balance,
-          transferAvailable: isDeposit,
-          type: isDeposit ? "deposit" : "savings",
-          disabledMessage: !isDeposit
-            ? "예적금 계좌에서는 이체를 이용할 수 없습니다."
+          transferAvailable: isChecking, // 중복 계산 제거: isChecking 직접 사용
+          type: displayType,
+          disabledMessage: !isChecking
+            ? ACCOUNT_TRANSFER_DISABLED_MESSAGE[acc.accountType]
             : undefined,
         };
       });
 
       setAccounts(transformed);
-      setDepositAccounts(transformed.filter((v: AccountCard) => v.type === "deposit"));
-      setSavingsAccounts(transformed.filter((v: AccountCard) => v.type === "savings"));
+      setDepositAccounts(
+        transformed.filter((v: AccountCard) => v.type === ACCOUNT_DISPLAY_TYPE.CHECKING)
+      );
+      setSavingsAccounts(
+        transformed.filter((v: AccountCard) => v.type === ACCOUNT_DISPLAY_TYPE.SAVINGS)
+      );
 
       const sum = transformed.reduce((acc: number, cur: AccountCard) => acc + cur.rawBalance, 0);
       setTotalBalance(sum);
