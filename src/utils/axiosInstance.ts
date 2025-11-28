@@ -14,7 +14,7 @@ let refreshPromise: Promise<string> | null = null;
 const isServer = typeof window === 'undefined';
 
 const axiosInstance = axios.create({
-  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
+  baseURL:  process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -23,7 +23,7 @@ const axiosInstance = axios.create({
 
 // 토큰 갱신 전용 axios 인스턴스
 const refreshAxios = axios.create({
-  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
