@@ -75,18 +75,18 @@ export default function ProfilePage() {
     }
   };
 
-  //redirect 후 다시 MyPage로 돌아왔을 때 “완료 모달” 띄우기
-  useEffect(() => {
-    // if (typeof window === "undefined") return;
+  // //redirect 후 다시 MyPage로 돌아왔을 때 “완료 모달” 띄우기
+  // useEffect(() => {
+  //   // if (typeof window === "undefined") return;
 
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get("status");
+  //   const params = new URLSearchParams(window.location.search);
+  //   const status = params.get("status");
 
-    if (status === "account-created") {
-      setAccountModalStatus("success");
-      setIsAccountModalOpen(true);
-    }
-  }, []);
+  //   if (status === "account-created") {
+  //     setAccountModalStatus("success");
+  //     setIsAccountModalOpen(true);
+  //   }
+  // }, []);
 
   return (
     <PageContainer>
