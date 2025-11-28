@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { getAccountList } from "@/lib/api/account";
 import type { EducationalAccount } from "@/types/account";
-import { getCurrentUserId } from "@/utils/authUtils";
 import { devError } from "@/utils/logger";
 
 /**
- * 계좌 목록 조회 및 선택 관리를 위한 커스텀 훅
+ * 계좌 목록 조회 및 선택 관리를 위한 커스텀 훅 (JWT 토큰 기반)
  */
 export function useAccountSelection() {
   const [accounts, setAccounts] = useState<EducationalAccount[]>([]);
@@ -18,7 +17,7 @@ export function useAccountSelection() {
       try {
         setIsLoadingAccounts(true);
         setErrorMessage("");
-        const accountList = await getAccountList(getCurrentUserId());
+        const accountList = await getAccountList();
         setAccounts(accountList);
       } catch (error) {
         devError("[useAccountSelection] 계좌 목록 조회 실패:", error);

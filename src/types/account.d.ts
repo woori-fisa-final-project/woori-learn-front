@@ -15,6 +15,7 @@ export interface EducationalAccount {
   accountName: string;
   bankName?: string; // API가 간헐적으로 생략할 수 있으므로 선택적 필드로 변경
   userId: number;
+  accountType: "CHECKING" | "SAVINGS" | "DEPOSIT"; // 계좌 유형: 입출금(CHECKING), 예적금(SAVINGS), 적금(DEPOSIT - 현재 미사용)
 }
 
 export interface AccountResponse {
@@ -22,6 +23,7 @@ export interface AccountResponse {
   accountName: string;
   accountNumber: string;
   balance: number;
+  accountType: "CHECKING" | "SAVINGS" | "DEPOSIT"; // 계좌 유형: 입출금(CHECKING), 예적금(SAVINGS), 적금(DEPOSIT - 현재 미사용)
 }
 
 export interface AccountListApiResponse {
