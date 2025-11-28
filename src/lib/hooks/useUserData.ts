@@ -11,12 +11,15 @@ import { getAvailablePoints, setAvailablePoints as cachePoints } from "@/constan
  * 3. 실패 시 localStorage 데이터로 폴백
  */
 export function useUserData() {
-  const [userId, setUserId] = useState<number | null>(null);
-  const [userName, setUserName] = useState("고객님");
-  const [availablePoints, setAvailablePoints] = useState(0);
 
-  const [isLoading, setIsLoading] = useState(true);
+  // 사용자 ID, 이름, 보유 포인트를 제공하는 커스텀 훅입니다.
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<number | null>(null); // 사용자 ID를 상태로 관리합니다.
+  const [userName, setUserName] = useState("고객님"); // 사용자 이름을 상태로 관리하며 기본값을 설정합니다.
+  const [availablePoints, setAvailablePoints] = useState(0); // 보유 포인트를 상태로 관리합니다.
+  const [account, setAccount] = useState<number | null>(null); // account_number 저장할 account
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -45,6 +48,9 @@ export function useUserData() {
         setUserName(safeName);
         setAvailablePoints(safePoints);
 
+        // account(다른 브랜치 추가 필드) 반영
+        setAccount(data.account ?? null);
+
         // LocalStorage에 캐시
         localStorage.setItem("userName", safeName);
         cachePoints(safePoints);
@@ -66,6 +72,7 @@ export function useUserData() {
     fetchUserData();
   }, []);
 
+
   // 이름 업데이트 (LocalStorage도 업데이트)
   const updateUserName = (name: string) => {
     setUserName(name);
@@ -74,12 +81,14 @@ export function useUserData() {
     }
   };
 
-  return {
+  return {// 컴포넌트에서 사용자 이름, 보유 포인트, 계좌 정보를 사용할 수 있도록 반환합니다.
     userId,
     userName,
     availablePoints,
     isLoading,
     error,
     updateUserName,
+    account
   };
+
 }
