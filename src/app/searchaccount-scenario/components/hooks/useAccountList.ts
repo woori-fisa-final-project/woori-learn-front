@@ -15,6 +15,7 @@ import {
   ACCOUNT_TYPE_LABEL,
   ACCOUNT_TRANSFER_DISABLED_MESSAGE,
   isValidAccountType,
+  isTransferAvailable,
 } from "@/constants/account";
 
 export function useAccountList() {
@@ -65,7 +66,7 @@ export function useAccountList() {
         }
 
         // 정상적인 accountType 처리
-        const isChecking = acc.accountType === ACCOUNT_TYPE.CHECKING;
+        const isChecking = isTransferAvailable(acc.accountType);
         const displayType = isChecking
           ? ACCOUNT_DISPLAY_TYPE.CHECKING
           : ACCOUNT_DISPLAY_TYPE.SAVINGS;

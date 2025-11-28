@@ -33,7 +33,7 @@ export const ACCOUNT_TYPE_LABEL = {
  * 계좌 타입별 이체 가능 여부 메시지
  */
 export const ACCOUNT_TRANSFER_DISABLED_MESSAGE = {
-  [ACCOUNT_TYPE.CHECKING]: "예적금 계좌에서는 이체를 이용할 수 없습니다.",
+  [ACCOUNT_TYPE.CHECKING]: "예적금 계좌에서는 이체를 이용할 수 있습니다.",
   [ACCOUNT_TYPE.SAVINGS]: "적금 계좌에서는 이체를 이용할 수 없습니다.",
   [ACCOUNT_TYPE.DEPOSIT]: "적금 계좌에서는 이체를 이용할 수 없습니다.",
 } as const;
@@ -51,6 +51,6 @@ export function isValidAccountType(
 /**
  * 계좌 타입이 이체 가능한지 확인
  */
-export function isTransferAvailable(accountType: string): boolean {
+export function isTransferAvailable(accountType: (typeof ACCOUNT_TYPE)[keyof typeof ACCOUNT_TYPE]): boolean {
   return accountType === ACCOUNT_TYPE.CHECKING;
 }
