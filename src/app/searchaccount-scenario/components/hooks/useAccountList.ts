@@ -15,7 +15,6 @@ import {
   ACCOUNT_TYPE_LABEL,
   ACCOUNT_TRANSFER_DISABLED_MESSAGE,
   isValidAccountType,
-  isTransferAvailable,
 } from "@/constants/account";
 
 export function useAccountList() {
@@ -68,7 +67,7 @@ export function useAccountList() {
         // 정상적인 accountType 처리
         const isChecking = acc.accountType === ACCOUNT_TYPE.CHECKING;
         const displayType = isChecking
-          ? ACCOUNT_DISPLAY_TYPE.DEPOSIT
+          ? ACCOUNT_DISPLAY_TYPE.CHECKING
           : ACCOUNT_DISPLAY_TYPE.SAVINGS;
 
         return {
@@ -80,7 +79,7 @@ export function useAccountList() {
           badge: "한도제한",
           balance: formatBalance(acc.balance),
           rawBalance: acc.balance,
-          transferAvailable: isTransferAvailable(acc.accountType),
+          transferAvailable: isChecking, // 중복 계산 제거: isChecking 직접 사용
           type: displayType,
           disabledMessage: !isChecking
             ? ACCOUNT_TRANSFER_DISABLED_MESSAGE[acc.accountType]
@@ -90,7 +89,7 @@ export function useAccountList() {
 
       setAccounts(transformed);
       setDepositAccounts(
-        transformed.filter((v: AccountCard) => v.type === ACCOUNT_DISPLAY_TYPE.DEPOSIT)
+        transformed.filter((v: AccountCard) => v.type === ACCOUNT_DISPLAY_TYPE.CHECKING)
       );
       setSavingsAccounts(
         transformed.filter((v: AccountCard) => v.type === ACCOUNT_DISPLAY_TYPE.SAVINGS)

@@ -13,9 +13,10 @@ export const ACCOUNT_TYPE = {
 
 /**
  * 프론트엔드에서 사용하는 계좌 타입 (UI 표시용)
+ * ACCOUNT_TYPE과 용어 일관성 유지
  */
 export const ACCOUNT_DISPLAY_TYPE = {
-  DEPOSIT: "deposit", // 입출금 (UI 표시)
+  CHECKING: "deposit", // 입출금 (UI 표시)
   SAVINGS: "savings", // 예적금 (UI 표시)
 } as const;
 
@@ -32,20 +33,19 @@ export const ACCOUNT_TYPE_LABEL = {
  * 계좌 타입별 이체 가능 여부 메시지
  */
 export const ACCOUNT_TRANSFER_DISABLED_MESSAGE = {
-  [ACCOUNT_TYPE.SAVINGS]: "예적금 계좌에서는 이체를 이용할 수 없습니다.",
+  [ACCOUNT_TYPE.CHECKING]: "예적금 계좌에서는 이체를 이용할 수 없습니다.",
+  [ACCOUNT_TYPE.SAVINGS]: "적금 계좌에서는 이체를 이용할 수 없습니다.",
   [ACCOUNT_TYPE.DEPOSIT]: "적금 계좌에서는 이체를 이용할 수 없습니다.",
 } as const;
 
 /**
  * accountType이 유효한지 확인하는 타입 가드
+ * in 연산자를 사용하여 타입 안전성 향상
  */
 export function isValidAccountType(
   type: unknown
 ): type is keyof typeof ACCOUNT_TYPE_LABEL {
-  return (
-    typeof type === "string" &&
-    Object.values(ACCOUNT_TYPE).includes(type as any)
-  );
+  return typeof type === "string" && type in ACCOUNT_TYPE_LABEL;
 }
 
 /**
