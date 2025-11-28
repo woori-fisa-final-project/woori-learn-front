@@ -148,8 +148,14 @@ export default function PointExchangePage() {
           accountNumber,
         });
 
-        setSubmitStatus("success");
-        // 이전 타이머가 있으면 정리
+        // setSubmitStatus("success");
+        // // 이전 타이머가 있으면 정리
+        // if (timerRef.current) {
+        //   clearTimeout(timerRef.current);
+        // }
+        // timerRef.current = setTimeout(() => {
+        //   router.push("/mypage");
+        // }, 1500);
         setIsExchangeModalOpen(true);
       } catch (error) {
         setSubmitStatus("error");

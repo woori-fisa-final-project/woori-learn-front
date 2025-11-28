@@ -34,7 +34,7 @@ export default function ProfilePage() {
     setIsAccountModalOpen(true);
 
     // 2) 은행 이동 대신 타이머로 가짜 처리
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       setAccountModalStatus("success");
     }, 2000); // 2초 후 성공 화면으로 전환
   };
