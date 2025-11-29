@@ -11,10 +11,10 @@ declare module "axios" {
 }
 
 let refreshPromise: Promise<string> | null = null;
+const isServer = typeof window === 'undefined';
 
 const axiosInstance = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  baseURL: "", // 테스트용으로 proxy 설정
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -23,7 +23,7 @@ const axiosInstance = axios.create({
 
 // 토큰 갱신 전용 axios 인스턴스
 const refreshAxios = axios.create({
-  baseURL: "",
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
@@ -98,6 +98,10 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config ?? {};
+
+    if(axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
 
     if (!error.response) {
       return Promise.reject(new ApiError(-1, "네트워크 오류가 발생했습니다."));
