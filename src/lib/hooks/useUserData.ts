@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { getCurrentUser } from "@/lib/api/user.api";
 import { useUserStore } from "@/lib/stores/userStore";
-import { getAvailablePoints, setAvailablePoints as cachePoints } from "@/constants/points";
 
 export function useUserData() {
   const [userId, setUserId] = useState<number | null>(null);
@@ -37,7 +36,6 @@ export function useUserData() {
 
         localStorage.setItem("userId", String(safeId));
         localStorage.setItem("userName", safeName);
-        cachePoints(safePoints);
         if (safeAccount) localStorage.setItem("account", safeAccount);
 
       } catch (err) {
@@ -50,7 +48,7 @@ export function useUserData() {
         const cachedName = localStorage.getItem("userName");
         if (cachedName) setUserName(cachedName);
 
-        setAvailablePoints(getAvailablePoints());
+        setAvailablePoints(0);
         const cachedAccount = localStorage.getItem("account");
         if (cachedAccount) setAccount(cachedAccount);
       } finally {
@@ -59,15 +57,6 @@ export function useUserData() {
     };
 
     fetchUserData();
-
-    // Cross-tab sync
-    const sync = (e: StorageEvent) => {
-      if (e.key === "availablePoints" && e.newValue) {
-        setAvailablePoints(Number(e.newValue));
-      }
-    };
-    window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
 
   }, []);
 

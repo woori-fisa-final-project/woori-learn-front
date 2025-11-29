@@ -7,7 +7,7 @@ import axiosInstance from '@/utils/axiosInstance';
 import { useScenarioHeader } from '@/lib/context/ScenarioHeaderContext';
 import { devLog, devError } from '@/utils/logger';
 import { useUserStore } from '@/lib/stores/userStore';
-import { setAvailablePoints as cachePoints } from '@/constants/points';
+import { getCurrentUser } from '@/lib/api/user.api';
 
 /**
  * 외부 데이터가 QuizContent 타입인지 검증하는 타입 가드
@@ -47,7 +47,7 @@ function QuizContent() {
   const [hasDeposited, setHasDeposited] = useState(false);
   const [isDepositing, setIsDepositing] = useState(false);
   const [depositMessage, setDepositMessage] = useState<string | null>(null);
-  const { availablePoints, setAvailablePoints } = useUserStore();
+  const { setAvailablePoints } = useUserStore();
   const inFlightRef = useRef(false);
 
   useEffect(() => {
@@ -141,9 +141,24 @@ function QuizContent() {
         );
 
         if (rewarded) {
-          const newPoints = availablePoints + rewardAmount;
-          setAvailablePoints(newPoints);
-          cachePoints(newPoints);
+          const serverBalance = Number(
+            res.data?.data?.currentBalance ??
+              res.data?.data?.balance ??
+              res.data?.data?.points
+          );
+
+          if (!Number.isNaN(serverBalance)) {
+            setAvailablePoints(serverBalance);
+          } else {
+            try {
+              const user = await getCurrentUser();
+              if (typeof user.points === 'number') {
+                setAvailablePoints(user.points);
+              }
+            } catch (refreshError) {
+              devError('[QuizPage] 보상 후 포인트 새로고침 실패:', refreshError);
+            }
+          }
         }
 
         setHasDeposited(true);
@@ -162,7 +177,7 @@ function QuizContent() {
         inFlightRef.current = false; // 잠금 해제
       }
     },
-    [quiz, hasDeposited, isDepositing,availablePoints]
+    [quiz, hasDeposited, isDepositing]
   );
 
   if (isLoading) {

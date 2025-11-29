@@ -12,6 +12,7 @@ import PageContainer from '@/components/common/PageContainer';
 import AccountInfoBlock from '@/components/common/AccountInfoBlock';
 import { useUserData } from '@/lib/hooks/useUserData';
 import Modal from '@/components/common/Modal';
+import { useUserStore } from '@/lib/stores/userStore';
 
 const FIXED_BANK = '우리은행';
 const BANK_LOGO = '/images/woori.png';
@@ -19,6 +20,7 @@ const BANK_LOGO = '/images/woori.png';
 export default function PointExchangePage() {
   const router = useRouter();
   const { availablePoints } = useUserData();
+  const { setAvailablePoints } = useUserStore();
   const isClient = useIsClient();
 
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
@@ -54,7 +56,7 @@ export default function PointExchangePage() {
   const validateAmount = (value: string, availablePoints: number) => {
     const raw = value.replace(/,/g, '');
     const amount = Number(raw);
-  if (!raw || isNaN(amount)) return '환전 금액을 입력해주세요.';
+    if (!raw || isNaN(amount)) return '환전 금액을 입력해주세요.';
     if (amount < 1) return '최소 환전 금액은 1p입니다.';
     if (amount > availablePoints)
       return `보유 포인트(${availablePoints.toLocaleString()}p)를 초과할 수 없습니다.`;
@@ -115,11 +117,20 @@ export default function PointExchangePage() {
         bankCode: 'WOORI',
       };
 
-      await requestPointExchange(dto);
+      const response = await requestPointExchange(dto);
+      if (response && typeof response.currentBalance === 'number') {
+        setAvailablePoints(response.currentBalance);
+      }
       setSubmitStatus('success');
 
       // 모달 표시
       setIsExchangeModalOpen(true);
+
+      // 성공 후 자동 이동 타이머 (2초 뒤 마이페이지로 이동)
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => {
+        router.replace('/mypage');
+      }, 2000);
 
       // 자동 이동은 모달 내부에서 처리
     } catch (error) {
