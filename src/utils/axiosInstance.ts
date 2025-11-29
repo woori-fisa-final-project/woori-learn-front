@@ -12,6 +12,7 @@ declare module "axios" {
 
 let refreshPromise: Promise<string> | null = null;
 const isServer = typeof window === 'undefined';
+const isServer = typeof window === 'undefined';
 
 const axiosInstance = axios.create({
   baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
@@ -98,6 +99,10 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config ?? {};
+
+    if(axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
 
     if(axios.isCancel(error)) {
       return Promise.reject(error);
