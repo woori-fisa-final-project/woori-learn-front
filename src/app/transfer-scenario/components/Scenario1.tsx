@@ -1,37 +1,46 @@
-"use client"; // 클라이언트 컴포넌트로 선언하여 바텀 시트 상호작용을 처리합니다.
+"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 
 type Scenario1Props = {
-  onOpenBankSheet: () => void; // 계좌번호 입력 바텀 시트를 여는 콜백입니다.
-  onContactTransfer: () => void; // 연락처 이체 버튼 클릭 시 실행할 콜백입니다.
+  onOpenBankSheet: () => void;
+  onContactTransfer: () => void;
 };
 
 export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenario1Props) {
-  // 손가락 표시 여부를 관리하는 상태 (초기값: true)
+  const router = useRouter();
+  
+  // ✅ URL 확인할 필요 없이 그냥 가져오면 됩니다.
+  // layout.tsx 덕분에 값이 살아있습니다.
+  const { sourceAccountNumber } = useTransferFlow(); 
+
   const [isFingerVisible, setIsFingerVisible] = useState(true);
 
+  useEffect(() => {
+    // 값이 잘 들어왔나 확인만 해보기
+    if (sourceAccountNumber) {
+      console.log("✅ Context에서 계좌번호 확인:", sourceAccountNumber);
+    } else {
+      console.warn("❌ 계좌번호가 비어있습니다 (새로고침 했거나 저장이 안 됨)");
+    }
+  }, [sourceAccountNumber]);
+
   const handleOpenSheet = () => {
-    setIsFingerVisible(false); // 손가락 숨기기
-    onOpenBankSheet();         // 바텀 시트 열기
+    setIsFingerVisible(false);
+    onOpenBankSheet();
   };
 
   return (
     <div className="flex h-full flex-col">
-      {/* 타이틀 영역: 사용자에게 이체 목적을 묻는 문구를 표시합니다. */}
       <section className="mt-[18px] space-y-[12px]">
         <h1 className="text-[24px] font-bold text-gray-900">어디로 이체하시겠어요?</h1>
       </section>
 
-      {/* 계좌번호 입력 버튼 및 추천/자주/내계좌 탭 메뉴 */}
       <section className="mt-[24px] space-y-[12px]">
-        
-        {/* 버튼을 감싸는 relative div 추가 (손가락 위치 기준점) */}
         <div className="relative">
-          
-          {/* 손가락 애니메이션: isFingerVisible이 true일 때만 표시
-              pointer-events-none: 손가락을 클릭해도 뒤에 있는 버튼이 눌리도록 함 */}
           {isFingerVisible && (
             <div className="absolute top-[10px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
               <span className="text-[30px]">👇</span>
@@ -40,7 +49,7 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
 
           <button
             type="button"
-            onClick={handleOpenSheet} // 클릭 시 handleOpenSheet 실행
+            onClick={handleOpenSheet}
             className="flex w-full flex-col bg-white pt-[40px]"
           >
             <div className="flex items-center justify-between">
@@ -67,7 +76,6 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
         </div>
       </section>
 
-      {/* 최근 입금 계좌 목록 헤더 영역 */}
       <section className="mt-[28px] flex items-center justify-between">
         <span className="text-[22px] font-semibold text-gray-500">최근입금계좌</span>
         <button type="button" className="text-[18px] text-gray-400" onClick={() => {}}>
@@ -75,13 +83,11 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
         </button>
       </section>
 
-      {/* 최근 이체 내역이 없을 때 빈 상태 안내를 보여줍니다. */}
       <section className="mt-[20px] flex flex-1 flex-col items-center justify-center">
         <Image src="/images/file.png" alt="파일 아이콘" className="h-[66px] w-[54px]" width={54} height={66} />
         <p className="mt-[16px] text-[16px] font-semibold text-gray-400">최근 이체 내역이 없어요</p>
       </section>
 
-      {/* 연락처를 선택하여 이체 플로우로 이동하는 버튼 */}
       <div className="mt-[20px] flex items-center justify-center">
         <button
           type="button"

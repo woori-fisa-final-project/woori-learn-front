@@ -4,6 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import Button from "@/components/common/Button";
 import NumericKeypad from "@/components/common/NumericKeypad";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import axiosInstance from "@/utils/axiosInstance";
+
 
 /**
  * ------------------------------------------------------------------
@@ -23,11 +25,6 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
   // 전역 상태에서 '출금 계좌번호'와 '비밀번호 저장 함수' 가져오기
   const { sourceAccountNumber, setEnteredPassword } = useTransferFlow();
 
-  /**
-   * ----------------------------------------------------------------
-   * State & Ref 관리
-   * ----------------------------------------------------------------
-   */
   const [password, setPassword] = useState("");       // 현재 입력된 비밀번호 (4자리)
   const [hasError, setHasError] = useState(false);    // 비밀번호 불일치 에러 상태
   const [failureCount, setFailureCount] = useState(0); // 비밀번호 틀린 횟수 카운트
@@ -42,52 +39,38 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
     };
   }, []);
 
-  /**
-   * ----------------------------------------------------------------
-   * API 통신
-   * ----------------------------------------------------------------
-   * transactions-password
-   * ----------------------------------------------------------------
-   */
-  
+
   /** * 백엔드 비밀번호 검증 요청 
    * @param pw 사용자가 입력한 4자리 비밀번호
    */
-  const validatePasswordFromBackend = async (pw: string) => {
-  try {
-    // 출금 계좌번호(내 계좌) 하이픈 제거
-    const rawAccount = sourceAccountNumber.replace(/\D/g, "");
+ const validatePasswordFromBackend = async (pw: string) => {
+    try {
+      // 숫자만 남기기 (DB 형식에 맞춤)
+      const rawAccount = sourceAccountNumber.replace(/\D/g, ""); 
+      
+      console.log("🔍 요청 계좌:", rawAccount);
 
-    console.log("🔍 rawAccount:", rawAccount);
-    console.log("🔍 sourceAccountNumber:", sourceAccountNumber);
+      // 👇 [핵심 변경] 복잡한 fetch 로직을 한 줄로 대체!
+      // - 헤더 설정 불필요 (Interceptors가 알아서 토큰 넣음)
+      // - 401 발생 시 자동 갱신 및 재시도 (Interceptors가 처리)
+      const res = await axiosInstance.post("/education/accounts/transactions-password", {
+          accountNumber: rawAccount,
+          password: pw
+      });
 
+      // axios 응답 구조 분해 (res.data 안에 서버 응답이 있음)
+      // 백엔드 ApiResponse가 { code: 200, data: boolean, message: ... } 형태라고 가정
+      const { code, data } = res.data;
 
-    const res = await fetch("http://localhost:8080/education/accounts/transactions-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        accountNumber: rawAccount, // 반드시 출금 계좌
-        password: pw,              // 입력받은 비밀번호
-      }),
-    });
+      return code === 200 && data === true;
 
-    if (!res.ok) return false;
+    } catch (err) {
+      console.error("비밀번호 검증 실패:", err);
+      // axiosInstance가 던진 ApiError를 여기서 잡을 수 있음
+      return false;
+    }
+  };
 
-    const json = await res.json();
-
-    return json.code === 200 && json.data === true;
-  } catch (err) {
-    console.error("비밀번호 검증 실패:", err);
-    return false;
-  }
-};
-
-
-  /**
-   * ----------------------------------------------------------------
-   * Event Handlers
-   * ----------------------------------------------------------------
-   */
 
   /** * 숫자 키패드 입력 처리 핸들러 
    * : 4자리가 입력되면 자동으로 검증 로직을 수행합니다.
@@ -151,11 +134,6 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
     onClose();
   };
 
-  /**
-   * ----------------------------------------------------------------
-   * UI Render
-   * ----------------------------------------------------------------
-   */
   return (
     // 1. 배경 (Backdrop) - 클릭 시 모달 닫힘
     <div

@@ -2,38 +2,43 @@
 
 import Button from "@/components/common/Button";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import { useUserData } from "@/lib/hooks/useUserData";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import axiosInstance from "@/utils/axiosInstance";
 
 type Scenario6Props = {
-  onSuccessTransfer: () => void;   // 이체 성공 → 시나리오7로 이동
-  onReenterAccount: () => void;    // 계좌번호 재입력
-  onReenterAmount: () => void;     // 금액 재입력
-  onBackToPassword: () => void;    // 비밀번호 다시 입력 (Scenario5로)
-  onCancel: () => void;            // 전체 취소
+  onConfirm: () => void;
+  onReenterAccount: () => void;
+  onReenterAmount: () => void;
+  onBackToPassword: () => void;
+  onCancel: () => void;
 };
 
 export default function Scenario6({
-  onSuccessTransfer,
+  onConfirm,
   onReenterAccount,
   onReenterAmount,
   onBackToPassword,
   onCancel,
 }: Scenario6Props) {
+  // setTransferResult 함수를 꺼내옵니다.
   const {
     selectedBank,
     accountNumber,
     recipientName,
     amount,
-    currentUserName,
     sourceAccountNumber,
     enteredPassword,
+    setTransferResult, 
   } = useTransferFlow();
+
+  const { userName: currentUserName } = useUserData();
 
   const bankName = selectedBank ?? "국민은행";
   const name = recipientName || "나누구";
   const displayAccount = accountNumber || "-";
-  const senderName = currentUserName ?? "김우리";
+  const senderName = currentUserName ?? "548호";
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -43,7 +48,7 @@ export default function Scenario6({
     return amount.toLocaleString();
   }, [amount]);
 
-  /** 🔵 이체 API 호출 */
+  /** 이체 API 호출 */
   const handleTransfer = async () => {
     if (loading) return;
 
@@ -51,26 +56,21 @@ export default function Scenario6({
     setErrorMsg("");
 
     try {
-      const res = await fetch("/education/accounts/transfer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await axiosInstance.post("/education/accounts/transfer", {
           fromAccountNumber: sourceAccountNumber.replace(/\D/g, ""),
           toAccountNumber: accountNumber.replace(/\D/g, ""),
           amount: amount,
-          accountPassword: enteredPassword, // Scenario5에서 저장한 비번 사용!
+          accountPassword: enteredPassword, 
           displayName: recipientName || "수취인",
-        }),
       });
 
-      const json = await res.json();
+      console.log("이체 성공", res.data);
 
-      if (!res.ok || json.code !== 200) {
-        throw new Error(json.message || "이체 실패");
-      }
+      // 성공한 결과를 Zustand에 저장합니다! (영수증 챙기기)
+      setTransferResult(res.data.data);
 
       // 성공 → 시나리오7 이동
-      onSuccessTransfer();
+      onConfirm();
     } catch (err: any) {
       setErrorMsg(err.message || "이체 중 오류가 발생했습니다.");
 

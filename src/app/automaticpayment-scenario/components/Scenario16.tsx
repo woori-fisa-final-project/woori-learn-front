@@ -206,10 +206,9 @@ function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalPr
 
         {/* 모달 하단에서 약관 확인을 완료할 수 있는 버튼을 제공한다. */}
         <div className="border-t border-gray-100 px-[20px] pb-[24px] pt-[16px]">
-          {/* 👇 [수정됨] relative 추가 */}
           <div className="relative">
             
-            {/* ✨ [Step 1] 모달 내부 확인 버튼 가리키기 ✨ */}
+            {/* 모달 내부 확인 버튼 가리키기 */}
             {showFinger && (
               <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
                 <span className="text-[30px]">👇</span>

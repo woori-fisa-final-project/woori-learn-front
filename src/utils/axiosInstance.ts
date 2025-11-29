@@ -99,6 +99,10 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config ?? {};
 
+    if(axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
     if (!error.response) {
       return Promise.reject(new ApiError(-1, "네트워크 오류가 발생했습니다."));
     }
