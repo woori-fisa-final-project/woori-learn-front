@@ -35,8 +35,6 @@ function TransferScenarioContent() {
   const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
   const { lastErrorType } = useTransferFlow();
 
-  const START_STEP_ID = 1001;
-
   const scenarioId = useMemo(() => {
     const v = searchParams.get("scenarioId");
     return v ? Number(v) : NaN;

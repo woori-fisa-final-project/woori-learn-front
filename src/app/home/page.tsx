@@ -72,7 +72,7 @@ export default function HomePage() {
       const res = await fetchMyScenario(scenarioId);
 
       // nowStepId가 1001이 아니면 Continue(이어하기) 오버레이 표시
-      if (res.nowStepId && res.nowStepId !== 1001) {
+      if (res.nowStepId && ![1001, 1121].includes(res.nowStepId)) {
         setContinueInfo({ scenarioId, nowStepId: res.nowStepId });
         return;
       }
@@ -227,12 +227,8 @@ export default function HomePage() {
         </div>
 
         {/* 서비스 카드 그리드 */}
-        <div>
-          <h2 className="mt-8 text-[18px] font-bold text-gray-600">
-            교육 시나리오
-          </h2>
-          <ServiceCardGrid cards={serviceCards} className="mt-3" />
-        </div>
+        <ServiceCardGrid cards={serviceCards} className="mt-10" />
+
         {/* 전체 달성률 제목 */}
         <div className="mt-8 w-full">
           <h2 className="text-[18px] font-bold text-gray-600">전체 달성률</h2>
@@ -251,7 +247,7 @@ export default function HomePage() {
         </div>
 
         {/* 교육별 진행도 카드 리스트 */}
-        <div className="mt-0 w-full pb-[25px]">
+        <div className="mt-0 w-full pb-[35px]">
           <h2 className="mb-4 text-[18px] font-bold text-gray-600">
             교육별 진행도
           </h2>
