@@ -15,7 +15,10 @@
   }                                                                                                                                                                                 
                                                                                                                                                                                     
   const API_BASE = ""; // 필요시 설정                                                                                                                                               
-  const getAuthToken = () => localStorage.getItem("adminToken") || "";                                                                                                              
+  const getAuthToken = () => {
+    if (typeof window === "undefined") return "";
+    return sessionStorage.getItem("adminToken") || "";
+  };                                                                                                              
                                                                                                                                                                                     
   const formatDate = (iso?: string) => {
   if (!iso) return "-";
@@ -106,13 +109,14 @@
         );                                                                                                                                                                          
         if (!res.ok) throw new Error("승인 실패");                                                                                                                                  
         await loadList();                                                                                                                                                           
-      } catch (e) {                                                                                                                                                                 
-        console.error(e);                                                                                                                                                           
-        // 필요시 토스트/알림 추가                                                                                                                                                  
-      } finally {                                                                                                                                                                   
-        setModalOpen(false);                                                                                                                                                        
-        setSelectedId(null);                                                                                                                                                        
-      }                                                                                                                                                                             
+      } catch (e) {
+        console.error(e);
+        alert("승인에 실패했습니다. 다시 시도해주세요.");
+        return; // ❗ finally 실행 막음
+      } finally {
+        setModalOpen(false);
+        setSelectedId(null);
+}                                                                                                                                                                             
     };                                                                                                                                                                              
                                                                                                                                                                                     
     const filteredList = useMemo(() => {                                                                                                                                            

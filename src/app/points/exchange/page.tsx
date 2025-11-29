@@ -124,6 +124,7 @@ export default function PointExchangePage() {
       // 자동 이동은 모달 내부에서 처리
     } catch (error) {
       setSubmitStatus('error');
+      return; // 🔥 재시도 시 중복요청 방지
     }
   };
 
