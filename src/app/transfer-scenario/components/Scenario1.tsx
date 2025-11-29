@@ -13,8 +13,6 @@ type Scenario1Props = {
 export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenario1Props) {
   const router = useRouter();
   
-  // ✅ URL 확인할 필요 없이 그냥 가져오면 됩니다.
-  // layout.tsx 덕분에 값이 살아있습니다.
   const { sourceAccountNumber } = useTransferFlow(); 
 
   const [isFingerVisible, setIsFingerVisible] = useState(true);
@@ -22,9 +20,9 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
   useEffect(() => {
     // 값이 잘 들어왔나 확인만 해보기
     if (sourceAccountNumber) {
-      console.log("✅ Context에서 계좌번호 확인:", sourceAccountNumber);
+      console.log("Context에서 계좌번호 확인:", sourceAccountNumber);
     } else {
-      console.warn("❌ 계좌번호가 비어있습니다 (새로고침 했거나 저장이 안 됨)");
+      console.warn("계좌번호가 비어있습니다 (새로고침 했거나 저장이 안 됨)");
     }
   }, [sourceAccountNumber]);
 
@@ -43,7 +41,7 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
         <div className="relative">
           {isFingerVisible && (
             <div className="absolute top-[10px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]">👇</span>
+              <span className="text-[30px]" aria-hidden="true">👇</span>
             </div>
           )}
 

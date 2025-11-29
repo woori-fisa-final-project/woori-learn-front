@@ -43,7 +43,7 @@ export default function Scenario3({
     return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 12)}`;
   }, [cleanedInput]);
 
-  // ✅ 유효성 검사 기준 (10자리 이상)
+  // 유효성 검사 기준 (10자리 이상)
   const isValid = cleanedInput.length >= 10;
 
   useEffect(() => {
@@ -101,10 +101,10 @@ export default function Scenario3({
         {/* 계좌번호 입력 필드 영역 */}
         <div className="space-y-[12px] relative">
           
-          {/* ✨ [1] 입력이 아직 덜 됐을 때(!isValid) -> 입력창 가리키기 ✨ */}
+          {/* 입력이 아직 덜 됐을 때(!isValid) -> 입력창 가리키기 */}
           {!isValid && (
             <div className="absolute -top-[25px] left-0 animate-bounce z-10 pointer-events-none">
-              <span className="text-[24px]">👇</span>
+              <span className="text-[30px]" aria-hidden="true">👇</span>
             </div>
           )}
 
@@ -125,10 +125,10 @@ export default function Scenario3({
         {/* 버튼을 감싸는 relative div 추가 */}
         <div className="relative">
           
-          {/* ✨ [2] 입력이 완료되었을 때(isValid) -> 다음 버튼 가리키기 ✨ */}
+          {/* 입력이 완료되었을 때(isValid) -> 다음 버튼 가리키기 */}
           {isValid && (
             <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]">👇</span>
+              <span className="text-[30px]" aria-hidden="true">👇</span>
             </div>
           )}
 

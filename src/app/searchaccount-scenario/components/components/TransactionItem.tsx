@@ -21,7 +21,7 @@ export default function TransactionItem({
       {/* isFirst가 true일 때만 손가락 애니메이션 표시 */}
       {isFirst && (
         <div className="absolute -top-[25px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-          <span className="text-[28px]">👇</span>
+          <span className="text-[30px]" aria-hidden="true">👇</span>
         </div>
       )}
 

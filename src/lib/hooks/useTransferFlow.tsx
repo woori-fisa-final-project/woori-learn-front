@@ -23,7 +23,7 @@ const formatAccountNumber = (value: string) => {
 
 export const resolveRecipientName = (accountNumber: string) => {
   const normalized = digitsOnly(accountNumber);
-  return RECIPIENT_NAME_MAP[normalized] ?? "살려줘";
+  return RECIPIENT_NAME_MAP[normalized] ?? "알 수 없음";
 };
 
 export type TransferResult = {

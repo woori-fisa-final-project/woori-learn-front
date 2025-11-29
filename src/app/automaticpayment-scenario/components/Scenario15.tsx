@@ -4,6 +4,7 @@
 import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import { useUserData } from "@/lib/hooks/useUserData"; // ✅ [추가] 사용자 정보 훅 가져오기
 import { formatDate } from "@/utils/formatDate";
 import { formatDateRange } from "@/utils/formatDateRange";
 import { useMemo } from "react";
@@ -38,8 +39,10 @@ export default function Scenario15({
     accountNumber,
     recipientName,
     amount,
-    currentUserName,
+
   } = useTransferFlow();
+
+  const { userName: currentUserName } = useUserData();
 
   // 금액과 등록일, 기간 정보를 보기 좋은 문자열로 가공한다.
   const formattedAmount = useMemo(() => {
@@ -98,7 +101,7 @@ export default function Scenario15({
         <div className="relative w-full">
           
           <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-            <span className="text-[30px]">👇</span>
+            <span className="text-[30px]" aria-hidden="true">👇</span>
           </div>
 
           <div className="w-full"> {/* Button 컴포넌트의 width 이슈 방지용 래퍼 */}

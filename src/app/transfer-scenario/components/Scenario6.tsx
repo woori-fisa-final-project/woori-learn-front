@@ -75,14 +75,11 @@ export default function Scenario6({
       setErrorMsg(err.message || "이체 중 오류가 발생했습니다.");
 
       // 비밀번호 오류라면 다시 Scenario5로 되돌리기
-      if (err.message?.includes("비밀번호")) {
-        setTimeout(() => {
+      if (err.code === 'PASSWORD_INCORRECT') {
+          setTimeout(() => {
           onBackToPassword();
         }, 1200);
       }
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (

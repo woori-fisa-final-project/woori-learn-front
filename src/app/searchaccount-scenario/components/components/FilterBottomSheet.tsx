@@ -68,7 +68,7 @@ export default function FilterBottomSheet({
                 {/* '이번달'일 때만 손가락 표시 */}
                 {p === "이번달" && tutorialStep === 0 && (
                   <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                    <span className="text-[24px]">👇</span>
+                    <span className="text-[30px]" aria-hidden="true">👇</span>
                   </div>
                 )}
                 
@@ -96,7 +96,7 @@ export default function FilterBottomSheet({
                 {/* '출금'일 때만 손가락 표시 */}
                 {t === "출금" && tutorialStep === 1 && (
                   <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                    <span className="text-[24px]">👇</span>
+                    <span className="text-[30px]" aria-hidden="true">👇</span>
                   </div>
                 )}
 
@@ -124,7 +124,7 @@ export default function FilterBottomSheet({
                 {/* '최신순'일 때만 손가락 표시 */}
                 {s === "최신순" && tutorialStep === 2 && (
                   <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                    <span className="text-[24px]">👇</span>
+                    <span className="text-[30px]" aria-hidden="true">👇</span>
                   </div>
                 )}
 
@@ -156,7 +156,7 @@ export default function FilterBottomSheet({
           <div className="relative flex-1">
             {tutorialStep === 3 && (
               <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]">👇</span>
+                <span className="text-[30px]" aria-hidden="true">👇</span>
               </div>
             )}
             

@@ -59,7 +59,7 @@ export default function Scenario2({ onSelect, onClose, allowedBanks }: Scenario2
                 {/* 국민은행 손가락 애니메이션 */}
                 {bank.name === "국민은행" && (
                   <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                    <span className="text-[24px]">👇</span>
+                    <span className="text-[30px]" aria-hidden="true">👇</span>
                   </div>
                 )}
 

@@ -132,7 +132,7 @@ export default function Scenario10() {
         {/* 확인 버튼을 감싸는 손가락 애니메이션 */}
         <div className="relative flex-1">
           <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-            <span className="text-[30px]">👇</span>
+            <span className="text-[30px]" aria-hidden="true">👇</span>
           </div>
 
           <button

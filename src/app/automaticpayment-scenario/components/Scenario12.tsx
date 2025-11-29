@@ -9,6 +9,7 @@ import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { useAccountSelection } from "@/lib/hooks/useAccountSelection";
 import { useAutoPaymentSteps } from "@/lib/hooks/useAutoPaymentSteps";
 import { useAutoPaymentRegistration } from "@/lib/hooks/useAutoPaymentRegistration";
+import { useUserData } from "@/lib/hooks/useUserData";
 // 공통 유틸리티 함수를 불러온다.
 import { formatAccountNumber } from "@/utils/accountUtils";
 // 다른 시나리오 단계 컴포넌트를 순차적으로 사용하여 전체 플로우를 완성한다.
@@ -34,10 +35,10 @@ function AccountSelectStep({
   isLoading: boolean;
   onSelectAccount: (accountId: number) => void;
 }) {
-  // ✅ [추가] 손가락 표시 여부 상태
+  // 손가락 표시 여부 상태
   const [isFingerVisible, setIsFingerVisible] = useState(true);
 
-  // ✅ [추가] 계좌 선택 시 손가락 숨기기
+  // 계좌 선택 시 손가락 숨기기
   const handleAccountClick = (id: number) => {
     setIsFingerVisible(false);
     onSelectAccount(id);
@@ -62,13 +63,13 @@ function AccountSelectStep({
       ) : (
         <section className="mt-[28px] space-y-[16px]">
           {accounts.map((account, index) => (
-            /* ✅ relative div 추가 */
+            
             <div key={account.id} className="relative">
               
-              {/* ✨ 첫 번째 계좌이고, 아직 클릭 안 했을 때만 손가락 표시 ✨ */}
+              {/* 첫 번째 계좌이고, 아직 클릭 안 했을 때만 손가락 표시 */}
               {index === 0 && isFingerVisible && (
                 <div className="absolute -top-[30px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                  <span className="text-[30px]">👇</span>
+                  <span className="text-[30px]" aria-hidden="true">👇</span>
                 </div>
               )}
 
@@ -121,8 +122,9 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
     accountNumber,
     recipientName,
     amount,
-    currentUserName,
   } = useTransferFlow();
+
+  const { userName: currentUserName } = useUserData();
 
   // 커스텀 훅으로 로직 분리
   const { accounts, selectedAccount, isLoadingAccounts, errorMessage: accountError, selectAccount } = useAccountSelection();

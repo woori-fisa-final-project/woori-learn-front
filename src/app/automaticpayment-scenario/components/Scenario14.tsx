@@ -129,7 +129,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 {/* 1일 선택창 가리키기 */}
                 {tutorialStep === 0 && (
                   <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                    <span className="text-[30px]">👇</span>
+                    <span className="text-[30px]" aria-hidden="true">👇</span>
                   </div>
                 )}
 

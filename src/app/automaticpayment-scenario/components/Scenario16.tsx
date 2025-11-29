@@ -81,13 +81,13 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
         </div>
 
         <div>
-          {/* 👇 [수정됨] relative 추가하여 손가락 위치 기준점 잡기 */}
+          {/*  relative 추가하여 손가락 위치 기준점 잡기 */}
           <div className="relative flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
             
-            {/* ✨ [Step 0] 약관 버튼 가리키기 ✨ */}
+            {/*  약관 버튼 가리키기 */}
             {tutorialStep === 0 && (
               <div className="absolute -top-[30px] left-[40%] -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]">👇</span>
+                <span className="text-[30px]" aria-hidden="true">👇</span>
               </div>
             )}
 
@@ -122,11 +122,10 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
       </section>
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[32px]">
-        {/* 약관에 동의하기 전까지 비활성화되는 확인 버튼이다. */}
-        {/* 👇 [수정됨] relative 추가 */}
+        {/* 약관에 동의하기 전까지 비활성화되는 확인 버튼 */}
         <div className="relative">
           
-          {/* ✨ [Step 2] 최종 확인 버튼 가리키기 ✨ */}
+          {/* 최종 확인 버튼 가리키기 */}
           {tutorialStep === 2 && isChecked && (
             <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
               <span className="text-[30px]">👇</span>
@@ -144,7 +143,7 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
         <TermsDetailModal 
           onClose={closeDetail} 
           onConfirm={handleModalConfirm}
-          // ✅ 모달 내부 손가락 표시 여부 전달
+          // 모달 내부 손가락 표시 여부 전달
           showFinger={tutorialStep === 1} 
         />
       )}
@@ -156,7 +155,7 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
 type TermsDetailModalProps = {
   onClose: () => void;
   onConfirm: () => void;
-  showFinger: boolean; // ✅ [추가] 손가락 표시 여부 Prop
+  showFinger: boolean; 
 };
 
 function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalProps) {
@@ -211,7 +210,7 @@ function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalPr
             {/* 모달 내부 확인 버튼 가리키기 */}
             {showFinger && (
               <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]">👇</span>
+                <span className="text-[30px]" aria-hidden="true">👇</span>
               </div>
             )}
 

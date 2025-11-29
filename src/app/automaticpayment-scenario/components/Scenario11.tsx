@@ -167,7 +167,7 @@ export default function Scenario11({
             
             {/* 메인 화면 등록 버튼 손가락 */}
             <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]">👇</span>
+              <span className="text-[30px]" aria-hidden="true">👇</span>
             </div>
 
             <Button size="md" onClick={handleRegister} fullWidth>

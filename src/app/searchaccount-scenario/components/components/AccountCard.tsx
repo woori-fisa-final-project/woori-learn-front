@@ -50,7 +50,7 @@ export default function AccountCard({
         {/* 조건 손가락 애니메이션 */}
         {showFingerAnimation && (
           <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-            <span className="text-[24px]">👇</span>
+            <span className="text-[30px]" aria-hidden="true">👇</span>
           </div>
         )}
 
