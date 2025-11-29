@@ -5,8 +5,8 @@ import Scenario12 from "./Scenario12";
 import Scenario18, { type Scenario18Detail } from "./Scenario18";
 import Scenario19 from "./Scenario19";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import type { ScenarioStep } from "@/types/scenario";
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
@@ -59,8 +59,20 @@ function convertToAutoTransferInfo(payment: AutoPayment, account: EducationalAcc
     };
 }
 
+function inferInitialScreenFromStepId(stepId: number): Screen {
+    if (stepId >= 1071) return "register";
+    return "list";
+}
+
 export default function ScenarioContainer({ engineStep, onPracticeNext }: Props) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const urlStepId = useMemo(() => {
+        const raw = searchParams.get("stepId");
+        const n = raw ? Number(raw) : NaN;
+        return Number.isFinite(n) ? n : 0;
+    }, [searchParams]);
 
     // 화면 상태
     const [currentScreen, setCurrentScreen] = useState<Screen>("list");
@@ -82,6 +94,21 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
     const isFetchingRef = useRef(false);
     const abortControllerRef = useRef<AbortController | null>(null);
 
+    const didInitScreenRef = useRef(false);
+    useEffect(() => {
+        if (didInitScreenRef.current) return;
+        didInitScreenRef.current = true;
+
+        const initial = inferInitialScreenFromStepId(urlStepId);
+        setCurrentScreen(initial);
+
+        if (initial === "register") {
+            setSelectedAutoPaymentId(null);
+            setSelectedPayment(null);
+            setDetailData(null);
+        }
+    }, [urlStepId]);
+    
     const fetchRepresentativeAccount = useCallback(async (signal?: AbortSignal) => {
         const accounts = await getAccountList(signal);
         const representative = getRepresentativeAccount(accounts);

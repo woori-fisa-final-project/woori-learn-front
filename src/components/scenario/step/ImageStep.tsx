@@ -14,6 +14,8 @@ export default function ImageStep({ content, onBackgroundClick, stepId }: ImageS
   // - 아니라면 "/images/scenario/{파일명}" 형태로 보정해서 사용합니다.
   const src = content.image.startsWith("/")
     ? content.image
+    : content.image === "point"
+    ? `/images/scenario/${content.image}.gif`
     : `/images/scenario/${content.image}.png`;
 
   return (

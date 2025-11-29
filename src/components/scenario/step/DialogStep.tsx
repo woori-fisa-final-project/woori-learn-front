@@ -34,10 +34,10 @@ export default function DialogStep({
     (previousStep.content as any)?.character === "wibee";
 
   const balloonBase =
-    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";
+    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-semibold leading-relaxed text-gray-800";
 
   const BTN_SIZE = {
-    sm: "h-[58px] text-[14px] font-normal",
+    sm: "h-[58px] text-[16px] font-normal",
     md: "h-[55px] text-[16px]",
     lg: "h-[60px] text-[16px]",
   } as const;
@@ -91,7 +91,7 @@ export default function DialogStep({
         <div className={`flex flex-1 flex-col ${alignClass} justify-center gap-6 min-h-screen`}>
           {/* 위쪽 말풍선 */}
           <div className={`flex ${justifyClass}`}>
-            <div className={`${balloonBase} pointer-events-none`}>
+            <div className={`${balloonBase} pointer-events-none bottom-[90px]`}>
               <p>{content.text}</p>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function DialogStep({
           {/* 아래 Weebee 캐릭터 */}
           <Weebee
             emotion={content.emotion}
-            className="z-1 flex h-[348px] w-[348px] items-center justify-center pointer-events-none"
+            className="z-1 flex h-[348px] w-[348px] items-center justify-center pointer-events-none -translate-y-20"
           />
         </div>
 

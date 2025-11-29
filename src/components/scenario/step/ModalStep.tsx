@@ -29,13 +29,13 @@ export default function ModalStep({ content, onBackgroundClick }: ModalStepProps
         {/* 헤더: 제목, 전구 아이콘, X 버튼 */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-[20px]">💡</span>
-            <h2 className="text-[20px] text-gray-700 font-semibold">{title}</h2>
+            <span className="text-[30px]">💡</span>
+            <h2 className="text-[30px] text-gray-700 font-semibold">{title}</h2>
           </div>
           <button
             type="button"
             onClick={onBackgroundClick}
-            className="text-gray-400 hover:text-gray-600 text-[20px] font-bold"
+            className="text-gray-400 hover:text-gray-600 text-[30px] font-bold"
             aria-label="닫기"
           >
             ×
@@ -47,7 +47,7 @@ export default function ModalStep({ content, onBackgroundClick }: ModalStepProps
           {items.map((item, index) => (
             <div key={index} className="flex items-start gap-2 font-semibold">
               <span className="text-gray-400">•</span>
-              <p className="text-[16px] text-gray-600 flex-1">{item}</p>
+              <p className="text-[25px] text-gray-600 flex-1">{item}</p>
             </div>
           ))}
         </div>

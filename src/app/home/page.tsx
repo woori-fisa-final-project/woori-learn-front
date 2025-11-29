@@ -9,6 +9,8 @@ import Modal from "@/components/common/Modal"; // 준비 중 서비스 안내 �
 import Image from "next/image";
 import { SCENARIO_CONFIG } from "@/constants/scenario";
 import { useScenarioStatus } from "./useScenarioStatus";
+import axiosInstance from "@/utils/axiosInstance";
+import Continue from "@/components/scenario/step/Continue";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -16,6 +18,27 @@ const utilityImage = "/images/utility-image.png"; // 공과금 카드 이미지�
 const savingsImage = "/images/savings-image.png"; // 예/적금 카드 이미지입니다.
 const loanImage = "/images/loan-image.png"; // 대출 카드 이미지입니다.
 const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용하는 아이콘입니다.
+
+type MyScenarioRes = {
+  scenarioId: number;
+  nowStepId: number;
+  type: string;
+  quizId: number | null;
+  content: Record<string, any>;
+};
+
+type ApiResponse<T> = {
+  code: number;
+  message: string;
+  data: T;
+};
+
+async function fetchMyScenario(scenarioId: number): Promise<MyScenarioRes> {
+  const { data } = await axiosInstance.get<ApiResponse<MyScenarioRes>>(
+    `/users/me/scenarios/${scenarioId}`
+  );
+  return data.data;
+}
 
 export default function HomePage() {
   const router = useRouter(); // 페이지 이동 처리를 위해 라우터 인스턴스를 가져옵니다.
@@ -29,15 +52,39 @@ export default function HomePage() {
     allScenariosCompleted,
   } = useScenarioStatus();
 
+  const [continueInfo, setContinueInfo] = useState<null | { scenarioId: number; nowStepId: number }>(null);
+  const [isCheckingScenario, setIsCheckingScenario] = useState(false);
+
   const handleProfileClick = () => {
     router.push("/mypage"); // 프로필 버튼 클릭 시 마이페이지로 이동합니다.
   };
 
-  const handleAccountClick = () => {
+  const handleAccountClick = async () => {
     // 조회·이체 서비스 카드를 눌렀을 때는
     // WooriMainPage로 이동하면서 시나리오 튜토리얼을 오버레이로 표시합니다.
     // ※ 백엔드 시나리오 ID는 1이며, 첫 Step은 1001부터 시작합니다.
-    router.push("/woorimain?scenarioId=1&stepId=1001");
+    if (isCheckingScenario) return;
+    setIsCheckingScenario(true);
+
+    const scenarioId = 1;
+
+    try {
+      const res = await fetchMyScenario(scenarioId);
+
+      // nowStepId가 1001이 아니면 Continue(이어하기) 오버레이 표시
+      if (res.nowStepId && res.nowStepId !== 1001) {
+        setContinueInfo({ scenarioId, nowStepId: res.nowStepId });
+        return;
+      }
+
+      // 처음부터 시작
+      router.push(`/woorimain?scenarioId=${scenarioId}&stepId=1001`);
+    } catch (e) {
+      // 실패 시 안전하게 처음부터 시작
+      router.push(`/woorimain?scenarioId=${scenarioId}&stepId=1001`);
+    } finally {
+      setIsCheckingScenario(false);
+    }
   };
 
   const handleModalOpen = () => {
@@ -137,6 +184,16 @@ export default function HomePage() {
     },
   ];
 
+  function resolveScenarioEntryPath(scenarioId: number, stepId: number) {
+    if (scenarioId === 1) {
+      if (stepId >= 1063) return `/automaticpayment-scenario?scenarioId=${scenarioId}&stepId=${stepId}`;
+      if (stepId >= 1035) return `/searchaccount-scenario?scenarioId=${scenarioId}&stepId=${stepId}`;
+      if (stepId >= 1013) return `/transfer-scenario?scenarioId=${scenarioId}&stepId=${stepId}`;
+      return `/woorimain?scenarioId=${scenarioId}&stepId=${stepId}`;
+    }
+    return `/woorimain?scenarioId=${scenarioId}&stepId=${stepId}`;
+  }
+
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
       <div className="w-full max-w-[390px] px-5 pt-[30px] pb-0 sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
@@ -209,6 +266,22 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {continueInfo && (
+        <Continue
+          onBackgroundClick={() => setContinueInfo(null)}
+          onRestartFromBeginning={() => {
+            const scenarioId = continueInfo.scenarioId;
+            setContinueInfo(null);
+            router.push(`/woorimain?scenarioId=${scenarioId}&stepId=1001`);
+          }}
+          onRestartFromStopPart={() => {
+            const { scenarioId, nowStepId } = continueInfo;
+            setContinueInfo(null);
+            router.push(resolveScenarioEntryPath(scenarioId, nowStepId - 1));
+          }}
+        />
+      )}
 
       {/* 모달 컴포넌트 */}
       <Modal

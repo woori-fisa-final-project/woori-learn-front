@@ -19,13 +19,10 @@ export async function postScenarioNextStepFromApi(
   scenarioId: number,
   body: { nowStepId: number; answer?: number },
 ): Promise<NextStepApiData> {
-  const { data } = await axiosInstance.post<
-    BaseResponse<{
-      status: string;
-      step: { nowStepId: number } | null; // COMPLETED면 null
-      quiz: NextStepApiData["quiz"];
-    }>
-  >(`/users/me/scenarios/${scenarioId}/next-step`, body);
+  const { data } = await axiosInstance.post<BaseResponse<NextStepApiData>>(
+    `/users/me/scenarios/${scenarioId}/next-step`,
+    body,
+  );
 
   if (data?.data === undefined) throw new Error("Invalid next-step response");
   return data.data;

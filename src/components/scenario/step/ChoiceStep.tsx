@@ -23,7 +23,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
   const isWeebee = previousContent?.character === "wibee";
 
   const balloonBase =
-    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";
+    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-semibold leading-relaxed text-gray-800";
 
   return (
     <div className="fixed inset-0 z-[9999] bg-gradient-to-b from-[#ffffff] to-[#549AE4]">
@@ -32,7 +32,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
         <div className="flex flex-1 flex-col items-center justify-center gap-6 min-h-screen">
           {/* 위쪽 말풍선 - DialogStep과 동일한 위치 */}
           <div className="flex justify-center">
-            <div className={balloonBase}>
+            <div className={`${balloonBase} bottom-[90px]`}>
               <p>{previousContent.text}</p>
             </div>
           </div>
@@ -40,7 +40,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
           {/* 아래 Weebee 캐릭터 - DialogStep과 동일한 위치 */}
           <Weebee
             emotion={previousContent.emotion}
-            className="z-1 flex h-[348px] w-[348px] items-center justify-center"
+            className="z-1 flex h-[348px] w-[348px] items-center justify-center -translate-y-20"
           />
         </div>
       )}
@@ -51,7 +51,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
           <div className="flex items-end justify-end">
             <div className="flex flex-col items-end">
               {/* 말풍선 - DialogStep과 동일한 위치 */}
-              <div className={balloonBase}>
+              <div className={`${balloonBase} bottom-[90px]`} >
                 <p>{previousContent.text}</p>
               </div>
             </div>
@@ -65,7 +65,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
           <button
             key={choice.text}
             type="button"
-            className="relative inline-block w-full max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800 cursor-pointer hover:bg-[#FFF9E6] transition-colors"
+            className="relative inline-block w-full max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-semibold leading-relaxed text-gray-800 cursor-pointer hover:bg-[#FFF9E6] transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onChoose(choice.next);
