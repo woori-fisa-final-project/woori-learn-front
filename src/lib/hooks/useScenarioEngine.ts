@@ -17,7 +17,7 @@ export function useScenarioEngine() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [quizState, setQuizState] = useState<null | { stepId: number; quiz: ApiQuiz }>(null);
+  const [quizState, setQuizState] = useState<null | { stepId: number; quiz: ApiQuiz; status?: string }>(null);
   const quizInFlightRef = useRef(false);
 
   const loadScenarioDoc = useCallback(async (scenarioId: number) => {
@@ -96,14 +96,15 @@ export function useScenarioEngine() {
         ...(answer == null ? {} : { answer }),
       });
 
-      if (res.status === "QUIZ_REQUIRED" && res.quiz) {
-        setQuizState({ stepId: nowStepId, quiz: res.quiz as ApiQuiz });
+      if ((res.status === "QUIZ_REQUIRED" || res.status === "QUIZ_WRONG") && res.quiz) {
+        setQuizState({ stepId: nowStepId, quiz: res.quiz as ApiQuiz, status: res.status });
         applyNowStepId(nowStepId); // 1050 유지
-        return;
+        return res;
       }
 
       setQuizState(null);
       applyNowStepId(res.step ? res.step.nowStepId : null);
+      return res;
     } catch (e: any) {
       console.error("[next-step ERROR]", e?.response?.status, e?.response?.data ?? e);
       setError(e instanceof Error ? e.message : "next-step 요청 중 오류");
@@ -117,7 +118,7 @@ export function useScenarioEngine() {
 
       quizInFlightRef.current = true;
       try {
-        await nextStep(quizState.stepId, optionIndex + QUIZ_ANSWER_BASE);
+        return await nextStep(quizState.stepId, optionIndex + QUIZ_ANSWER_BASE);
       } finally {
         quizInFlightRef.current = false;
       }

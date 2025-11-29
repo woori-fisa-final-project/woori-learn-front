@@ -13,30 +13,37 @@ const TERMS_CHECKED_ICON = "/images/Termcheck2.png";
 // 상위 단계에서 확인 콜백을 전달받기 위한 props 타입이다.
 type Scenario16Props = {
   onConfirm: () => void;
+  advancePractice: (opts?: { onlyIds?: number[]; answer?: number }) => Promise<boolean>;
 };
 
 // 약관 동의 화면을 렌더링해 사용자가 필수 약관을 확인하고 진행하도록 한다.
-export default function Scenario16({ onConfirm }: Scenario16Props) {
+export default function Scenario16({ onConfirm, advancePractice }: Scenario16Props) {
   // 체크박스 상태와 상세 모달 열림 여부를 각각 관리한다.
   const [isChecked, setIsChecked] = useState(false);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
-  const handleAgreementClick = () => {
+  const handleAgreementClick = async () => {
     if (isChecked) {
       setIsChecked(false);
       return;
     }
     setDetailOpen(true);
+
+    await advancePractice({ onlyIds: [1095] });
   };
 
   // 사용자가 직접 상세 보기 버튼을 눌렀을 때 모달을 연다.
-  const openDetail = () => {
+  const openDetail = async () => {
     setDetailOpen(true);
+
+    await advancePractice({ onlyIds: [1095] });
   };
 
   // 모달 닫기 버튼이나 배경을 통해 상세 화면을 닫는다.
-  const closeDetail = () => {
+  const closeDetail = async () => {
     setDetailOpen(false);
+
+    await advancePractice({ onlyIds: [1096] });
   };
 
   // 체크 상태가 없으면 다음 단계로 이동하지 않도록 방지한다.
@@ -48,9 +55,11 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
   };
 
   // 모달에서 확인을 누르면 자동으로 체크 상태를 유지한 채 다음 단계로 진행한다.
-  const handleModalConfirm = () => {
+  const handleModalConfirm = async () => {
     setDetailOpen(false);
     setIsChecked(true);
+
+    await advancePractice({ onlyIds: [1097] });
   };
 
   return (

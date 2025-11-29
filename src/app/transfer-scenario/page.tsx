@@ -153,7 +153,9 @@ function TransferScenarioContent() {
         <ScenarioContainer
           engineStepId={engineStepId}
           engineNextId={engineNextId}
-          onPracticeNext={(nowStepId, answer) => nextStep(nowStepId, answer)}
+          onPracticeNext={async (nowStepId, answer) => {
+            await nextStep(nowStepId, answer);
+          }}
           onTransferResult={handleTransferResult}
           onExitToMain={handleExitToMain}
         />

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { createAutoPayment } from "@/lib/api/autoPayment";
 import type { EducationalAccount } from "@/types/account";
 import type { ScheduleSummary } from "@/app/automaticpayment-scenario/components/types";
@@ -17,73 +17,74 @@ export function useAutoPaymentRegistration() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const accountPasswordRef = useRef<string>("");
 
-  const handleScheduleComplete = (options: ScheduleSummary) => {
+  const handleScheduleComplete = useCallback((options: ScheduleSummary) => {
     setScheduleSummary(options);
     setPasswordSheetOpen(true);
-  };
+  }, []);
 
-  const handlePasswordSuccess = (password: string) => {
+  const handlePasswordSuccess = useCallback((password: string) => {
     accountPasswordRef.current = password;
     setPasswordSheetOpen(false);
-  };
+  }, []);
 
-  const handlePasswordClose = () => {
+  const handlePasswordClose = useCallback(() => {
     setPasswordSheetOpen(false);
-  };
+  }, []);
 
-  const registerAutoPayment = async (
-    selectedAccount: EducationalAccount | null,
-    selectedBank: string | null,
-    accountNumber: string,
-    recipientName: string,
-    amount: number
-  ) => {
-    if (!scheduleSummary) {
-      devError("[registerAutoPayment] 일정 정보가 없습니다.");
-      return false;
-    }
+  const registerAutoPayment = useCallback(
+    async (
+      selectedAccount: EducationalAccount | null,
+      selectedBank: string | null,
+      accountNumber: string,
+      recipientName: string,
+      amount: number
+    ) => {
+      if (!scheduleSummary) {
+        devError("[registerAutoPayment] 일정 정보가 없습니다.");
+        return false;
+      }
 
-    if (!selectedAccount) {
-      setErrorMessage(ERROR_MESSAGES.ACCOUNT_NOT_FOUND);
-      return false;
-    }
+      if (!selectedAccount) {
+        setErrorMessage(ERROR_MESSAGES.ACCOUNT_NOT_FOUND);
+        return false;
+      }
 
-    // 금액 검증
-    const validation = validateAutoPaymentAmount(amount);
-    if (!validation.isValid) {
-      setErrorMessage(validation.errorMessage || "");
-      return false;
-    }
+      // 금액 검증
+      const validation = validateAutoPaymentAmount(amount);
+      if (!validation.isValid) {
+        setErrorMessage(validation.errorMessage || "");
+        return false;
+      }
 
-    try {
-      // frequency와 transferDay에서 숫자 추출
-      const transferCycle = parseNumber(scheduleSummary.frequency);
-      const designatedDate = parseTransferDay(scheduleSummary.transferDay);
+      try {
+        // frequency와 transferDay에서 숫자 추출
+        const transferCycle = parseNumber(scheduleSummary.frequency);
+        const designatedDate = parseTransferDay(scheduleSummary.transferDay);
 
-      // API 호출
-      await createAutoPayment({
-        educationalAccountId: selectedAccount.id,
-        depositBankCode: getBankCode(selectedBank || "국민은행"),
-        depositNumber: accountNumber || "",
-        amount: amount,
-        counterpartyName: recipientName || "받는 분",
-        displayName: "타행자동이체",
-        transferCycle: transferCycle,
-        designatedDate: designatedDate,
-        startDate: scheduleSummary.startDate,
-        expirationDate: scheduleSummary.endDate,
-        accountPassword: accountPasswordRef.current,
-      });
+        // API 호출
+        await createAutoPayment({
+          educationalAccountId: selectedAccount.id,
+          depositBankCode: getBankCode(selectedBank || "국민은행"),
+          depositNumber: accountNumber || "",
+          amount: amount,
+          counterpartyName: recipientName || "받는 분",
+          displayName: "타행자동이체",
+          transferCycle: transferCycle,
+          designatedDate: designatedDate,
+          startDate: scheduleSummary.startDate,
+          expirationDate: scheduleSummary.endDate,
+          accountPassword: accountPasswordRef.current,
+        });
 
-      // 성공 시 비밀번호 초기화 (보안)
-      accountPasswordRef.current = "";
-      return true;
-    } catch (error) {
-      devError("[registerAutoPayment] 자동이체 등록 실패:", error);
-      setErrorMessage(ERROR_MESSAGES.REGISTRATION_FAILED);
-      return false;
-    }
-  };
+        // 성공 시 비밀번호 초기화 (보안)
+        accountPasswordRef.current = "";
+        return true;
+      } catch (error) {
+        devError("[registerAutoPayment] 자동이체 등록 실패:", error);
+        setErrorMessage(ERROR_MESSAGES.REGISTRATION_FAILED);
+        return false;
+      }
+    }, [scheduleSummary]);
 
   return {
     scheduleSummary,

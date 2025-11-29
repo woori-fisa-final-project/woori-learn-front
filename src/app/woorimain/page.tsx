@@ -323,11 +323,26 @@ export default function WooriMainPage() {
   }, []);
 
   const handleNavigate = (route: string) => {
-    router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
+    if (route === "/automaticpayment-scenario") {
+      const scenarioId = Number(searchParams.get("scenioId")) || 1;
+
+      if (currentStep?.type === "PRACTICE" && currentStep.id != null) {
+        const nextStepId = currentStep.next ?? currentStep.id + 1; // 1062 -> 1063
+        router.push(`${route}?scenarioId=${scenarioId}&stepId=${nextStepId}`);
+        return;
+      }
+      router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
+      return;
+    };
+
+    router.push(route);
   };
 
-  const handleOpenMenu = () => {
+  const handleOpenMenu = async () => {
     setMenuOpen(true);
+    if (currentStep?.type === "PRACTICE" && currentStep.id === 1060) {
+      await nextStep(currentStep.id);
+    }
   };
 
   const handleCloseMenu = () => {
@@ -421,7 +436,9 @@ export default function WooriMainPage() {
         <ScenarioRenderer
           step={currentStep}
           previousStep={previousStep}
-          onNext={(nowStepId, answer) => nextStep(nowStepId, answer)}
+          onNext={async (nowStepId, answer) => {
+            await nextStep(nowStepId, answer);
+          }}
           onBackgroundClick={async () => {
             // CHOICE 단계에서는 ChoiceStep 내부에서 onChoiceNext를 통해 이동하므로
             // 여기서는 일반 nextStep을 호출하지 않습니다.

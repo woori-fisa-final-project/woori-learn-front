@@ -9,6 +9,7 @@ import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
 import InfoRow from "@/components/common/InfoRow";
 import Image from "next/image";
+import { ScenarioStep } from "@/types";
 
 // 자동이체 등록 정보 카드에 표시할 데이터를 정의한다.
 export type AutoTransferInfo = {
@@ -37,6 +38,8 @@ type Scenario11Props = {
   autoTransferList?: AutoTransferInfo[];
   onNavigateToRegister?: () => void;
   onNavigateToDetail?: (id: number) => void;
+  engineStep?: ScenarioStep | null;
+  onPracticeNext?: (nowStepId: number, answer?: number) => void | Promise<void>;
 };
 
 // 자동이체 메인 페이지를 구성하는 최상위 컴포넌트로, 계좌 정보와 등록 상태를 표시한다.
@@ -48,6 +51,8 @@ export default function Scenario11({
     console.warn("[Scenario11] onNavigateToRegister not provided"),
   onNavigateToDetail = (id) =>
     console.warn("[Scenario11] onNavigateToDetail not provided: ", id),
+  engineStep = null,
+  onPracticeNext,
 }: Scenario11Props) {
   // 페이지 이동과 세부 플로우 전환을 처리하기 위해 라우터 인스턴스를 가져온다.
   const router = useRouter();
@@ -56,6 +61,13 @@ export default function Scenario11({
   // 바텀시트가 열려 있는지 여부를 관리하여 사용자 입력에 따라 UI를 토글한다.
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [isFxInfoModalOpen, setFxInfoModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!engineStep) return;
+    if (engineStep.id === 1067 || engineStep.id === 1068) {
+      setSheetOpen(true);
+    }
+  }, [engineStep]);
 
   // 컴포넌트가 마운트될 때 화면 제목과 뒤로가기 동작을 지정하고, 언마운트 시 원상복구한다.
   useEffect(() => {
@@ -72,8 +84,13 @@ export default function Scenario11({
   }, [router, setOnBack, setTitle]);
 
   // 등록하기 버튼을 눌렀을 때 바텀시트를 열어 자동이체 유형을 고르게 한다.
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (isSheetOpen) return; // <-- 중복 열림 방지
+
+    if (engineStep?.type === "PRACTICE" && engineStep.id === 1065) {
+      await onPracticeNext?.(engineStep.id);
+      return;
+    }
     setSheetOpen(true);
   };
 
@@ -86,9 +103,12 @@ export default function Scenario11({
   };
 
   // 자동이체 유형을 선택했을 때 분기 처리하여 다음 행동을 결정한다.
-  const handleSelectOption = (type: "krw" | "fx") => {
+  const handleSelectOption = async (type: "krw" | "fx") => {
     // 원화를 선택하면 자동이체 등록 플로우로 이동한다.
     if (type === "krw") {
+      if (engineStep?.type === "PRACTICE" && engineStep.id === 1068) {
+        await onPracticeNext?.(engineStep.id);
+      }
       onNavigateToRegister?.();
     } else {
       setFxInfoModalOpen(true);
@@ -104,7 +124,10 @@ export default function Scenario11({
     setFxInfoModalOpen(false);
   };
 
-  const handleOpenDetail = (id: number) => {
+  const handleOpenDetail = async (id: number) => {
+    if (engineStep?.type === "PRACTICE" && engineStep.id === 1107) {
+      await onPracticeNext?.(engineStep.id);
+    }
     // 상위 컴포넌트로 ID를 전달하여 상세 화면으로 전환
     onNavigateToDetail?.(id);
   };

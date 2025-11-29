@@ -1,13 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
 import ScenarioContainer from "./components/ScenarioContainer";
-import QuizScreen, { type QuizContent } from "@/components/quiz/QuizScreen";
 
 function SearchAccountScenarioContent() {
   const searchParams = useSearchParams();
@@ -16,6 +15,14 @@ function SearchAccountScenarioContent() {
   const startStepId = stepIdParam ? Number(stepIdParam) : undefined;
 
   const { currentStep, previousStep, isLoading, error, resume, nextStep, quizState, submitQuizAnswer } = useScenarioEngine();
+  const router = useRouter();
+
+  // 퀴즈가 필요하면 퀴즈 페이지로 이동
+  useEffect(() => {
+    if (quizState && currentStep) {
+      router.push(`/quiz?scenarioId=${scenarioId}&stepId=${currentStep.id}`);
+    }
+  }, [quizState, currentStep, scenarioId, router]);
 
   // resume는 "처음 1번"만 (URL의 step 바뀐다고 매번 resume하면 끊김)
   const resumedKeyRef = useRef<string | null>(null);
@@ -34,25 +41,14 @@ function SearchAccountScenarioContent() {
     return (currentStep as any)?.next ?? null;
   }, [currentStep]);
 
-  const uiQuiz: QuizContent | null = useMemo(() => {
-    if (!quizState) return null;
-    return {
-      id: String(quizState.quiz.id),
-      title: "퀴즈",
-      prompt: quizState.quiz.question,
-      options: quizState.quiz.options.map((text: string, idx: number) => ({
-        id: String(idx), // optionIndex
-        text,
-      })),
-    };
-  }, [quizState]);
-
   return (
     <TransferFlowProvider>
       <div className="relative mx-auto h-[100dvh] w-full max-w-[430px] bg-white">
         {/* UI (PRACTICE는 여기서 진행) */}
         <ScenarioContainer
-          onPracticeNext={nextStep}
+          onPracticeNext={async (nowStepId, answer) => {
+            await nextStep(nowStepId, answer);
+          }}
           engineStepId={isPractice ? currentStep?.id ?? null : null}
         />
 
@@ -71,27 +67,6 @@ function SearchAccountScenarioContent() {
                 void nextStep(currentStep.id);
               }}
             />
-          </div>
-        )}
-
-        {/* 퀴즈 오버레이 */}
-        {uiQuiz && (
-          <div
-            className="absolute inset-0 z-[70] bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              className="h-full px-[20px] py-[24px]"
-              onClick={(e) => e.stopPropagation()}>
-              <QuizScreen
-                quiz={uiQuiz}
-                onSelectOption={(_, optionId) => {
-                  const idx = Number(optionId);
-                  if (!Number.isFinite(idx)) return;
-                  void submitQuizAnswer(idx); // ✅ 여기서 answer 붙여 next-step 재호출
-                }}
-              />
-            </div>
           </div>
         )}
 

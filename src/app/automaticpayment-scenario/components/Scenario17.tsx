@@ -19,6 +19,7 @@ type Scenario17Props = {
   ownerName: string;
   amount: number;
   onConfirm: () => void;
+  advancePractice: (opts?: { onlyIds?: number[]; answer?: number }) => Promise<boolean>;
 };
 
 // 자동이체 등록이 완료되었음을 알리고 요약 정보를 보여주는 컴포넌트이다.
@@ -32,10 +33,16 @@ export default function Scenario17({
   ownerName,
   amount,
   onConfirm,
+  advancePractice,
 }: Scenario17Props) {
   const formattedAmount = amount > 0 ? `${amount.toLocaleString()}원` : "0원";
   const formattedPeriod = formatDateRange(scheduleSummary.startDate, scheduleSummary.endDate);
   const registerDate = formatDate(new Date());
+
+  const handleConfirmClick = async () => {
+    await advancePractice?.({ onlyIds: [1101] });
+    await onConfirm();
+  };
 
   return (
     <div className="flex h-full flex-col items-center text-center">
@@ -65,7 +72,7 @@ export default function Scenario17({
       </section>
 
       <div className="mt-[26px] w-full pb-[32px]">
-        <Button onClick={onConfirm}>확인</Button>
+        <Button onClick={() => void handleConfirmClick()}>확인</Button>
       </div>
 
     </div>

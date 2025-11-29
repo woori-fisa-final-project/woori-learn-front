@@ -4,7 +4,7 @@ import Button from "@/components/common/Button";
 import BottomSheet from "@/components/common/BottomSheet";
 import InfoRow from "@/components/common/InfoRow";
 import Modal from "@/components/common/Modal";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type Scenario18Detail = {
   status: string;
@@ -20,13 +20,22 @@ export type Scenario18Detail = {
   inboundAccount: string;
 };
 
+type EngineStep = {
+  id: number;
+  type: string;
+  content?: any;
+  quizId?: number | null;
+}
+
 type Scenario18Props = {
   detail: Scenario18Detail;
   onBack: () => void;
   onNavigateToCancelComplete: () => void;
+  engineStep?: EngineStep | null;
+  onPracticeNext?: (nowStepId: number, answer?: number) => void | Promise<void>;
 };
 
-export default function Scenario18({ detail, onBack, onNavigateToCancelComplete }: Scenario18Props) {
+export default function Scenario18({ detail, onBack, onNavigateToCancelComplete, engineStep = null, onPracticeNext }: Scenario18Props) {
   const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [isReviewSheetOpen, setReviewSheetOpen] = useState(false);
   const [bankName, accountNumber] = useMemo(() => {
@@ -35,7 +44,35 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
     return [detail.inboundAccount, ""] as [string, string];
   }, [detail.inboundAccount]);
 
-  const handleRequestCancel = () => {
+  const advancePractice = useCallback(
+    async (opts?: { onlyIds?: number[]; answer?: number }) => {
+      if (!engineStep) return false;
+      if (engineStep.type !== "PRACTICE") return false;
+      if (opts?.onlyIds && !opts.onlyIds.includes(engineStep.id)) return false;
+
+      await onPracticeNext?.(engineStep.id, opts?.answer);
+      return true;
+    },
+    [engineStep, onPracticeNext]
+  );
+
+  useEffect(() => {
+    if (!engineStep) return;
+
+    if (engineStep.type === "PRACTICE" && engineStep.id === 1113) {
+      setConfirmOpen(true);
+    }
+
+    if (engineStep.type === "PRACTICE" && engineStep.id === 1115) {
+      setReviewSheetOpen(true);
+    }
+  }, [engineStep]);
+
+  const handleRequestCancel = async () => {
+    if (engineStep?.type === "PRACTICE" && engineStep.id === 1110) {
+      await onPracticeNext?.(engineStep.id);
+      return;
+    }
     setConfirmOpen(true);
   };
 
@@ -43,10 +80,24 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
     setConfirmOpen(false);
   };
 
-  const handleConfirmCancel = () => {
+  const handleConfirmCancel = async () => {
+    if (engineStep?.type === "PRACTICE" && engineStep.id === 1113) {
+      await onPracticeNext?.(engineStep.id);
+      setConfirmOpen(false);
+      return;
+    }
+
     setConfirmOpen(false);
     setReviewSheetOpen(true);
   };
+
+  const handleFinalConfirm = async () => {
+    if (engineStep?.type === "PRACTICE" && engineStep.id === 1115) {
+      await onPracticeNext?.(engineStep.id);
+    }
+    setReviewSheetOpen(false);
+    await onNavigateToCancelComplete();
+  }
 
   const rows = useMemo(() => [
     { label: "상태", value: detail.status },
@@ -81,8 +132,6 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
         </Button>
       </main>
 
-      
-
       <Modal
         isOpen={isConfirmOpen}
         onClose={handleCloseConfirm}
@@ -95,15 +144,15 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
               {accountNumber ? `/${accountNumber}` : ""}의 자동 이체를 해지하시겠습니까?
             </p>
             <p>
-            <br/>
+              <br />
               타행자동이체 시 이체지정일 당일에 인증되므로 전 영업일까지 해지해 주세요.
             </p>
             <p>
-             <br/>
+              <br />
               자동이체 해지 당일 등록 건 취소 가능 여부는 고객센터로 문의하시기 바랍니다.
             </p>
           </div>
- 
+
           <div className="grid grid-cols-2 gap-[10px]">
             <Button variant="secondary" size="sm" onClick={handleCloseConfirm}>
               취소
@@ -111,7 +160,7 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
             <Button
               size="sm"
               onClick={() => {
-                handleConfirmCancel();
+                void handleConfirmCancel();
               }}
             >
               네

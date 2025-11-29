@@ -31,11 +31,6 @@ export default function Scenario19({ detail, onNavigateToQuiz }: Scenario19Props
         <div className="flex flex-col items-center gap-[12px] text-center">
           <Image src="/images/maincheck.png" alt="등록 완료" width={66} height={66} />
           <h2 className="text-[20px] font-semibold text-gray-900">자동이체를 해지했어요</h2>
-          <p className="text-[13px] text-gray-500">
-            자동이체가 해지되었는지
-            <br />
-            다시 한 번 확인해 주세요.
-          </p>
         </div>
 
         <section className="rounded-[20px] border border-gray-100 bg-[#F5F7FA] px-[20px] py-[20px]">

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 type Step =
   | "account"
+  | "select"
   | "form"
   | "amount"
   | "review"
@@ -11,7 +12,8 @@ type Step =
   | "complete";
 
 const STEP_PREVIOUS_MAP: Partial<Record<Step, Step>> = {
-  form: "account",
+  select: "account",
+  form: "select",
   amount: "form",
   review: "amount",
   schedule: "review",

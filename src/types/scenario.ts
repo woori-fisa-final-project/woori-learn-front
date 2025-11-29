@@ -11,6 +11,7 @@ export interface ScenarioStep {
   scenarioId: number;
   type: StepType;
   content: Record<string, any>;
+  next?: number | null;
 }
 
 export interface ScenarioMeta {
@@ -30,9 +31,15 @@ export type ApiQuiz = {
 };
 
 export type NextStepApiData = {
-  status: string; // "QUIZ_REQUIRED" | "COMPLETED" | ...
-  step: { nowStepId: number } | null;
-  quiz: ApiQuiz | null;
+  status: "QUIZ_REQUIRED" | "QUIZ_WRONG";
+  step?: {
+    scenarioId: number;
+    nowStepId: number;
+    type: string;
+    quizId?: number;
+    content?: any;
+  };
+  quiz?: ApiQuiz;
 };
 
 // 백엔드 실제 응답

@@ -54,7 +54,7 @@ export default function OverlayStep({ content, onBackgroundClick, previousStep }
   return (
     <Overlay
       isOpen
-      zIndex="z-50"
+      zIndex="z-[100]"
       backgroundColor="bg-black/40"
       onClose={onBackgroundClick}
     >

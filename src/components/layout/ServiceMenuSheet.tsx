@@ -7,7 +7,7 @@ interface ServiceMenuSheetProps {
   isOpen: boolean;
   onClose: () => void;
   userName?: string;
-  onNavigate: (path: string) => void;
+  onNavigate: (path: string) => void | Promise<void>;
   onOpenNotice: (message: string) => void;
 }
 
@@ -104,6 +104,7 @@ export function ServiceMenuSheet({
                   className="w-full cursor-pointer text-left transition hover:text-primary-500"
                   onClick={() => {
                     if (item === "자동이체") {
+                      void onNavigate("/automaticpayment-scenario");
                       onNavigate("/automaticpayment-scenario");
                       onClose();
                       return;

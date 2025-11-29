@@ -21,7 +21,7 @@ export default function ModalStep({ content, onBackgroundClick }: ModalStepProps
   return (
     <Overlay
       isOpen
-      zIndex="z-50"
+      zIndex="z-[100]"
       backgroundColor="bg-black/40"
       onClose={onBackgroundClick}
     >

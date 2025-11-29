@@ -31,7 +31,7 @@ export default function ScenarioRenderer({ step, previousStep, onNext, onBackgro
   const { type, content } = step;
 
   if (type === "IMAGE") {
-    return <ImageStep content={content} onBackgroundClick={onBackgroundClick} />;
+    return <ImageStep stepId={step.id} content={content} onBackgroundClick={onBackgroundClick} />;
   }
 
   if (type === "DIALOG") {
@@ -43,24 +43,24 @@ export default function ScenarioRenderer({ step, previousStep, onNext, onBackgro
   }
 
   if (type === "CHOICE") {
-  return (
-    <ChoiceStep
-      content={content}
-      previousStep={previousStep ?? null}
-      onChoose={(nextStepId: number) => {
-        const choices = content?.choices as any[] | undefined;
+    return (
+      <ChoiceStep
+        content={content}
+        previousStep={previousStep ?? null}
+        onChoose={(nextStepId: number) => {
+          const choices = content?.choices as any[] | undefined;
 
-        // nextStepId로 몇 번째 선택지인지 찾아서 answer 인덱스로 변환
-        const answerIndex = Array.isArray(choices)
-          ? choices.findIndex((c) => c?.next === nextStepId)
-          : -1;
+          // nextStepId로 몇 번째 선택지인지 찾아서 answer 인덱스로 변환
+          const answerIndex = Array.isArray(choices)
+            ? choices.findIndex((c) => c?.next === nextStepId)
+            : -1;
 
-        // answerIndex 못 찾으면 0번 선택으로 fallback
-        void onNext(step.id, answerIndex >= 0 ? answerIndex : 0);
-      }}
-    />
-  );
-}
+          // answerIndex 못 찾으면 0번 선택으로 fallback
+          void onNext(step.id, answerIndex >= 0 ? answerIndex : 0);
+        }}
+      />
+    );
+  }
 
   if (type === "MODAL") {
     return <ModalStep content={content} onBackgroundClick={onBackgroundClick} />;
