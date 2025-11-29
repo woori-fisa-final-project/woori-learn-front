@@ -162,7 +162,7 @@ function QuizContent() {
         inFlightRef.current = false; // 잠금 해제
       }
     },
-    [quiz, hasDeposited, isDepositing]
+    [quiz, hasDeposited, isDepositing,availablePoints]
   );
 
   if (isLoading) {
