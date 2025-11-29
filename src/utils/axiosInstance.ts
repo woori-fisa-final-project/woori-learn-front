@@ -14,9 +14,13 @@ let refreshPromise: Promise<string> | null = null;
 const isServer = typeof window === 'undefined';
 
 const axiosInstance = axios.create({
+<<<<<<< HEAD
 
   baseURL: "",
 
+=======
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
+>>>>>>> 093d20ea96c488b90f95dae9b07e5240a0610ffb
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -25,7 +29,11 @@ const axiosInstance = axios.create({
 
 // 토큰 갱신 전용 axios 인스턴스
 const refreshAxios = axios.create({
+<<<<<<< HEAD
   baseURL: "",
+=======
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
+>>>>>>> 093d20ea96c488b90f95dae9b07e5240a0610ffb
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
@@ -101,6 +109,10 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config ?? {};
+
+    if(axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
 
     if(axios.isCancel(error)) {
       return Promise.reject(error);

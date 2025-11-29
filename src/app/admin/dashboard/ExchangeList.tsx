@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
   import React, { useEffect, useMemo, useState } from "react";                                                                                                                      
   import ExchangeModal from "./ExchangeModal";
+  import type { ExchangeHistoryDto } from "@/types/admin";
                                                                                                                                                                                     
   interface ExchangeItem {                                                                                                                                                          
     id: string;                                                                                                                                                                     
@@ -27,7 +28,7 @@
   // "2025. 11. 28." → "2025-11-28" 비슷하게 가공
 };
                                                                                                                                                                                     
-  const mapDtoToItem = (d: any): ExchangeItem => ({                                                                                                                                 
+  const mapDtoToItem = (d: ExchangeHistoryDto): ExchangeItem => ({
     id: String(d.id),                                                                                                                                                               
     userId: d.userId ?? "-",                                                                                                                                                        
     name: d.nickname ?? "-",                                                                                                                                                        
@@ -60,7 +61,7 @@
     const [search, setSearch] = useState("");                                                                                                                                       
     const [filter, setFilter] = useState(""); // "", "환전", "완료"                                                                                                                 
                                                                                                                                                                                     
-    const loadList = async () => {                                                                                                                                                  
+        const loadList = useCallback(async () => {                                                                                                                                                  
       const statusParam = statusParamFromFilter(filter);
       const url = `${API_BASE}/admin/points/history?status=${statusParam}&page=1&size=20`;                                                                                          
       const res = await fetch(url, {                                                                                                                                                
@@ -79,12 +80,11 @@
       const content = json?.data?.content ?? [];                                                                                                                                    
       // 서버가 WITHDRAW 범주 필터링을 수행함                                                                                                                                       
       setExchangeList(content.map(mapDtoToItem));                                                                                                                                   
-    };                                                                                                                                                                              
-                                                                                                                                                                                    
+    }, [filter]);                                                                                                                                                                              
+
     useEffect(() => {                                                                                                                                                               
       loadList().catch(console.error);                                                                                                                                              
-      // eslint-disable-next-line react-hooks/exhaustive-deps                                                                                                                       
-    }, [filter]);                                                                                                                                                                   
+    }, [loadList]);                                                                                                                                                                
                                                                                                                                                                                     
     const handleApproveClick = (id: string) => {                                                                                                                                    
       setSelectedId(id);                                                                                                                                                            
