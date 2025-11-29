@@ -11,10 +11,10 @@ declare module "axios" {
 }
 
 let refreshPromise: Promise<string> | null = null;
+const isServer = typeof window === 'undefined';
 
 const axiosInstance = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  baseURL: "", // 테스트용으로 proxy 설정
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -23,7 +23,7 @@ const axiosInstance = axios.create({
 
 // 토큰 갱신 전용 axios 인스턴스
 const refreshAxios = axios.create({
-  baseURL: "",
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
@@ -38,7 +38,11 @@ const getRefreshToken = async (): Promise<string> => {
   // 갱신 시작
   refreshPromise = (async () => {
     try {
-      const res = await refreshAxios.post("/auth/refresh", {}, { skipAuth: true });
+      const res = await refreshAxios.post(
+        "/auth/refresh",
+        {},
+        { skipAuth: true }
+      );
       const newAccessToken = res.data.data.accessToken;
       useAuthStore.getState().setAccessToken(newAccessToken);
       return newAccessToken;
@@ -69,9 +73,9 @@ axiosInstance.interceptors.request.use(
 
     // 저장소에서 토큰 가져오기
     let token = useAuthStore.getState().accessToken;
-    
+
     // 토큰이 없거나 토큰이 만료되었으면 갱신 시도
-    if(token && isTokenExpired(token)){
+    if (!token || isTokenExpired(token)) {
       try {
         // 갱신된 토큰을 받아옴
         token = await getRefreshToken();
@@ -94,6 +98,14 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config ?? {};
+
+    if(axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
+    if(axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
 
     if (!error.response) {
       return Promise.reject(new ApiError(-1, "네트워크 오류가 발생했습니다."));
@@ -127,12 +139,11 @@ axiosInstance.interceptors.response.use(
           ...originalRequest,
           headers: {
             ...originalRequest.headers,
-            Authorization: `Bearer ${newAccessToken}`
+            Authorization: `Bearer ${newAccessToken}`,
           },
         };
 
         return axiosInstance(retryRequest);
-
       } catch (refreshError) {
         // refresh token도 실패하면 로그인으로
         useAuthStore.getState().clearTokens();

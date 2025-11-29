@@ -7,6 +7,7 @@ export function useUserData() {
   const [userId, setUserId] = useState<number | null>(null); // 사용자 ID를 상태로 관리합니다.
   const [userName, setUserName] = useState(""); // 사용자 이름을 상태로 관리하며 기본값을 설정합니다.
   const [availablePoints, setAvailablePoints] = useState(0); // 보유 포인트를 상태로 관리합니다.
+  const [account, setAccount] = useState<number | null>(null); // account_number 저장할 account
 
   useEffect(() => {
     // 컴포넌트 마운트 시 로컬 저장소에서 사용자 데이터를 불러옵니다.
@@ -19,6 +20,7 @@ export function useUserData() {
         setUserId(data.id);
         setUserName(data.nickname);
         setAvailablePoints(data.point);
+        setAccount(data.account);
       } catch (error) {
         if (error instanceof ApiError) {
           console.error("사용자 정보를 불러오는 중 오류:", error.message);
@@ -31,5 +33,5 @@ export function useUserData() {
     loadUserData();
   }, []);
 
-  return { userId, userName, availablePoints }; // 컴포넌트에서 ID, 이름, 포인트를 사용할 수 있도록 반환합니다.
+  return { userName, availablePoints, account }; // 컴포넌트에서 사용자 이름, 보유 포인트, 계좌 정보를 사용할 수 있도록 반환합니다.
 }
