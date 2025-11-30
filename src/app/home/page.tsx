@@ -20,6 +20,9 @@ const savingsImage = "/images/savings-image.png"; // 예/적금 카드 이미지
 const loanImage = "/images/loan-image.png"; // 대출 카드 이미지입니다.
 const profileIcon = "/images/profileicon.png"; // 프로필 버튼에서 사용하는 아이콘입니다.
 
+const SCENARIO_START_STEP_ID = 1001;
+const SCENARIO_END_STEP_ID = 1121;
+
 type MyScenarioRes = {
   scenarioId: number;
   nowStepId: number;
@@ -72,8 +75,7 @@ export default function HomePage() {
     try {
       const res = await fetchMyScenario(scenarioId);
 
-      // nowStepId가 1001이 아니면 Continue(이어하기) 오버레이 표시
-      if (res.nowStepId && ![1001, 1121].includes(res.nowStepId)) {
+      if (res.nowStepId && ![SCENARIO_START_STEP_ID, SCENARIO_END_STEP_ID].includes(res.nowStepId)) {
         setContinueInfo({ scenarioId, nowStepId: res.nowStepId });
         return;
       }

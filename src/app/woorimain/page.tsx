@@ -13,6 +13,7 @@ import { formatAccountNumber, getRepresentativeAccount } from "@/utils/accountUt
 import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
 import { isAbortError } from "@/types/errors";
+import { getScenarioEntryPath } from "@/lib/scenario/scenarioRouting";
 
 type NavItem = {
   label: string;
@@ -363,12 +364,12 @@ export default function WooriMainPage() {
         // 다음 스텝 ID 계산 (현재 스텝 + 1)
         const nextStepId = currentStep.id + 1;
         // transfer-scenario 페이지로 이동하면서 다음 스텝을 표시
-        router.push(`/transfer-scenario?scenarioId=1&stepId=${nextStepId}&scenarioStep=2`);
+        router.push(getScenarioEntryPath(1, nextStepId));
         return;
       }
     }
 
-    router.push("/transfer-scenario?scenarioId=1&stepId=1013&scenarioStep=2");
+    router.push(getScenarioEntryPath(1, 1013));
   };
 
 

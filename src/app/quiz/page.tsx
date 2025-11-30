@@ -206,7 +206,7 @@ function QuizPageInner() {
           } else {
             try {
               const user = await getCurrentUser();
-              const p = (user as any).points ?? (user as any).point;
+              const p = user.points ?? user.point;
               if (typeof p === "number") setAvailablePoints(p);
             } catch (refreshError) {
               devError("[QuizPage] 보상 후 포인트 새로고침 실패:", refreshError);

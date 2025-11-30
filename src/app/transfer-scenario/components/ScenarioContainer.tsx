@@ -12,6 +12,9 @@ import Scenario5 from "./Scenario5";
 import Scenario6 from "./Scenario6";
 import Scenario7 from "./Scenario7";
 
+const CORRECT_ACCOUNT = "110-123-456789";
+const CORRECT_AMOUNT = 500000;
+
 type ScenarioContainerProps = {
   onPracticeNext: (nowStepId: number, answer?: number) => Promise<void> | void;
   onTransferResult?: (result: "success" | "fail") => void;
@@ -20,15 +23,15 @@ type ScenarioContainerProps = {
   onExitToMain?: (nextStepId: number | null) => void;
 };
 
-  const PRACTICE_TO_UI: Record<number, { step: number; bankSheet?: boolean; passwordSheet?: boolean }> = {
-    1015: { step: 1 },
-    1016: { step: 2, bankSheet: true },
-    1017: { step: 3 },
-    1019: { step: 4 },
-    1024: { step: 5, passwordSheet: true },
-    1026: { step: 6 },
-    1028: { step: 7 },
-  };
+const PRACTICE_TO_UI: Record<number, { step: number; bankSheet?: boolean; passwordSheet?: boolean }> = {
+  1015: { step: 1 },
+  1016: { step: 2, bankSheet: true },
+  1017: { step: 3 },
+  1019: { step: 4 },
+  1024: { step: 5, passwordSheet: true },
+  1026: { step: 6 },
+  1028: { step: 7 },
+};
 
 export default function ScenarioContainer({ onPracticeNext, onTransferResult, engineStepId, engineNextId, onExitToMain }: ScenarioContainerProps) {
   const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
@@ -198,8 +201,6 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
         {clampedStep === 6 && (
           <Scenario6
             onConfirm={async () => {
-              const CORRECT_ACCOUNT = "110-123-456789";
-              const CORRECT_AMOUNT = 500000;
 
               // 계좌번호 정규화 (하이픈 제거하여 비교)
               const normalizedAccount = (accountNumber || "").replace(/-/g, "").trim();
