@@ -17,10 +17,8 @@ export default function Scenario6({
   onConfirm,
   onReenterAccount,
   onReenterAmount,
-  onCancel,
-  onBack,
 }: Scenario6Props) {
-  const { selectedBank, accountNumber, recipientName, amount, currentUserName, sourceAccountNumber } = useTransferFlow(); // 플로우 컨텍스트에서 계좌 정보와 금액을 가져옵니다.
+  const { selectedBank, accountNumber, recipientName, amount, currentUserName } = useTransferFlow(); // 플로우 컨텍스트에서 계좌 정보와 금액을 가져옵니다.
   const bankName = selectedBank ?? "국민은행"; // 선택된 은행이 없으면 기본값을 사용합니다.
   const name = recipientName || "나누구"; // 수취인 이름이 없으면 기본 이름을 표시합니다.
   const displayAccount = accountNumber || "-"; // 계좌번호가 비어 있으면 대시(-)로 보여줍니다.

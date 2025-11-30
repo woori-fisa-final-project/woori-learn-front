@@ -11,6 +11,7 @@ import { SCENARIO_CONFIG } from "@/constants/scenario";
 import { useScenarioStatus } from "./useScenarioStatus";
 import axiosInstance from "@/utils/axiosInstance";
 import Continue from "@/components/scenario/step/Continue";
+import { getScenarioEntryPath } from "@/lib/scenario/scenarioRouting";
 
 const logoImage = "/images/logo1.png"; // 상단 로고 이미지 경로입니다.
 const accountImage = "/images/account-image.png"; // 계좌 조회 서비스 카드에 사용할 이미지입니다.
@@ -184,16 +185,6 @@ export default function HomePage() {
     },
   ];
 
-  function resolveScenarioEntryPath(scenarioId: number, stepId: number) {
-    if (scenarioId === 1) {
-      if (stepId >= 1063) return `/automaticpayment-scenario?scenarioId=${scenarioId}&stepId=${stepId}`;
-      if (stepId >= 1035) return `/searchaccount-scenario?scenarioId=${scenarioId}&stepId=${stepId}`;
-      if (stepId >= 1013) return `/transfer-scenario?scenarioId=${scenarioId}&stepId=${stepId}`;
-      return `/woorimain?scenarioId=${scenarioId}&stepId=${stepId}`;
-    }
-    return `/woorimain?scenarioId=${scenarioId}&stepId=${stepId}`;
-  }
-
   return (
     <main className="flex min-h-screen items-start justify-center overflow-x-hidden bg-white">
       <div className="w-full max-w-[390px] px-5 pt-[30px] pb-0 sm:max-w-[480px] md:max-w-[560px] lg:max-w-[768px]">
@@ -274,7 +265,7 @@ export default function HomePage() {
           onRestartFromStopPart={() => {
             const { scenarioId, nowStepId } = continueInfo;
             setContinueInfo(null);
-            router.push(resolveScenarioEntryPath(scenarioId, nowStepId - 1));
+            router.push(getScenarioEntryPath(scenarioId, nowStepId - 1));
           }}
         />
       )}
