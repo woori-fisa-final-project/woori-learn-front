@@ -1,22 +1,7 @@
-/*
-  1) 시나리오 8 → accountNumber 넘겨옴
-      ↓
-  2) useAccountInfo() → 계좌 1개 정보 조회
-      ↓
-  3) useTransactionFetch() → 해당 계좌의 거래내역 조회
-      ↓
-  4) useTransactionFilters() → 필터 적용/해제 관리
-      ↓
-  5) useTransactionTransform() → “정렬 + 필터 결과 + 월별 그룹” 만든다
-      ↓
-  6) TransactionList 컴포넌트로 렌더링
-*/
-
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
+import { useEffect } from "react";
+
 import { useAccountInfo } from "./hooks/useAccountInfo";
 import { useTransactionFetch } from "./hooks/useTransactionFetch";
 import { useTransactionFilters } from "./hooks/useTransactionFilters";
@@ -29,30 +14,27 @@ import FilterBottomSheet from "./components/FilterBottomSheet";
 
 import type { Transaction } from "@/types";
 
-export const TRANSACTION_STORAGE_KEY = "searchaccount:lastTransaction";
-
 type Scenario9Props = {
-  onOpenFilter?: () => void | Promise<void>; // PRACTICE 1039
-  onApplyFilter?: () => void | Promise<void>; // PRACTICE 1040
-  onPickTransaction?: (t: Transaction) => void | Promise<void>; // PRACTICE 1043
+  accountNumber: string;
+
+  filterOpen: boolean;
+  onRequestOpenFilter: () => void | Promise<void>;
+  onRequestCloseFilter: () => void;
+
+  onRequestApplyFilter: () => void | Promise<void>;
+  onPickTransaction: (t: Transaction) => void | Promise<void>;
 };
 
 export default function Scenario9({
-  onOpenFilter,
-  onApplyFilter,
+  accountNumber,
+  filterOpen,
+  onRequestOpenFilter,
+  onRequestCloseFilter,
+  onRequestApplyFilter,
   onPickTransaction,
 }: Scenario9Props) {
-  const router = useRouter();
-  const params = useSearchParams();
-  const accountNumber = params.get("accountNumber") ?? "";
-
-  const { setOnBack, setTitle } = useScenarioHeader();
-
-  const { accountInfo, loadAccountInfo, error: accountError } =
-    useAccountInfo(accountNumber);
-
-  const { transactions, fetchTransactions, error: txError } =
-    useTransactionFetch();
+  const { accountInfo, loadAccountInfo, error: accountError } = useAccountInfo(accountNumber);
+  const { transactions, fetchTransactions, error: txError } = useTransactionFetch();
 
   const {
     filterState,
@@ -64,39 +46,36 @@ export default function Scenario9({
     resetFilters,
   } = useTransactionFilters();
 
-  const transformed = useTransactionTransform(
-    transactions,
-    appliedFilters,
-    //accountInfo
-  );
-
-  const [openFilter, setOpenFilter] = useState(false);
+  const transformed = useTransactionTransform(transactions, appliedFilters);
 
   useEffect(() => {
-    setTitle("거래내역조회");
-    setOnBack(() => () => router.push("/searchaccount-scenario"));
+    if (!accountNumber) return;
 
     (async () => {
       const info = await loadAccountInfo();
-      if (info) {
-        const params = new URLSearchParams();
-        params.append("accountId", String(info.id));
-        params.append("period", "3M"); // default
-        params.append("type", "ALL");
+      if (!info) return;
 
-        await fetchTransactions(info.id, params);
-      }
+      const params = new URLSearchParams();
+      params.append("accountId", String(info.id));
+      params.append("period", "3M");
+      params.append("type", "ALL");
+
+      await fetchTransactions(info.id, params);
     })();
+  }, [accountNumber, loadAccountInfo, fetchTransactions]);
 
-    return () => setOnBack(null);
-  }, [accountNumber, loadAccountInfo, fetchTransactions, router, setOnBack, setTitle]);
+  if (!accountNumber) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center text-gray-500">
+        계좌를 선택해주세요.
+      </div>
+    );
+  }
 
   if (accountError || txError) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center">
-        <p className="text-red-500">
-          {accountError ?? txError ?? "오류가 발생했습니다."}
-        </p>
+        <p className="text-red-500">{accountError ?? txError ?? "오류가 발생했습니다."}</p>
       </div>
     );
   }
@@ -107,41 +86,16 @@ export default function Scenario9({
 
       <TransactionSummary
         filters={filterState}
-        onOpen={() => {
-          void onOpenFilter?.();
-          setOpenFilter(true)
-        }}
+        onOpen={() => void onRequestOpenFilter()}
         totalAmount={transformed.totalAmount}
         appliedRange={transformed.rangeText}
       />
 
-      <TransactionList
-        grouped={transformed.grouped}
-        onSelect={(t) => {
-          sessionStorage.setItem(
-            TRANSACTION_STORAGE_KEY,
-            JSON.stringify({
-              id: t.id,
-              accountId: t.accountId,
-              date: t.date,
-              time: t.time,
-              amount: t.amount,
-              description: t.description,
-            })
-          );
-
-          if (onPickTransaction) {
-            void onPickTransaction(t);
-            return;
-          }
-
-          router.push(`/searchaccount-scenario?step=10&id=${t.id}`);
-        }}
-      />
+      <TransactionList grouped={transformed.grouped} onSelect={(t) => void onPickTransaction(t)} />
 
       <FilterBottomSheet
-        open={openFilter}
-        onClose={() => setOpenFilter(false)}
+        open={filterOpen}
+        onClose={onRequestCloseFilter}
         draft={draftFilters}
         setDraft={setDraftFilters}
         updatePeriod={updatePeriod}
@@ -149,8 +103,7 @@ export default function Scenario9({
         onApply={async () => {
           if (!accountInfo) return;
           await applyFilters(accountInfo, fetchTransactions);
-          setOpenFilter(false);
-          await onApplyFilter?.();
+          await onRequestApplyFilter();
         }}
       />
     </div>

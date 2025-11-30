@@ -1,36 +1,69 @@
 "use client";
 
-// 자동이체 등록 플로우에서 필요한 React 훅과 유틸리티, 하위 시나리오 컴포넌트를 불러온다.
 import { useCallback, useEffect, useState } from "react";
-// 헤더 제어와 이체 흐름 상태 관리를 위해 내부 컨텍스트와 훅을 이용한다.
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { useAccountSelection } from "@/lib/hooks/useAccountSelection";
 import { useAutoPaymentSteps } from "@/lib/hooks/useAutoPaymentSteps";
 import { useAutoPaymentRegistration } from "@/lib/hooks/useAutoPaymentRegistration";
-// 공통 유틸리티 함수를 불러온다.
 import { formatAccountNumber } from "@/utils/accountUtils";
-// 다른 시나리오 단계 컴포넌트를 순차적으로 사용하여 전체 플로우를 완성한다.
+
 import Scenario1 from "@/app/transfer-scenario/components/Scenario1";
 import Scenario2 from "@/app/transfer-scenario/components/Scenario2";
 import Scenario3 from "@/app/transfer-scenario/components/Scenario3";
 import Scenario4 from "@/app/transfer-scenario/components/Scenario4";
 import Scenario5 from "@/app/transfer-scenario/components/Scenario5";
+
 import Scenario13 from "./Scenario13";
 import Scenario14 from "./Scenario14";
 import Scenario15 from "./Scenario15";
 import Scenario16 from "./Scenario16";
 import Scenario17 from "./Scenario17";
+
 import type { EducationalAccount } from "@/types/account";
 import Image from "next/image";
-import Modal from "@/components/common/Modal";
-import { ScheduleSummary } from "./types";
+import type { ScheduleSummary } from "./types";
 
 type EngineStep = {
   id: number;
   type: string;
   quizId?: number | null;
   content?: any;
+};
+
+export const AUTO_PAYMENT_EXPECTED = {
+  targetBank: "국민은행",
+  targetAccountDigits: "110123456789",
+  monthlyRentAmount: 500_000,
+  transferDay: "5일",
+  durationMonths: 12,
+} as const;
+
+const onlyDigits = (v: string | null | undefined) => (v ?? "").replace(/\D/g, "");
+
+const monthDiff = (startYmd: string, endYmd: string) => {
+  // start/end: "YYYY-MM-DD"
+  const [sy, sm] = startYmd.split("-").map(Number);
+  const [ey, em] = endYmd.split("-").map(Number);
+  if (!sy || !sm || !ey || !em) return NaN;
+  return (ey - sy) * 12 + (em - sm);
+};
+
+const isStoryInputValid = (params: {
+  selectedBank: string | null | undefined;
+  accountNumber: string | null | undefined;
+  amount: number;
+  scheduleSummary: { startDate: string; endDate: string; transferDay: string };
+}) => {
+  const bankOk = (params.selectedBank ?? "") === AUTO_PAYMENT_EXPECTED.targetBank;
+  const acctOk = onlyDigits(params.accountNumber) === AUTO_PAYMENT_EXPECTED.targetAccountDigits;
+  const amtOk = params.amount === AUTO_PAYMENT_EXPECTED.monthlyRentAmount;
+  const dayOk = params.scheduleSummary.transferDay === AUTO_PAYMENT_EXPECTED.transferDay;
+
+  const months = monthDiff(params.scheduleSummary.startDate, params.scheduleSummary.endDate);
+  const durationOk = months === AUTO_PAYMENT_EXPECTED.durationMonths;
+
+  return bankOk && acctOk && amtOk && dayOk && durationOk;
 };
 
 function AccountSelectStep({
@@ -78,15 +111,11 @@ function AccountSelectStep({
                   />
                 </div>
                 <div className="flex flex-col gap-[4px]">
-                  <p className="text-[17px] font-semibold text-gray-900">
-                    {account.accountName}
-                  </p>
+                  <p className="text-[17px] font-semibold text-gray-900">{account.accountName}</p>
                   <p className="text-[13px] text-gray-500">
                     우리은행 {formatAccountNumber(account.accountNumber)}
                   </p>
-                  <p className="text-[13px] text-gray-500">
-                    잔액 {account.balance.toLocaleString()}원
-                  </p>
+                  <p className="text-[13px] text-gray-500">잔액 {account.balance.toLocaleString()}원</p>
                 </div>
               </div>
             </button>
@@ -104,8 +133,12 @@ type Scenario12Props = {
   onPracticeNext?: (nowStepId: number, answer?: number) => void | Promise<void>;
 };
 
-export default function Scenario12({ onComplete, onCancel, engineStep = null, onPracticeNext }: Scenario12Props) {
-  // 자동이체 등록 흐름 전체를 제어하는 메인 페이지 컴포넌트이다.
+export default function Scenario12({
+  onComplete,
+  onCancel,
+  engineStep = null,
+  onPracticeNext,
+}: Scenario12Props) {
   const { setTitle, setOnBack } = useScenarioHeader();
   const {
     setSelectedBank,
@@ -118,15 +151,11 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     currentUserName,
   } = useTransferFlow();
 
-  // 커스텀 훅으로 로직 분리
-  const {
-    accounts,
-    selectedAccount,
-    isLoadingAccounts,
-    errorMessage: accountError,
-    selectAccount,
-  } = useAccountSelection();
+  const { accounts, selectedAccount, isLoadingAccounts, errorMessage: accountError, selectAccount } =
+    useAccountSelection();
+
   const { step, setStep } = useAutoPaymentSteps(setOnBack, onCancel);
+
   const {
     scheduleSummary,
     isPasswordSheetOpen,
@@ -138,16 +167,7 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     setPasswordSheetOpen,
   } = useAutoPaymentRegistration();
 
-  // 은행 선택 바텀시트 노출 여부를 관리한다.
   const [isBankSheetOpen, setBankSheetOpen] = useState(false);
-  // 에러 모달 상태
-  const [errorModal, setErrorModal] = useState<{
-    isOpen: boolean;
-    message: string;
-  }>({
-    isOpen: false,
-    message: "",
-  });
 
   const advancePractice = useCallback(
     async (opts?: { onlyIds?: number[]; answer?: number }) => {
@@ -156,43 +176,17 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
       if (!onPracticeNext) return false;
       if (opts?.onlyIds && !opts.onlyIds.includes(engineStep.id)) return false;
 
-      await onPracticeNext?.(engineStep.id, opts?.answer);
+      await onPracticeNext(engineStep.id, opts?.answer);
       return true;
     },
     [engineStep, onPracticeNext]
   );
 
-  const handleScheduleCompleteWithEngine = useCallback(
-    async (options: ScheduleSummary) => {
-      await advancePractice({ onlyIds: [1085] });
-      handleScheduleComplete(options);
-      setStep("confirm");
-    },
-    [advancePractice, handleScheduleComplete, setStep]
-  );
-
-  // 에러 메시지 동기화
-  useEffect(() => {
-    if (accountError) {
-      setErrorModal({ isOpen: true, message: accountError });
-    }
-  }, [accountError]);
-
-  useEffect(() => {
-    if (registrationError) {
-      setErrorModal({ isOpen: true, message: registrationError });
-    }
-  }, [registrationError]);
-
-  // 화면이 나타날 때 헤더 제목을 설정하고 사라질 때 초기화한다.
   useEffect(() => {
     setTitle("자동이체 등록");
-    return () => {
-      setTitle("");
-    };
+    return () => setTitle("");
   }, [setTitle]);
 
-  // 컴포넌트가 사라질 때 자동이체 흐름과 선택 상태를 초기화한다.
   useEffect(() => {
     return () => {
       resetFlow();
@@ -200,24 +194,27 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     };
   }, [resetFlow, setPasswordSheetOpen]);
 
-  // 계좌 선택 단계에서 사용자가 특정 계좌를 고를 때 상태를 갱신한다.
+  // 1071: 계좌 선택 실습
   const handleSelectAccount = async (accountId: number) => {
     await advancePractice({ onlyIds: [1071] });
+
     const account = selectAccount(accountId);
     if (!account) {
       console.warn(`[Scenario12] Account not found for id: ${accountId}`);
       return;
     }
+
     setSourceAccountNumber(account.accountNumber);
     setStep("select");
   };
 
+  // 1074: Scenario1에서 "계좌번호 입력" 클릭 실습
   const handleOpenBankSheet = async () => {
     await advancePractice({ onlyIds: [1074] });
     setBankSheetOpen(true);
-  }
+  };
 
-  // 은행 선택이 완료되면 다음 단계로 이동하도록 단계 상태를 변경한다.
+  // 1075: banksheet에서 은행 클릭 실습
   const handleSelectBank = async (bankName: string) => {
     await advancePractice({ onlyIds: [1075] });
     setSelectedBank(bankName);
@@ -225,75 +222,71 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     setStep("form");
   };
 
-  const displaySourceAccount = selectedAccount
-    ? formatAccountNumber(selectedAccount.accountNumber)
-    : "000-0000-000000";
+  const displaySourceAccount = selectedAccount ? formatAccountNumber(selectedAccount.accountNumber) : "000-0000-000000";
   const displaySourceName = selectedAccount?.accountName ?? "우리은행계좌";
   const displaySourceBank = "우리은행";
+
   const inboundBank = selectedBank ?? "국민은행";
-  const inboundAccount = accountNumber || "-";
+  const inboundAccount = String(accountNumber ?? "-");
   const inboundName = recipientName || "받는 분";
   const ownerName = currentUserName ?? "김우리";
 
-  // 비밀번호 인증에 성공하면 확인 단계로 이동한다.
+  // 1089: 비밀번호 성공(choices[0]) / 실패(choices[1]) 분기
   const handlePasswordSuccess = async (password: string) => {
     await advancePractice({ onlyIds: [1089], answer: 0 });
     onPasswordSuccess(password);
     setStep("confirm");
   };
 
-  // 비밀번호 입력을 취소하면 다시 일정 설정 단계로 돌아간다.
   const handlePasswordClose = () => {
     onPasswordClose();
     setStep("schedule");
   };
 
-  // 금액을 수정하려는 경우 해당 단계로 이동한다.
-  const handleEditAmount = () => {
-    setStep("amount");
-  };
+  // 1085: 일정 설정 완료 후 "다음" 클릭 실습
+  const handleScheduleCompleteWithEngine = useCallback(
+    async (options: ScheduleSummary) => {
+      await advancePractice({ onlyIds: [1085] });
+      handleScheduleComplete(options);
+    },
+    [advancePractice, handleScheduleComplete]
+  );
 
-  // 출금 계좌 정보를 수정하려는 경우 이전 단계로 이동한다.
-  const handleEditAccount = () => {
-    setStep("form");
-  };
-
-  // 일정 정보를 다시 수정하려는 경우 일정 단계로 이동한다.
-  const handleEditSchedule = () => {
-    setStep("schedule");
-  };
-
-  // 검토 화면에서 등록하기를 누르면 약관 동의 단계로 진입한다.
   const handleOpenConsent = async () => {
-    if (!scheduleSummary) {
-      return;
-    }
-    await advancePractice({ onlyIds: [1092], answer: 0 });
-    setStep("consent");
-  };
+    if (!scheduleSummary) return;
 
-  // 약관에 동의하고 확인을 누르면 API를 호출하고 완료 화면으로 진행한다.
-  const handleConsentCompleted = async () => {
-    await advancePractice();
-    const success = await registerAutoPayment(
-      selectedAccount,
+    const ok = isStoryInputValid({
       selectedBank,
       accountNumber,
-      recipientName,
-      amount
-    );
+      amount,
+      scheduleSummary: {
+        startDate: scheduleSummary.startDate,
+        endDate: scheduleSummary.endDate,
+        transferDay: scheduleSummary.transferDay,
+      },
+    });
 
-    if (success) {
-      setStep("complete");
-    } else if (!selectedAccount) {
-      setStep("account");
+    // ✅ 여기서 절대 모달로 막지 말고, 1092 PRACTICE를 good/bad로 소비해서 분기시킨다
+    if (ok) {
+      await advancePractice({ onlyIds: [1092], answer: 0 }); // good -> 1093
+      setStep("consent");
+    } else {
+      await advancePractice({ onlyIds: [1092], answer: 1 }); // bad -> 1593
+      // ❗ consent로 넘어가지 않음(Scenario15 화면 유지 + 엔진이 1593부터 오버레이/이미지 보여줌)
     }
   };
 
-  // 완료 화면에서 확인을 누르면 메인 자동이체 페이지로 돌아간다.
+
+  const handleConsentCompleted = async () => {
+    // 1098 같은 PRACTICE는 Scenario16 내부에서 소비됨. 여기서는 그냥 진행.
+    const success = await registerAutoPayment(selectedAccount, selectedBank, accountNumber, recipientName, amount);
+
+    if (success) setStep("complete");
+    else if (!selectedAccount) setStep("account");
+  };
+
   const handleSuccessConfirm = async () => {
     await advancePractice({ onlyIds: [1101] });
-    // 메인 페이지에서 API로 목록을 다시 조회할 것이므로 콜백 호출
     onComplete?.();
   };
 
@@ -301,14 +294,9 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     <div className="mx-auto flex h-full flex-col min-h-[84dvh] w-full max-w-[390px] bg-white">
       <main className="flex h-full flex-col px-[20px] pb-[40px]">
         {step === "account" && (
-          <AccountSelectStep
-            accounts={accounts}
-            isLoading={isLoadingAccounts}
-            onSelectAccount={handleSelectAccount}
-          />
+          <AccountSelectStep accounts={accounts} isLoading={isLoadingAccounts} onSelectAccount={handleSelectAccount} />
         )}
 
-        {/* 입금 방법 선택 단계 */}
         {step === "select" && (
           <Scenario1
             onOpenBankSheet={handleOpenBankSheet}
@@ -316,13 +304,12 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
           />
         )}
 
-        {/* 단계 상태에 따라 다음 시나리오 컴포넌트를 조건부로 보여준다. */}
         {step === "form" && (
           <div className="flex h-full flex-col">
             <Scenario3
               onNext={async () => {
                 await advancePractice({ onlyIds: [1076] });
-                setStep("amount")
+                setStep("amount");
               }}
               onBack={() => setStep("select")}
             />
@@ -333,7 +320,7 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
           <Scenario4
             onNext={async () => {
               await advancePractice({ onlyIds: [1078] });
-              setStep("review")
+              setStep("review");
             }}
             onBack={() => setStep("form")}
           />
@@ -345,14 +332,12 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
             sourceAccountNumber={displaySourceAccount}
             onNext={async () => {
               await advancePractice({ onlyIds: [1079] });
-              setStep("schedule")
+              setStep("schedule");
             }}
           />
         )}
 
-        {step === "schedule" && (
-          <Scenario14 onComplete={handleScheduleCompleteWithEngine} />
-        )}
+        {step === "schedule" && <Scenario14 onComplete={handleScheduleCompleteWithEngine} />}
 
         {step === "confirm" && scheduleSummary && (
           <Scenario15
@@ -360,22 +345,20 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
             sourceAccountNumber={displaySourceAccount}
             sourceAccountBank={displaySourceBank}
             scheduleSummary={scheduleSummary}
-            onEditAmount={handleEditAmount}
-            onEditAccount={handleEditAccount}
-            onEditSchedule={handleEditSchedule}
+            onEditAmount={() => setStep("amount")}
+            onEditAccount={() => setStep("form")}
+            onEditSchedule={() => setStep("schedule")}
             onSubmit={handleOpenConsent}
           />
         )}
 
-        {/* 약관 동의 단계에서는 시나리오 16을 노출한다. */}
         {step === "consent" && (
-          <Scenario16 
+          <Scenario16
             onConfirm={handleConsentCompleted}
             advancePractice={advancePractice}
           />
         )}
 
-        {/* 등록 완료 화면에서는 입력된 정보를 다시 확인하고 메인 화면으로 이동한다. */}
         {step === "complete" && scheduleSummary && (
           <Scenario17
             sourceAccountNumber={displaySourceAccount}
@@ -392,7 +375,6 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
         )}
       </main>
 
-      {/* 은행 선택 바텀시트는 계좌를 선택한 직후에만 표시된다. */}
       {isBankSheetOpen && (
         <Scenario2
           onClose={() => setBankSheetOpen(false)}
@@ -401,26 +383,16 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
         />
       )}
 
-      {/* 비밀번호 인증 바텀시트는 자동이체 등록 직전에 호출된다. */}
       {isPasswordSheetOpen && (
         <Scenario5
           onSuccess={handlePasswordSuccess}
           onMaxFail={async () => {
             await advancePractice({ onlyIds: [1089], answer: 1 });
-            setStep("confirm");
+            handlePasswordClose();
           }}
           onClose={handlePasswordClose}
         />
       )}
-
-      {/* 에러 모달 */}
-      <Modal
-        isOpen={errorModal.isOpen}
-        onClose={() => setErrorModal({ isOpen: false, message: "" })}
-        title="오류"
-        description={errorModal.message}
-        confirmText="확인"
-      />
     </div>
   );
 }

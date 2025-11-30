@@ -1,25 +1,32 @@
 "use client";
 
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
 import ScenarioContainer from "./components/ScenarioContainer";
+import { getNextStepId } from "@/utils/stepUtil";
 
 function AutomaticPaymentScenarioContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
 
+  const scenarioId = useMemo(() => {
+    const raw = searchParams.get("scenarioId");
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : 1;
+  }, [searchParams]);
+
   useEffect(() => {
     const scenarioIdParam = searchParams.get("scenarioId");
     const stepIdParam = searchParams.get("stepId");
 
-    const scenarioId = scenarioIdParam ? Number(scenarioIdParam) : NaN;
+    const sid = scenarioIdParam ? Number(scenarioIdParam) : NaN;
     const stepId = stepIdParam ? Number(stepIdParam) : undefined;
 
-    if (!Number.isNaN(scenarioId)) {
-      void resume(scenarioId, stepId);
+    if (!Number.isNaN(sid)) {
+      void resume(sid, stepId);
     }
   }, [resume, searchParams]);
 
@@ -32,13 +39,8 @@ function AutomaticPaymentScenarioContent() {
 
   return (
     <>
-      {/* 실제 화면(UI 흐름)은 컨테이너가 담당 */}
-      <ScenarioContainer
-        engineStep={currentStep}
-        onPracticeNext={onPracticeNext}
-      />
+      <ScenarioContainer engineStep={currentStep} onPracticeNext={onPracticeNext} />
 
-      {/* 시나리오 오버레이는 page에서 “항상 최상단”으로 */}
       {currentStep && currentStep.type !== "PRACTICE" && (
         <ScenarioRenderer
           step={currentStep}
@@ -48,14 +50,30 @@ function AutomaticPaymentScenarioContent() {
           }}
           onBackgroundClick={async () => {
             const quizId = (currentStep as any)?.quizId;
+
             if (typeof quizId === "number") {
-              router.push(`quiz?scenarioId=1&stepId=1119`);
+              router.push(`quiz?scenarioId=${scenarioId}&stepId=${currentStep.id}`);
               return;
             }
+
             if (currentStep.type === "CHOICE") return;
             if (currentStep.type === "PRACTICE") return;
-            if (currentStep?.id != null)
-              await nextStep(currentStep.id);
+
+            if (currentStep?.id != null) await nextStep(currentStep.id);
+          }}
+
+          onRestartFromBeginning={async () => {
+            if (Number.isNaN(scenarioId)) {
+              router.replace("/woorimain");
+              return;
+            }
+            router.replace(`/woorimain?scenarioId=${scenarioId}&stepId=1001`);
+          }}
+          onRestartFromWrongPart={async () => {
+            if (!currentStep) return;
+            const target = getNextStepId(currentStep);
+            if (!target || Number.isNaN(scenarioId)) return;
+            await resume(scenarioId, target);
           }}
         />
       )}

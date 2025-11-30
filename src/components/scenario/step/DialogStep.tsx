@@ -7,8 +7,8 @@ type DialogStepProps = {
   onBackgroundClick?: () => void;
   previousStep?: ScenarioStep | null;
 
-  onRestartFromBeginning?: () => void; // 처음부터 다시하기
-  onRestartFromWrongPart?: () => void; // 틀린 부분부터 다시하기
+  onRestartFromBeginning?: () => void | Promise<void>; // 처음부터 다시하기
+  onRestartFromWrongPart?: () => void | Promise<void>; // 틀린 부분부터 다시하기
 };
 
 // 말풍선 디자인 규칙:
@@ -42,12 +42,9 @@ export default function DialogStep({
     lg: "h-[60px] text-[16px]",
   } as const;
 
-  const BTN_COMMON =
-    "w-full rounded-[14px] font-semibold";
-  const LEFT_BTN =
-    "bg-white text-[#1F74FF] border border-white/70";
-  const RIGHT_BTN =
-    "bg-[#1F74FF] text-white border border-[#1F74FF]";
+  const BTN_COMMON = "w-full rounded-[14px] font-semibold";
+  const LEFT_BTN = "bg-white text-[#1F74FF] border border-white/70";
+  const RIGHT_BTN = "bg-[#1F74FF] text-white border border-[#1F74FF]";
 
 
   const BadEndingButtons = () => (

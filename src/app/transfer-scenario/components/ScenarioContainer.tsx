@@ -20,15 +20,6 @@ type ScenarioContainerProps = {
   onExitToMain?: (nextStepId: number | null) => void;
 };
 
-export default function ScenarioContainer({ onPracticeNext, onTransferResult, engineStepId, engineNextId, onExitToMain }: ScenarioContainerProps) {
-  const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
-  const searchParams = useSearchParams(); // URL 쿼리 파라미터를 읽기 위해 사용합니다.
-  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, lastErrorType, setLastErrorType, } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
-  const [step, setStep] = useState<number>(1); // 현재 진행 중인 단계(1~7)를 관리합니다.
-  const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false); // 은행 선택 바텀 시트 열림 여부를 저장합니다.
-  const [isPasswordSheetOpen, setPasswordSheetOpen] = useState<boolean>(false); // 비밀번호 입력 바텀 시트 열림 여부를 저장합니다.
-  const practiceFlagsRef = useRef<Set<number>>(new Set());
-
   const PRACTICE_TO_UI: Record<number, { step: number; bankSheet?: boolean; passwordSheet?: boolean }> = {
     1015: { step: 1 },
     1016: { step: 2, bankSheet: true },
@@ -38,6 +29,13 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     1026: { step: 6 },
     1028: { step: 7 },
   };
+
+export default function ScenarioContainer({ onPracticeNext, onTransferResult, engineStepId, engineNextId, onExitToMain }: ScenarioContainerProps) {
+  const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
+  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, setLastErrorType, } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
+  const [step, setStep] = useState<number>(1); // 현재 진행 중인 단계(1~7)를 관리합니다.
+  const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false); // 은행 선택 바텀 시트 열림 여부를 저장합니다.
+  const [isPasswordSheetOpen, setPasswordSheetOpen] = useState<boolean>(false); // 비밀번호 입력 바텀 시트 열림 여부를 저장합니다.
 
   const inFlightRef = useRef(false);
   const handledStepIdRef = useRef<number | null>(null);
@@ -79,17 +77,6 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     [engineStepId, onPracticeNext]
   );
 
-  // URL 쿼리에서 scenarioStep을 읽어와 초기 step 설정
-  useEffect(() => {
-    const scenarioStepParam = searchParams.get("scenarioStep");
-    if (!scenarioStepParam) return;
-
-    const scenarioStep = Number(scenarioStepParam);
-    if (!Number.isNaN(scenarioStep) && scenarioStep >= 1 && scenarioStep <= 7) {
-      setStep(scenarioStep);
-    }
-  }, [searchParams]);
-
   const clampedStep = useMemo(() => {
     return Math.min(Math.max(step, 1), 7);
   }, [step]);
@@ -105,7 +92,6 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     setPasswordSheetOpen(false); // 비밀번호 시트를 닫습니다.
     resetFlow(); // 컨텍스트의 플로우 데이터를 초기화합니다.
     setSelectedBank("국민은행"); // 기본 은행으로 되돌립니다.
-    practiceFlagsRef.current.clear();
   }, [resetFlow, setSelectedBank]);
 
   const handleBackToMain = useCallback(() => {
@@ -159,9 +145,7 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     };
 
     setOnBack(() => handleHeaderBack); // 헤더 뒤로가기 콜백을 등록합니다.
-    return () => {
-      setOnBack(null); // 컴포넌트 언마운트 시 콜백을 해제합니다.
-    };
+    return () => setOnBack(null); // 컴포넌트 언마운트 시 콜백을 해제합니다.
   }, [
     clampedStep,
     goToStep,

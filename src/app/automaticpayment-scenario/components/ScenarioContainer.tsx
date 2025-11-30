@@ -59,8 +59,18 @@ function convertToAutoTransferInfo(payment: AutoPayment, account: EducationalAcc
     };
 }
 
+// ✅ stepId 기반 초기 화면 추론(네가 준 디테일 매핑 기준)
 function inferInitialScreenFromStepId(stepId: number): Screen {
-    if (stepId >= 1071) return "register";
+    // 등록 흐름 UI(Scenario12 포함): 1069 ~ 1101
+    if (stepId >= 1069 && stepId <= 1101) return "register";
+
+    // 자동이체 상세/해지 확인(Scenario18): 1108 ~ 1115
+    if (stepId >= 1108 && stepId <= 1115) return "detail";
+
+    // 해지 완료(Scenario19) + 이후 다이얼로그/퀴즈도 base screen은 cancelled로 둠
+    if (stepId >= 1116) return "cancelled";
+
+    // 그 외(1063~1068, 1102~1107 등)는 list
     return "list";
 }
 
@@ -74,21 +84,17 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         return Number.isFinite(n) ? n : 0;
     }, [searchParams]);
 
-    // 화면 상태
     const [currentScreen, setCurrentScreen] = useState<Screen>("list");
     const [selectedAutoPaymentId, setSelectedAutoPaymentId] = useState<number | null>(null);
 
-    // 목록 데이터
     const [accountSuffix, setAccountSuffix] = useState("0000");
     const [autoTransferList, setAutoTransferList] = useState<AutoTransferInfo[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // 상세/해지 데이터
     const [detailData, setDetailData] = useState<Scenario18Detail | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<AutoPayment | null>(null);
     const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-    // 에러 모달
     const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
 
     const isFetchingRef = useRef(false);
@@ -102,13 +108,13 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         const initial = inferInitialScreenFromStepId(urlStepId);
         setCurrentScreen(initial);
 
-        if (initial === "register") {
+        if (initial !== "detail") {
             setSelectedAutoPaymentId(null);
             setSelectedPayment(null);
             setDetailData(null);
         }
     }, [urlStepId]);
-    
+
     const fetchRepresentativeAccount = useCallback(async (signal?: AbortSignal) => {
         const accounts = await getAccountList(signal);
         const representative = getRepresentativeAccount(accounts);
@@ -170,7 +176,9 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
                         devError("[fetchData] background load failed:", bgErr);
                         setErrorModal({
                             isOpen: true,
-                            message: isApiError(bgErr) ? `일부 데이터 로드 실패: ${bgErr.message}` : "일부 자동이체 데이터를 불러오지 못했습니다.",
+                            message: isApiError(bgErr)
+                                ? `일부 데이터 로드 실패: ${bgErr.message}`
+                                : "일부 자동이체 데이터를 불러오지 못했습니다.",
                         });
                     }
                 }
@@ -200,16 +208,12 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         if (currentScreen === "list") fetchData();
     });
 
-    // PRACTICE 소비(컨테이너 -> page로 올라간 onPracticeNext 호출)
-    const practiceNext = useCallback(
-        async (nowStepId: number, answer?: number): Promise<void> => {
-            await onPracticeNext(nowStepId, answer);
-        },
-        [onPracticeNext]
-    );
+    const practiceNext = useCallback(async (nowStepId: number, answer?: number) => onPracticeNext(nowStepId, answer), [
+        onPracticeNext,
+    ]);
 
-    // 화면 이동
     const handleNavigateToRegister = () => setCurrentScreen("register");
+
     const handleRegisterComplete = () => {
         setCurrentScreen("list");
         fetchData();
@@ -325,12 +329,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
 
             {currentScreen === "register" && (
                 <TransferFlowProvider>
-                    <Scenario12
-                        onComplete={handleRegisterComplete}
-                        onCancel={handleBackToList}
-                        engineStep={engineStep}
-                        onPracticeNext={practiceNext}
-                    />
+                    <Scenario12 onComplete={handleRegisterComplete} onCancel={handleBackToList} engineStep={engineStep} onPracticeNext={practiceNext} />
                 </TransferFlowProvider>
             )}
 
@@ -356,7 +355,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
                 <Scenario19
                     detail={detailData}
                     onNavigateToQuiz={async () => {
-                        // 퀴즈로 넘어가기 전에, PRACTICE면 한 번 소비해주는 패턴 유지
+                        // ✅ 1116 PRACTICE(Scenario19 "확인") 소비
                         if (engineStep?.type === "PRACTICE") {
                             await practiceNext(engineStep.id);
                             return;

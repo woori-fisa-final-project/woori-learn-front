@@ -10,6 +10,8 @@ type ScenarioRendererProps = {
   previousStep?: ScenarioStep | null;
   onNext: (nowStepId: number, answer?: number) => void | Promise<void>;
   onBackgroundClick?: () => void;
+  onRestartFromBeginning?: () => void | Promise<void>;
+  onRestartFromWrongPart?: () => void | Promise<void>;
 };
 
 // ScenarioRenderer는 반드시 다음 규칙으로만 렌더링합니다.
@@ -19,7 +21,7 @@ type ScenarioRendererProps = {
 // CHOICE → ChoiceStep
 // MODAL → ModalStep
 // PRACTICE → PracticeStep
-export default function ScenarioRenderer({ step, previousStep, onNext, onBackgroundClick }: ScenarioRendererProps) {
+export default function ScenarioRenderer({ step, previousStep, onNext, onBackgroundClick, onRestartFromBeginning, onRestartFromWrongPart }: ScenarioRendererProps) {
   if (!step) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -35,7 +37,15 @@ export default function ScenarioRenderer({ step, previousStep, onNext, onBackgro
   }
 
   if (type === "DIALOG") {
-    return <DialogStep content={content} onBackgroundClick={onBackgroundClick} />;
+    return (
+      <DialogStep
+        content={step.content as any}
+        previousStep={previousStep ?? null}
+        onBackgroundClick={onBackgroundClick as any}
+        onRestartFromBeginning={onRestartFromBeginning}
+        onRestartFromWrongPart={onRestartFromWrongPart}
+      />
+    );
   }
 
   if (type === "OVERLAY") {

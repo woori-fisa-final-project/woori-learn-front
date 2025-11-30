@@ -5,14 +5,13 @@ import { useState } from "react";
 import Button from "@/components/common/Button";
 import Image from "next/image";
 
-
 // 약관 동의 체크박스에 사용할 아이콘 경로를 정의한다.
 const TERMS_CHECK_ICON = "/images/Termcheck.png";
 const TERMS_CHECKED_ICON = "/images/Termcheck2.png";
 
 // 상위 단계에서 확인 콜백을 전달받기 위한 props 타입이다.
 type Scenario16Props = {
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   advancePractice: (opts?: { onlyIds?: number[]; answer?: number }) => Promise<boolean>;
 };
 
@@ -29,6 +28,7 @@ export default function Scenario16({ onConfirm, advancePractice }: Scenario16Pro
     }
     setDetailOpen(true);
 
+    // 1095: 약관(보기/체크) 진입 실습
     await advancePractice({ onlyIds: [1095] });
   };
 
@@ -36,6 +36,7 @@ export default function Scenario16({ onConfirm, advancePractice }: Scenario16Pro
   const openDetail = async () => {
     setDetailOpen(true);
 
+    // 1095: 약관(보기) 진입 실습
     await advancePractice({ onlyIds: [1095] });
   };
 
@@ -43,23 +44,27 @@ export default function Scenario16({ onConfirm, advancePractice }: Scenario16Pro
   const closeDetail = async () => {
     setDetailOpen(false);
 
+    // 1096: 약관 닫기(또는 배경) 실습
     await advancePractice({ onlyIds: [1096] });
   };
 
-  // 체크 상태가 없으면 다음 단계로 이동하지 않도록 방지한다.
-  const handleConfirm = () => {
-    if (!isChecked) {
-      return;
-    }
-    onConfirm();
+  // ✅ Scenario16 화면의 "확인" 버튼: 1098 PRACTICE 소비 후 onConfirm 실행
+  const handleConfirm = async () => {
+    if (!isChecked) return;
+
+    // 1098: 약관 동의 완료 후 Scenario16 "확인" 클릭 실습
+    await advancePractice({ onlyIds: [1098] });
+
+    await onConfirm?.();
   };
 
-  // 모달에서 확인을 누르면 자동으로 체크 상태를 유지한 채 다음 단계로 진행한다.
+  // ✅ 모달의 "확인" 버튼: 1097 PRACTICE 소비 후 체크 상태 ON
   const handleModalConfirm = async () => {
+    // 1097: 약관 전문에서 "확인" 클릭 실습
+    await advancePractice({ onlyIds: [1097] });
+
     setDetailOpen(false);
     setIsChecked(true);
-
-    await advancePractice({ onlyIds: [1097] });
   };
 
   return (
@@ -108,7 +113,7 @@ export default function Scenario16({ onConfirm, advancePractice }: Scenario16Pro
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[32px]">
         {/* 약관에 동의하기 전까지 비활성화되는 확인 버튼이다. */}
-        <Button onClick={handleConfirm} disabled={!isChecked}>
+        <Button onClick={() => void handleConfirm()} disabled={!isChecked}>
           확인
         </Button>
       </div>
@@ -158,15 +163,24 @@ function TermsDetailModal({ onClose, onConfirm }: TermsDetailModalProps) {
             <article>
               <h4 className="text-[15px] font-semibold text-gray-800">제2조 (신청, 변경 및 해지)</h4>
               <ul className="mt-[8px] list-disc space-y-[8px] pl-[18px]">
-                <li>납부자가 타행 자동이체를 이용, 변경 또는 해지하고자 할 경우에는 타행 자동이체신청서, 변경, 해지신청서를 제출하여야 합니다.</li>
-                <li>타행 자동이체를 신청할 때, 신청정보와 제공정보가 일치하지 않는 경우 이체가 제한될 수 있습니다.</li>
-                <li>이체일이 휴일인 경우 다음 영업일에 이체되며, 이체일 당일 계좌 잔액이 부족하면 이체되지 않을 수 있습니다.</li>
+                <li>
+                  납부자가 타행 자동이체를 이용, 변경 또는 해지하고자 할 경우에는 타행 자동이체신청서, 변경,
+                  해지신청서를 제출하여야 합니다.
+                </li>
+                <li>
+                  타행 자동이체를 신청할 때, 신청정보와 제공정보가 일치하지 않는 경우 이체가 제한될 수 있습니다.
+                </li>
+                <li>
+                  이체일이 휴일인 경우 다음 영업일에 이체되며, 이체일 당일 계좌 잔액이 부족하면 이체되지 않을 수
+                  있습니다.
+                </li>
               </ul>
             </article>
             <article>
               <h4 className="text-[15px] font-semibold text-gray-800">제3조 (계좌이체 서비스)</h4>
               <p className="mt-[8px] whitespace-pre-line">
-                타행 자동이체는 계좌이체서비스를 대상으로 하며, 계좌이체서비스 이용 약관을 준용합니다. 자세한 사항은 은행 고객센터 또는 홈페이지를 참고하세요.
+                타행 자동이체는 계좌이체서비스를 대상으로 하며, 계좌이체서비스 이용 약관을 준용합니다. 자세한
+                사항은 은행 고객센터 또는 홈페이지를 참고하세요.
               </p>
             </article>
           </section>
@@ -180,4 +194,3 @@ function TermsDetailModal({ onClose, onConfirm }: TermsDetailModalProps) {
     </div>
   );
 }
-

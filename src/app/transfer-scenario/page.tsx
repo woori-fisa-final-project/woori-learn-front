@@ -2,16 +2,14 @@
 
 import { useEffect, Suspense, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import ScenarioContainer from "./components/ScenarioContainer"; // 이체 시나리오 전체 흐름을 렌더링하는 컨테이너 컴포넌트를 가져옵니다.
-import { TransferFlowProvider, useTransferFlow } from "@/lib/hooks/useTransferFlow"; // 이체 과정에서 사용하는 상태를 전역으로 제공하기 위한 컨텍스트 프로바이더입니다.
+import ScenarioContainer from "./components/ScenarioContainer";
+import { TransferFlowProvider, useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 import { useScenarioBackgroundClick } from "@/lib/hooks/useScenarioBackgroundClick";
-
-import OverlayStep from "@/components/scenario/step/OverlayStep";
-import ModalStep from "@/components/scenario/step/ModalStep";
+import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
 import DialogStep from "@/components/scenario/step/DialogStep";
-import ImageStep from "@/components/scenario/step/ImageStep";
-import ChoiceStep from "@/components/scenario/step/ChoiceStep";
+import type { ScenarioStep } from "@/types/scenario";
+import { getNextStepId } from "@/utils/stepUtil";
 
 function pickAnswerIndexByGood(choices: any[] | undefined, wantGood: boolean) {
   if (!Array.isArray(choices) || choices.length === 0) return undefined;
@@ -21,6 +19,46 @@ function pickAnswerIndexByGood(choices: any[] | undefined, wantGood: boolean) {
 
   // fallback: success=0, fail=1
   return wantGood ? 0 : (choices.length > 1 ? 1 : 0);
+}
+
+function TransferOverlayHost({
+  step,
+  previousStep,
+  onNext,
+  onBackgroundClick,
+  onRestartFromBeginning,
+  onRestartFromWrongPart,
+}: {
+  step: ScenarioStep | null;
+  previousStep: ScenarioStep | null;
+  onNext: (nowStepId: number, answer?: number) => Promise<void> | void;
+  onBackgroundClick: () => Promise<void> | void;
+  onRestartFromBeginning: () => void;
+  onRestartFromWrongPart: () => Promise<void> | void;
+}) {
+  if (!step || step.type === "PRACTICE") return null;
+
+  // DIALOG만 추가 props가 필요해서 예외 처리
+  if (step.type === "DIALOG") {
+    return (
+      <DialogStep
+        content={step.content}
+        previousStep={previousStep}
+        onBackgroundClick={onBackgroundClick}
+        onRestartFromBeginning={onRestartFromBeginning}
+        onRestartFromWrongPart={onRestartFromWrongPart}
+      />
+    );
+  }
+
+  return (
+    <ScenarioRenderer
+      step={step}
+      previousStep={previousStep}
+      onNext={onNext}
+      onBackgroundClick={onBackgroundClick}
+    />
+  );
 }
 
 /**
@@ -50,13 +88,7 @@ function TransferScenarioContent() {
   }, [resume, scenarioId, searchParams]);
 
   const engineStepId = currentStep?.type === "PRACTICE" ? currentStep.id : null;
-  const engineNextId =
-    currentStep?.type === "PRACTICE"
-      ? ((currentStep as any).next ??
-        (currentStep as any).nextStep ??
-        (currentStep as any).next_step ??
-        null)
-      : null;
+  const engineNextId = currentStep?.type === "PRACTICE" ? getNextStepId(currentStep) : null;
 
   const handleExitToMain = useCallback(
     (nextStepId: number | null) => {
@@ -64,13 +96,6 @@ function TransferScenarioContent() {
         router.replace("/woorimain");
         return;
       }
-
-      // nextStepId가 없으면 그냥 메인만
-      if (!nextStepId) {
-        router.replace("/woorimain");
-        return;
-      }
-
       router.replace(`/woorimain?scenarioId=${scenarioId}&stepId=${nextStepId}`);
     },
     [router, scenarioId]
@@ -78,24 +103,14 @@ function TransferScenarioContent() {
 
   const restartFromBeginning = useCallback(() => {
     const START_STEP_ID = 1001;
-    if (Number.isNaN(scenarioId)) {
-      router.replace("/woorimain");
-      return;
-    }
+    if (Number.isNaN(scenarioId)) return router.replace("/woorimain");
     router.replace(`/woorimain?scenarioId=${scenarioId}&stepId=${START_STEP_ID}`);
   }, [router, scenarioId]);
 
   const restartFromWrongPart = useCallback(async () => {
-    if (!currentStep) return;
-
-    const target =
-      (currentStep as any).next ??
-      (currentStep as any).nextStep ??
-      (currentStep as any).next_step;
-
-    if (!target) return;
-
-    await resume(scenarioId, Number(target));
+    const target = getNextStepId(currentStep);
+    if (!target || Number.isNaN(scenarioId)) return;
+    await resume(scenarioId, target);
   }, [currentStep, resume, scenarioId]);
 
   const handleTransferResult = useCallback(async (result: "success" | "fail") => {
@@ -106,15 +121,6 @@ function TransferScenarioContent() {
 
     await nextStep(currentStep.id, answer);
   }, [currentStep, nextStep]);
-
-  // currentStep 변경 추적
-  useEffect(() => {
-    if (currentStep) {
-      console.log("currentStep 변경:", currentStep.id, currentStep.type, currentStep.content);
-    } else {
-      console.log("currentStep이 null입니다");
-    }
-  }, [currentStep]);
 
   const nextStepByBackground = useCallback(
     async (nowStepId: number) => {
@@ -129,9 +135,9 @@ function TransferScenarioContent() {
 
         if (isBadBranchDialog) {
           const answer =
-            lastErrorType === "amount" ? 0 :
-              (lastErrorType === "account" || lastErrorType === "both") ? 1 :
-                0;
+            lastErrorType === "amount"
+              ? 0 : (lastErrorType === "account" || lastErrorType === "both")
+              ? 1 : 0;
 
           await nextStep(nowStepId, answer);
           return;
@@ -147,68 +153,26 @@ function TransferScenarioContent() {
 
   return (
     <>
-      <Suspense fallback={<div>로딩 중...</div>}>
-        <ScenarioContainer
-          engineStepId={engineStepId}
-          engineNextId={engineNextId}
-          onPracticeNext={async (nowStepId, answer) => {
-            await nextStep(nowStepId, answer);
-          }}
-          onTransferResult={handleTransferResult}
-          onExitToMain={handleExitToMain}
-        />
-      </Suspense>
+      <ScenarioContainer
+        engineStepId={engineStepId}
+        engineNextId={engineNextId}
+        onPracticeNext={async (nowStepId, answer) => {
+          await nextStep(nowStepId, answer);
+        }}
+        onTransferResult={handleTransferResult}
+        onExitToMain={handleExitToMain}
+      />
 
-      {currentStep && currentStep.type !== "PRACTICE" && (
-        <>
-          {currentStep.type === "IMAGE" && (
-            <ImageStep
-              content={currentStep.content}
-              onBackgroundClick={handleBackgroundClick}
-            />
-          )}
-
-          {currentStep.type === "OVERLAY" && (
-            <OverlayStep
-              content={currentStep.content}
-              previousStep={previousStep}
-              onBackgroundClick={handleBackgroundClick}
-            />
-          )}
-
-          {currentStep.type === "MODAL" && (
-            <ModalStep
-              content={currentStep.content}
-              onBackgroundClick={handleBackgroundClick}
-            />
-          )}
-
-          {currentStep.type === "DIALOG" && (
-            <DialogStep
-              content={currentStep.content}
-              previousStep={previousStep}
-              onBackgroundClick={handleBackgroundClick}
-              onRestartFromBeginning={restartFromBeginning}
-              onRestartFromWrongPart={restartFromWrongPart}
-            />
-          )}
-
-          {currentStep.type === "CHOICE" && (
-            <ChoiceStep
-              content={currentStep.content}
-              previousStep={previousStep ?? null}
-              onChoose={(nextStepId: number) => {
-                const choices = currentStep.content?.choices as any[] | undefined;
-                const idx = Array.isArray(choices)
-                  ? choices.findIndex((c) => c?.next === nextStepId)
-                  : -1;
-
-                void nextStep(currentStep.id!, idx >= 0 ? idx : 0);
-              }}
-            />
-          )}
-        </>
-      )}
+      <TransferOverlayHost
+        step={currentStep}
+        previousStep={previousStep}
+        onNext={async (nowStepId, answer) => {
+          await nextStep(nowStepId, answer);
+        }}
+        onBackgroundClick={handleBackgroundClick}
+        onRestartFromBeginning={restartFromBeginning}
+        onRestartFromWrongPart={restartFromWrongPart}
+      />
     </>
   );
 }
