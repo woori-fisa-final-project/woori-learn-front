@@ -40,7 +40,7 @@ export default function VerifyPage() {
           onClick={handleResend}
           className="mt-4 text-primary-400 underline underline-offset-2 text-[15px] font-medium"
         >
-          인증번호 다시 보내기
+          인증메일 다시 보내기
         </button>
       </div>
     </main>
