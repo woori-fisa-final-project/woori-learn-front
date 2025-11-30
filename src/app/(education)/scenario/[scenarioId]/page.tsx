@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import ScenarioLayout from "@/components/scenario/ScenarioLayout";
 import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
@@ -51,7 +51,6 @@ import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 export default function ScenarioDetailPage() {
   const params = useParams();
   const scenarioId = Number(params?.scenarioId);
-  const router = useRouter();
 
   const { currentStep, previousStep, isLoading, error, nextStep, resume } =
     useScenarioEngine();
@@ -72,7 +71,7 @@ export default function ScenarioDetailPage() {
     }
   }, [resume, scenarioId]);
 
-  
+
 
   const handleScreenClick = async () => {
     // CHOICE 단계에서는 ChoiceStep 내부에서 onChoiceNext를 통해 이동하므로
@@ -124,7 +123,9 @@ export default function ScenarioDetailPage() {
               <ScenarioRenderer
                 step={currentStep}
                 previousStep={previousStep}
-                onNext={(nowStepId, answer) => nextStep(nowStepId, answer)}
+                onNext={async (nowStepId, answer) => {
+                  await nextStep(nowStepId, answer);
+                }}
                 onBackgroundClick={handleScreenClick}
               />
             )}

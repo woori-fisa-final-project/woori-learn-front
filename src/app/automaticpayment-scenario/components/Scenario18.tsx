@@ -137,17 +137,15 @@ export default function Scenario18({
 
       <Modal isOpen={isConfirmOpen} onClose={handleCloseConfirm} zIndex="z-[100]">
         <div className="flex flex-col gap-[18px] text-left">
-          <div className="space-y-[8px] text-[16px] text-gray-700">
+          <div className="space-y-4 text-[16px] text-gray-700">
             <p className="font-semibold text-gray-900">
               {bankName}
               {accountNumber ? `/${accountNumber}` : ""}의 자동 이체를 해지하시겠습니까?
             </p>
             <p>
-              <br />
               타행자동이체 시 이체지정일 당일에 인증되므로 전 영업일까지 해지해 주세요.
             </p>
             <p>
-              <br />
               자동이체 해지 당일 등록 건 취소 가능 여부는 고객센터로 문의하시기 바랍니다.
             </p>
           </div>
