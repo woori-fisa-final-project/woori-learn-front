@@ -1,10 +1,11 @@
 import { AutoPayment, AutoPaymentStatus } from "@/types/autoPayment";
-import { devLog, logApiCall, logApiResponse, devError } from "@/utils/logger";
+import { logApiCall, logApiResponse, devError } from "@/utils/logger";
 import axiosInstance from "@/utils/axiosInstance";
 import { AUTO_PAYMENT } from "../constants";
 import type { ApiResponse, Page } from "@/types/api";
 
-const BASE_URL = "/education/auto-payment";
+
+const BASE_URL = '/education/auto-payment';
 
 interface GetAutoPaymentListParams {
   educationalAccountId: number;
@@ -18,6 +19,7 @@ interface GetAutoPaymentListParams {
  * 자동이체 목록 조회 (페이지네이션)
  */
 export async function getAutoPaymentList(
+
   params: GetAutoPaymentListParams,
   signal?: AbortSignal
 ): Promise<Page<AutoPayment>> {
@@ -46,6 +48,7 @@ export async function getAutoPaymentList(
   } catch (error) {
     devError("[getAutoPaymentList] 목록 조회 실패:", error);
     throw error;
+
   }
 }
 
@@ -61,9 +64,10 @@ export async function getAutoPaymentDetail(
     );
 
     return response.data.data;
-  } catch (error) {
-    devError("[getAutoPaymentDetail] 상세 조회 실패:", error);
-    throw error;
+  } catch (error: any) {
+    devError('[getAutoPaymentDetail] 에러:', error);
+    throw new Error(`자동이체 상세 조회 실패: ${error.message}`);
+
   }
 }
 
@@ -94,9 +98,10 @@ export async function createAutoPayment(
     );
 
     return response.data.data;
-  } catch (error) {
-    devError("[createAutoPayment] 등록 실패:", error);
-    throw error;
+  } catch (error: any) {
+    devError('[createAutoPayment] 에러:', error);
+    throw new Error(`자동이체 등록 실패: ${error.message}`);
+
   }
 }
 
@@ -107,6 +112,7 @@ export async function cancelAutoPayment(
   autoPaymentId: number,
   educationalAccountId: number
 ): Promise<AutoPayment> {
+
   try {
     const queryParams = new URLSearchParams();
     queryParams.append("educationalAccountId", educationalAccountId.toString());
@@ -122,5 +128,6 @@ export async function cancelAutoPayment(
   } catch (error) {
     devError("[cancelAutoPayment] 해지 실패:", error);
     throw error;
+
   }
 }
