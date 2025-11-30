@@ -250,7 +250,7 @@ const PRACTICE_MAPPINGS: PracticeMapping[] = [
   { component: 'Transfer/Scenario7', stepRange: [1027, 1033] },
   
   // 계좌조회 시나리오 (1034 ~ 1049)
-  { component: 'SearchAccount/Scenario8', stepRange: [1033, 1036] },
+  { component: 'SearchAccount/Scenario8', stepRange: [1034, 1036] },
   { component: 'SearchAccount/Scenario9', stepRange: [1037, 1044] },
   { component: 'SearchAccount/Scenario10', stepRange: [1045, 1049] },
   

@@ -211,18 +211,6 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
               const isAccountCorrect = normalizedAccount === normalizedCorrectAccount;
               const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
 
-              // 디버깅: 실제 값 확인
-              console.log("이체 검증:", {
-                accountNumber,
-                normalizedAccount,
-                normalizedCorrectAccount,
-                isAccountCorrect,
-                amount,
-                numericAmount,
-                CORRECT_AMOUNT,
-                isAmountCorrect,
-              });
-
               // ✅ 어디가 틀렸는지 저장
               if (isAccountCorrect && isAmountCorrect) {
                 setLastErrorType("none");

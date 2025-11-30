@@ -70,8 +70,8 @@ export function TransferFlowProvider({ children }: { children: ReactNode }) { //
   const [amount, setAmount] = useState(DEFAULT_STATE.amount); // 이체 금액을 상태로 저장합니다.
   const [sourceAccountNumber, setSourceAccountNumber] = useState(DEFAULT_STATE.sourceAccountNumber);
   const { userName } = useUserData(); // 현재 로그인한 사용자의 이름을 불러옵니다.
-  const [lastErrorType, setLastErrorType] = useState<"none" | "account" | "amount" | "both">("none");  
-const updateAccountNumber = useCallback((value: string) => { // 계좌번호 입력 시 형식을 자동으로 맞추는 함수입니다.
+  const [lastErrorType, setLastErrorType] = useState<"none" | "account" | "amount" | "both">("none");
+  const updateAccountNumber = useCallback((value: string) => { // 계좌번호 입력 시 형식을 자동으로 맞추는 함수입니다.
     const formatted = formatAccountNumber(value); // 숫자만 추출해 규칙에 맞게 재조합합니다.
     setAccountNumber(formatted); // 포맷팅된 값을 상태에 반영합니다.
   }, []);

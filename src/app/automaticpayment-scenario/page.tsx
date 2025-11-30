@@ -51,7 +51,7 @@ function AutomaticPaymentScenarioContent() {
             const quizId = (currentStep as any)?.quizId;
 
             if (typeof quizId === "number") {
-              router.push(`quiz?scenarioId=${scenarioId}&stepId=${currentStep.id}`);
+              router.push(`/quiz?scenarioId=${scenarioId}&stepId=${currentStep.id}`);
               return;
             }
 
