@@ -12,17 +12,24 @@ import Scenario5 from "./Scenario5";
 import Scenario6 from "./Scenario6";
 import Scenario7 from "./Scenario7";
 
+/** "정답"으로 판정할 값들(계좌번호/금액 비교) */
 const CORRECT_ACCOUNT = "110-123-456789";
 const CORRECT_AMOUNT = 500000;
 
 type ScenarioContainerProps = {
+  /** PRACTICE 스텝 완료 처리(백엔드 nextStep 호출)
+   * - 엔진 스텝 ID와 answer(분기용)를 함께 넘겨 진행을 넘김
+   */
   onPracticeNext: (nowStepId: number, answer?: number) => Promise<void> | void;
-  onTransferResult?: (result: "success" | "fail") => void;
-  engineStepId?: number | null;
-  engineNextId?: number | null;
+  onTransferResult?: (result: "success" | "fail") => void;  // 이체 결과를 상위로 전달(성공/실패)
+  engineStepId?: number | null; // 현재 엔진에서 내려준 PRACTICE step id
+  engineNextId?: number | null; // 완료 후 상위(ex: woorimain)로 돌아갈 때 이어서 재개할 next step id
   onExitToMain?: (nextStepId: number | null) => void;
 };
 
+/** 엔진 PRACTICE stepId -> UI/바텀시트 오픈 상태 매핑 테이블
+ * - 엔진 흐름과 UI 화면을 분리해서 유지보수하기 쉽게 만들기 위한 매핑
+ */
 const PRACTICE_TO_UI: Record<number, { step: number; bankSheet?: boolean; passwordSheet?: boolean }> = {
   1015: { step: 1 },
   1016: { step: 2, bankSheet: true },
@@ -56,6 +63,11 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     setPasswordSheetOpen(!!ui.passwordSheet);
   }, [engineStepId]);
 
+  /** 엔진 PRACTICE 완료 처리 유틸
+   * - 현재 엔진 stepId가 expectedStepId일 때만 완료 처리
+   * - inFlight/handledRef로 중복 호출 차단
+   * - 실패 시 handledStepIdRef를 풀어서 재시도 가능하게 함
+   */
   const completePractice = useCallback(
     async (expectedStepId: number, answer?: number) => {
       if (engineStepId == null) return;
@@ -70,7 +82,7 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
       try {
         await onPracticeNext(expectedStepId, answer);
       } catch (e) {
-        // 실패했으면 다시 시도 가능하게 풀어줌
+        // 실패했으면 다시 시도 가능하게 해제
         handledStepIdRef.current = null;
         throw e;
       } finally {
@@ -80,15 +92,21 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     [engineStepId, onPracticeNext]
   );
 
+  /** step을 특정 범위로 제한(잘못된 숫자가 들어와도  UI가 꺠지지 않도록 보정) */
   const clampedStep = useMemo(() => {
     return Math.min(Math.max(step, 1), 7);
   }, [step]);
 
+  /** 특정 단계로 이동 */
   const goToStep = useCallback((target: number) => {
     const next = Math.min(Math.max(target, 1), 7);
     setStep(next);
   }, []);
 
+  /** 플로우 초기화
+   * - step/바텀시트 상태를 초기화하고
+   * - 컨텍스트(TransferFlow)의 입력값도 초기화
+   */
   const handleReset = useCallback(() => {
     setStep(1); // 단계 상태를 초기화합니다.
     setBankSheetOpen(false); // 은행 선택 시트를 닫습니다.
@@ -212,7 +230,7 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
               const isAccountCorrect = normalizedAccount === normalizedCorrectAccount;
               const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
 
-              // ✅ 어디가 틀렸는지 저장
+              // 어디가 틀렸는지 저장
               if (isAccountCorrect && isAmountCorrect) {
                 setLastErrorType("none");
               } else if (!isAccountCorrect && isAmountCorrect) {
@@ -269,13 +287,17 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
       {isPasswordSheetOpen && clampedStep === 5 && (
         <Scenario5
           onSuccess={async () => {
+            // 성공 -> 시트 닫고 다음 단계로 이동
             setPasswordSheetOpen(false);
             goToStep(6);
+            // 엔진은 성공 분기로
             await completePractice(1024, 0);
           }}
           onMaxFail={async () => {
+            // 최대 실패 -> 시트 닫고 금액 입력 단계로 
             setPasswordSheetOpen(false);
             goToStep(4);
+            // 엔진은 실패 분기로
             await completePractice(1024, 1);
           }}
           onClose={() => {

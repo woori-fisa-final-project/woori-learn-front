@@ -52,12 +52,12 @@ const QUICK_MENU = [
   { label: "분실 신고", icon: "🚨" },
 ];
 
+/** 상단 "사용자 인사 + 아이콘/메뉴버튼" 영역 컴포넌트 */
 function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu: () => void }) {
-  // 상단 사용자 인사 영역입니다.
   return (
     <header className="mb-[30px] flex items-center justify-between">
       <p className="text-[20px] font-semibold text-gray-800">
-        {userName ? `${userName}님` : "김민영님"}
+        {userName ? `${userName}님` : "김우리님"}
       </p>
       <div className="flex items-center gap-[14px] text-[20px] text-gray-500">
         <span role="img" aria-label="vehicle">
@@ -69,6 +69,8 @@ function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu
         <span role="img" aria-label="notification">
           🔔
         </span>
+
+        {/* 전체 메뉴 열기 버튼 */}
         <button
           type="button"
           onClick={onOpenMenu}
@@ -93,7 +95,7 @@ function AccountCard({
   onTransfer: (e?: React.MouseEvent) => void;
   onViewAll: () => void;
 }) {
-  // 대표 계좌 요약 카드입니다.
+  // 대표 계좌 요약 카드
   if (isLoading) {
     return (
       <section className="rounded-[16px] bg-white p-5 shadow-sm">
@@ -265,10 +267,10 @@ export default function WooriMainPage() {
   const [noticeMessage, setNoticeMessage] = useState("");
   const [isNoticeOpen, setNoticeOpen] = useState(false);
 
-  // 시나리오 엔진: woorimain 위에서 OVERLAY 단계(예: 1009)를 재생할 때 사용합니다.
+  // 시나리오 오버레이 엔진 상태
   const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
 
-  // URL 쿼리에서 scenarioId, stepId를 읽어와 시나리오를 재개합니다.
+  // URL 쿼리에서 scenarioId, stepId가 들어오면 해당 스텝부터 시나리오 재개
   useEffect(() => {
     const scenarioIdParam = searchParams.get("scenarioId");
     const stepIdParam = searchParams.get("stepId");
@@ -323,6 +325,10 @@ export default function WooriMainPage() {
     };
   }, []);
 
+  /**
+   * 메뉴에서 화면 이동 처리
+   * - 특정 route는 "현재 PRACTICE 단계에 따라 다음 stepId를 붙여 이동"
+   */
   const handleNavigate = (route: string) => {
     if (route === "/automaticpayment-scenario") {
       const scenarioId = Number(searchParams.get("scenarioId")) || 1;
@@ -339,6 +345,10 @@ export default function WooriMainPage() {
     router.push(route);
   };
 
+  /**
+   * 헤더 메뉴 열기
+   * - 특정 PRACTICE에서 "메뉴 열기"가 진행 트리거가 되기에 nextStep을 호출
+   */
   const handleOpenMenu = async () => {
     setMenuOpen(true);
     if (currentStep?.type === "PRACTICE" && currentStep.id === 1060) {
@@ -350,6 +360,11 @@ export default function WooriMainPage() {
     setMenuOpen(false);
   };
 
+  /**
+   * 이체 버튼 핸들러
+   * - PRACTICE 단계에서 content.button === "nextbtn"인 경우:
+   *    현재 stepId + 1로 다음 단계 수행해야 하므로, getScenarioEntryPath로 해당 step이 속한 페이지로 이동
+   */
   const handleTransfer = async (e?: React.MouseEvent) => {
     // 이벤트 전파 중단 (다른 리스너가 가로채지 않도록)
     if (e) {
@@ -357,8 +372,6 @@ export default function WooriMainPage() {
       e.stopPropagation();
     }
 
-    // 이체 버튼 클릭 시: 현재 step이 PRACTICE이고 content.button === "nextbtn"이면
-    // transfer-scenario 페이지로 이동하면서 nextStep 호출하여 다음 스텝을 오버레이로 표시
     if (currentStep?.type === "PRACTICE" && currentStep.content?.button === "nextbtn") {
       if (currentStep.id != null) {
         // 다음 스텝 ID 계산 (현재 스텝 + 1)
@@ -369,13 +382,13 @@ export default function WooriMainPage() {
       }
     }
 
+    // 기본 진입: transfer 시나리오 시작 스텝
     router.push(getScenarioEntryPath(1, 1013));
   };
 
-
-
+  /** 전체 계좌 보기 페이지로 이동 */
   const handleViewAllAccounts = () => {
-    router.push("/searchaccount-scenario"); // 전체 계좌 조회 시나리오 페이지로 이동합니다.
+    router.push("/searchaccount-scenario");
   };
 
   const handleOpenNotice = (message: string) => {
@@ -441,11 +454,9 @@ export default function WooriMainPage() {
             await nextStep(nowStepId, answer);
           }}
           onBackgroundClick={async () => {
-            // CHOICE 단계에서는 ChoiceStep 내부에서 onChoiceNext를 통해 이동하므로
-            // 여기서는 일반 nextStep을 호출하지 않습니다.
+            // CHOICE는 ChoiceStep 내부에서 next를 호출하므로 여기서는 무시
             if (currentStep?.type === "CHOICE") return;
-            // PRACTICE 단계에서는 content.button을 통해 next-step을 요청하므로
-            // 여기서는 일반 nextStep을 호출하지 않습니다.
+            // PRACTICE는 해당 페이지에서 next를 호출하므로 여기서는 무시
             if (currentStep?.type === "PRACTICE") return;
             if (currentStep?.id != null) {
               await nextStep(currentStep.id);
@@ -454,7 +465,7 @@ export default function WooriMainPage() {
         />
       )}
 
-      {/* PRACTICE 타입일 때는 아무것도 렌더링하지 않습니다 (오버레이 제거). */}
+      {/* PRACTICE 타입은 overlay가 아니라 “해당 시나리오 페이지(실습 화면)”로 이동하여 진행 */}
     </div>
   );
 }
