@@ -20,16 +20,15 @@ type ScenarioContainerProps = {
 };
 
 const PRACTICE_TO_UI: Record<number, { step: UiStep; openFilter?: boolean }> = {
-    1034: { step: 8 }, // 진입
-    1036: { step: 8 }, // 계좌 선택
-    1039: { step: 9 }, // 필터 클릭
-    1040: { step: 9, openFilter: true }, // 필터 적용
-    1043: { step: 9 }, // 거래내역 선택
-    1047: { step: 10 }, // 상세 확인 버튼
+    1034: { step: 8 },
+    1036: { step: 8 },
+    1039: { step: 9 },
+    1040: { step: 9, openFilter: true },
+    1043: { step: 9 },
+    1047: { step: 10 },
 };
 
 function parseUiStep(searchParams: ReturnType<typeof useSearchParams>): UiStep | null {
-    // transfer처럼 "scenarioStep=1,2,3"도 지원 + 기존 "step=8,9,10"도 지원
     const scenarioStep = Number(searchParams.get("scenarioStep"));
     if (scenarioStep === 2) return 9;
     if (scenarioStep === 3) return 10;
@@ -54,7 +53,6 @@ export default function ScenarioContainer({ onPracticeNext, engineStepId, onExit
     const [selectedAccount, setSelectedAccount] = useState<{ id: number; accountNumber: string } | null>(null);
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
-    // transfer-scenario에서 쓰던 중복 호출 방지 패턴 그대로
     const inFlightRef = useRef(false);
     const handledStepIdRef = useRef<number | null>(null);
 
@@ -72,7 +70,7 @@ export default function ScenarioContainer({ onPracticeNext, engineStepId, onExit
             try {
                 await onPracticeNext(expectedStepId, answer);
             } catch (e) {
-                handledStepIdRef.current = null; // 실패 시 재시도 가능
+                handledStepIdRef.current = null;
                 throw e;
             } finally {
                 inFlightRef.current = false;
@@ -93,7 +91,6 @@ export default function ScenarioContainer({ onPracticeNext, engineStepId, onExit
         [router, searchParams]
     );
 
-    // URL step 파라미터로 초기 진입도 가능하게(transfer의 scenarioStep과 같은 역할)
     useEffect(() => {
         const accountNumber = searchParams.get("accountNumber");
         const accountId = searchParams.get("accountId");
@@ -121,7 +118,6 @@ export default function ScenarioContainer({ onPracticeNext, engineStepId, onExit
         setUiStep(mapped.step);
         setFilterOpen(!!mapped.openFilter);
 
-        // step10으로 리줌될 수 있으니 transaction 세션 복구
         if (mapped.step === 10 && !selectedTransaction && typeof window !== "undefined") {
             const stored = sessionStorage.getItem(TRANSACTION_STORAGE_KEY);
             if (stored) {
@@ -145,25 +141,21 @@ export default function ScenarioContainer({ onPracticeNext, engineStepId, onExit
         setTitle(headerTitle);
 
         const onBack = () => {
-            // 필터가 열려있으면 먼저 닫기
             if (filterOpen) {
                 setFilterOpen(false);
                 return;
             }
-            // 10 -> 9
             if (uiStep === 10) {
                 setUiStep(9);
-                replaceQuery({ scenarioStep: "2", step: null }); // scenarioStep=2는 UI9 의미
+                replaceQuery({ scenarioStep: "2", step: null });
                 return;
             }
-            // 9 -> 8
             if (uiStep === 9) {
                 setUiStep(8);
                 replaceQuery({ scenarioStep: "1", step: null, accountId: null, accountNumber: null });
                 setSelectedTransaction(null);
                 return;
             }
-            // 8 -> 메인으로 나가기
             onExitToMain();
         };
 
@@ -188,7 +180,6 @@ export default function ScenarioContainer({ onPracticeNext, engineStepId, onExit
         async (acc: AccountCard) => {
             setSelectedAccount({ id: acc.id, accountNumber: acc.accountNumber });
 
-            // URL도 보존(새로고침 대비) — 여기서 절대 "맨몸 URL" 만들지 말고 기존 쿼리 patch만!
             replaceQuery({
                 scenarioStep: "2",
                 step: null,

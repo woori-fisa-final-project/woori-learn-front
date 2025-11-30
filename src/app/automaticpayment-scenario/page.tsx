@@ -12,23 +12,22 @@ function AutomaticPaymentScenarioContent() {
   const searchParams = useSearchParams();
   const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
 
+  const scenarioIdParam = searchParams.get("scenarioId");
+  const stepIdParam = searchParams.get("stepId");
+
   const scenarioId = useMemo(() => {
-    const raw = searchParams.get("scenarioId");
-    const n = raw ? Number(raw) : NaN;
+    const n = scenarioIdParam ? Number(scenarioIdParam) : NaN;
     return Number.isFinite(n) ? n : 1;
-  }, [searchParams]);
+  }, [scenarioIdParam]);
 
   useEffect(() => {
-    const scenarioIdParam = searchParams.get("scenarioId");
-    const stepIdParam = searchParams.get("stepId");
-
-    const sid = scenarioIdParam ? Number(scenarioIdParam) : NaN;
+    const scenarioId = scenarioIdParam ? Number(scenarioIdParam) : NaN;
     const stepId = stepIdParam ? Number(stepIdParam) : undefined;
 
-    if (!Number.isNaN(sid)) {
-      void resume(sid, stepId);
+    if (!Number.isNaN(scenarioId)) {
+      void resume(scenarioId, stepId);
     }
-  }, [resume, searchParams]);
+  }, [resume, scenarioIdParam, stepIdParam]);
 
   const onPracticeNext = useCallback(
     async (nowStepId: number, answer?: number): Promise<void> => {
@@ -57,7 +56,6 @@ function AutomaticPaymentScenarioContent() {
             }
 
             if (currentStep.type === "CHOICE") return;
-            if (currentStep.type === "PRACTICE") return;
 
             if (currentStep?.id != null) await nextStep(currentStep.id);
           }}
@@ -87,6 +85,7 @@ export default function AutomaticPaymentScenarioPage() {
       fallback={
         <div className="flex h-screen items-center justify-center">
           <p className="text-gray-500">로딩 중...</p>
+
         </div>
       }
     >

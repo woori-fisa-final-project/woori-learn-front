@@ -10,7 +10,7 @@ import AlertModalContent from "./components/AlertModalContent";
 import CategoryBlock from "./components/CategoryBlock";
 
 type Scenario8Props = {
-  onPickDepositAccount: (acc: AccountCard) => void | Promise<void>; // PRACTICE(1036)
+  onPickDepositAccount: (acc: AccountCard) => void | Promise<void>;
 };
 
 const QUICK_FILTERS = [

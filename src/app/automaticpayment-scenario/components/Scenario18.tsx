@@ -30,7 +30,7 @@ type EngineStep = {
 type Scenario18Props = {
   detail: Scenario18Detail;
   onBack: () => void;
-  onNavigateToCancelComplete: () => void; // 실제 API 취소 + 화면 전환은 컨테이너에서
+  onNavigateToCancelComplete: () => void;
   engineStep?: EngineStep | null;
   onPracticeNext?: (nowStepId: number, answer?: number) => void | Promise<void>;
 };
@@ -63,26 +63,21 @@ export default function Scenario18({
     [engineStep, onPracticeNext]
   );
 
-  // ✅ 엔진 스텝에 맞춰 UI(모달/바텀시트) 자동 오픈
   useEffect(() => {
     if (!engineStep) return;
 
-    // 1113: 모달에서 "네" 클릭 실습 단계 → 모달이 떠 있어야 함
     if (engineStep.type === "PRACTICE" && engineStep.id === 1113) {
       setConfirmOpen(true);
     }
 
-    // 1115: 바텀시트에서 "확인했습니다" 클릭 실습 → 바텀시트가 떠 있어야 함
     if (engineStep.type === "PRACTICE" && engineStep.id === 1115) {
       setReviewSheetOpen(true);
     }
   }, [engineStep]);
 
-  // 1110: "자동이체 해지" 버튼 클릭 실습
   const handleRequestCancel = async () => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1110) {
       await onPracticeNext?.(engineStep.id);
-      // 다음(1111/1112)은 오버레이지만 모달이 떠 있는 상태가 자연스러우므로 열어둠
       setConfirmOpen(true);
       return;
     }
@@ -91,7 +86,6 @@ export default function Scenario18({
 
   const handleCloseConfirm = () => setConfirmOpen(false);
 
-  // 1113: 모달에서 "네" 클릭 실습
   const handleConfirmCancel = async () => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1113) {
       await onPracticeNext?.(engineStep.id);
@@ -103,7 +97,6 @@ export default function Scenario18({
     setReviewSheetOpen(true);
   };
 
-  // ✅ 1115: 바텀시트에서 "확인했습니다" 클릭 실습 (여기서 반드시 소비!)
   const handleFinalConfirm = async () => {
     await advancePractice({ onlyIds: [1115] });
     setReviewSheetOpen(false);

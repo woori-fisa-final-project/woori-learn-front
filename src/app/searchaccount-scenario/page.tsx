@@ -34,7 +34,6 @@ function SearchAccountOverlayHost({
 }) {
   if (!step || step.type === "PRACTICE") return null;
 
-  // DIALOG는 extra props 필요할 수 있어서 분기
   if (step.type === "DIALOG") {
     return (
       <DialogStep
@@ -72,11 +71,9 @@ function SearchAccountScenarioContent() {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("scenarioId", String(SCENARIO_ID));
 
-    // URL을 교정해서 이후 로직(quiz 이동, resume 등)이 NaN에 안 걸리게 한다
     router.replace(`/searchaccount-scenario?${sp.toString()}`);
   }, [router, searchParams]);
 
-  // 엔진 시작 stepId(woorimain에서 넘겨주는 값)
   const startStepId = useMemo(() => {
     const n = toFiniteNumber(searchParams.get("stepId"));
     return n ?? undefined;
@@ -91,7 +88,6 @@ function SearchAccountScenarioContent() {
     [nextStep]
   );
 
-  // 2) resume는 “처음 1번만”
   const resumedKeyRef = useRef<string | null>(null);
   useEffect(() => {
     const key = `${scenarioId}:${startStepId ?? "resume"}`;
@@ -101,7 +97,6 @@ function SearchAccountScenarioContent() {
     void resume(scenarioId, startStepId);
   }, [resume, scenarioId, startStepId]);
 
-  // 퀴즈가 필요하면 퀴즈 페이지로 이동
   useEffect(() => {
     if (quizState && currentStep) {
       router.push(`/quiz?scenarioId=${scenarioId}&stepId=${currentStep.id}`);
@@ -127,7 +122,6 @@ function SearchAccountScenarioContent() {
     [router]
   );
 
-  // 배경 클릭으로 nextStep 호출 보호(CHOICE/QUIZ 등)
   const nextStepByBackground = useCallback(
     async (nowStepId: number) => {
       if (!currentStep) return;

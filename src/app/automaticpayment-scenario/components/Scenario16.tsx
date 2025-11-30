@@ -28,39 +28,30 @@ export default function Scenario16({ onConfirm, advancePractice }: Scenario16Pro
     }
     setDetailOpen(true);
 
-    // 1095: 약관(보기/체크) 진입 실습
     await advancePractice({ onlyIds: [1095] });
   };
 
-  // 사용자가 직접 상세 보기 버튼을 눌렀을 때 모달을 연다.
   const openDetail = async () => {
     setDetailOpen(true);
 
-    // 1095: 약관(보기) 진입 실습
     await advancePractice({ onlyIds: [1095] });
   };
 
-  // 모달 닫기 버튼이나 배경을 통해 상세 화면을 닫는다.
   const closeDetail = async () => {
     setDetailOpen(false);
 
-    // 1096: 약관 닫기(또는 배경) 실습
     await advancePractice({ onlyIds: [1096] });
   };
 
-  // ✅ Scenario16 화면의 "확인" 버튼: 1098 PRACTICE 소비 후 onConfirm 실행
   const handleConfirm = async () => {
     if (!isChecked) return;
 
-    // 1098: 약관 동의 완료 후 Scenario16 "확인" 클릭 실습
     await advancePractice({ onlyIds: [1098] });
 
     await onConfirm?.();
   };
 
-  // ✅ 모달의 "확인" 버튼: 1097 PRACTICE 소비 후 체크 상태 ON
   const handleModalConfirm = async () => {
-    // 1097: 약관 전문에서 "확인" 클릭 실습
     await advancePractice({ onlyIds: [1097] });
 
     setDetailOpen(false);

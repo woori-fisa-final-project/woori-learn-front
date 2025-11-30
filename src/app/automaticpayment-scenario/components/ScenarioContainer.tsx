@@ -59,18 +59,13 @@ function convertToAutoTransferInfo(payment: AutoPayment, account: EducationalAcc
     };
 }
 
-// ✅ stepId 기반 초기 화면 추론(네가 준 디테일 매핑 기준)
 function inferInitialScreenFromStepId(stepId: number): Screen {
-    // 등록 흐름 UI(Scenario12 포함): 1069 ~ 1101
     if (stepId >= 1069 && stepId <= 1101) return "register";
 
-    // 자동이체 상세/해지 확인(Scenario18): 1108 ~ 1115
     if (stepId >= 1108 && stepId <= 1115) return "detail";
 
-    // 해지 완료(Scenario19) + 이후 다이얼로그/퀴즈도 base screen은 cancelled로 둠
     if (stepId >= 1116) return "cancelled";
 
-    // 그 외(1063~1068, 1102~1107 등)는 list
     return "list";
 }
 
@@ -355,7 +350,6 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
                 <Scenario19
                     detail={detailData}
                     onNavigateToQuiz={async () => {
-                        // ✅ 1116 PRACTICE(Scenario19 "확인") 소비
                         if (engineStep?.type === "PRACTICE") {
                             await practiceNext(engineStep.id);
                             return;

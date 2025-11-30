@@ -8,7 +8,9 @@ import axios from "axios";
  * 사용자의 계좌 목록 조회 (JWT 토큰 기반)
  * 서버에서 토큰의 Principal에서 userId를 추출하여 처리합니다.
  */
-export async function getAccountList(signal?: AbortSignal): Promise<EducationalAccount[]> {
+export async function getAccountList(
+  signal?: AbortSignal
+): Promise<EducationalAccount[]> {
   try {
     const response = await axiosInstance.get<ApiResponse<EducationalAccount[]>>(
       `/education/accounts/list`,

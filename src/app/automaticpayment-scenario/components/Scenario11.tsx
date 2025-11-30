@@ -54,7 +54,6 @@ export default function Scenario11({
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [isFxInfoModalOpen, setFxInfoModalOpen] = useState(false);
 
-  // ✅ 1066(모달)~1068(실습) 구간에서는 바텀시트가 “떠 있어야” 함
   useEffect(() => {
     if (!engineStep) return;
     if ([1066, 1067, 1068].includes(engineStep.id)) {
@@ -74,7 +73,6 @@ export default function Scenario11({
     };
   }, [router, setOnBack, setTitle]);
 
-  // 1065: "자동이체 등록하기" 클릭 실습
   const handleRegister = async () => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1065) {
       await onPracticeNext?.(engineStep.id);
@@ -85,7 +83,6 @@ export default function Scenario11({
 
   const handleCloseSheet = () => setSheetOpen(false);
 
-  // 1068: 바텀시트에서 "원화 자동이체 등록" 클릭 실습
   const handleSelectOption = async (type: "krw" | "fx") => {
     if (type === "krw") {
       if (engineStep?.type === "PRACTICE" && engineStep.id === 1068) {
@@ -100,7 +97,6 @@ export default function Scenario11({
     setFxInfoModalOpen(true);
   };
 
-  // 1107: 등록된 자동이체 내역 클릭 실습
   const handleOpenDetail = async (id: number) => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1107) {
       await onPracticeNext?.(engineStep.id);

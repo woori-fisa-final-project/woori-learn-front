@@ -16,7 +16,7 @@ type Scenario15Props = {
   onEditAmount: () => void;
   onEditAccount: () => void;
   onEditSchedule: () => void;
-  onSubmit: () => void; // ✅ 1092 PRACTICE는 부모(Scenario12)에서 처리
+  onSubmit: () => void;
 };
 
 export default function Scenario15({

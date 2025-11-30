@@ -42,7 +42,6 @@ export const AUTO_PAYMENT_EXPECTED = {
 const onlyDigits = (v: string | null | undefined) => (v ?? "").replace(/\D/g, "");
 
 const monthDiff = (startYmd: string, endYmd: string) => {
-  // start/end: "YYYY-MM-DD"
   const [sy, sm] = startYmd.split("-").map(Number);
   const [ey, em] = endYmd.split("-").map(Number);
   if (!sy || !sm || !ey || !em) return NaN;
@@ -127,18 +126,13 @@ function AccountSelectStep({
 }
 
 type Scenario12Props = {
-  onComplete?: () => void;
+  onComplete?: (accountId?: number | null) => void;
   onCancel?: () => void;
   engineStep?: EngineStep | null;
   onPracticeNext?: (nowStepId: number, answer?: number) => void | Promise<void>;
 };
 
-export default function Scenario12({
-  onComplete,
-  onCancel,
-  engineStep = null,
-  onPracticeNext,
-}: Scenario12Props) {
+export default function Scenario12({ onComplete, onCancel, engineStep = null, onPracticeNext, }: Scenario12Props) {
   const { setTitle, setOnBack } = useScenarioHeader();
   const {
     setSelectedBank,
@@ -194,7 +188,6 @@ export default function Scenario12({
     };
   }, [resetFlow, setPasswordSheetOpen]);
 
-  // 1071: 계좌 선택 실습
   const handleSelectAccount = async (accountId: number) => {
     await advancePractice({ onlyIds: [1071] });
 
@@ -208,13 +201,11 @@ export default function Scenario12({
     setStep("select");
   };
 
-  // 1074: Scenario1에서 "계좌번호 입력" 클릭 실습
   const handleOpenBankSheet = async () => {
     await advancePractice({ onlyIds: [1074] });
     setBankSheetOpen(true);
   };
 
-  // 1075: banksheet에서 은행 클릭 실습
   const handleSelectBank = async (bankName: string) => {
     await advancePractice({ onlyIds: [1075] });
     setSelectedBank(bankName);
@@ -231,7 +222,6 @@ export default function Scenario12({
   const inboundName = recipientName || "받는 분";
   const ownerName = currentUserName ?? "김우리";
 
-  // 1089: 비밀번호 성공(choices[0]) / 실패(choices[1]) 분기
   const handlePasswordSuccess = async (password: string) => {
     await advancePractice({ onlyIds: [1089], answer: 0 });
     onPasswordSuccess(password);
@@ -243,7 +233,6 @@ export default function Scenario12({
     setStep("schedule");
   };
 
-  // 1085: 일정 설정 완료 후 "다음" 클릭 실습
   const handleScheduleCompleteWithEngine = useCallback(
     async (options: ScheduleSummary) => {
       await advancePractice({ onlyIds: [1085] });
@@ -266,19 +255,15 @@ export default function Scenario12({
       },
     });
 
-    // ✅ 여기서 절대 모달로 막지 말고, 1092 PRACTICE를 good/bad로 소비해서 분기시킨다
     if (ok) {
-      await advancePractice({ onlyIds: [1092], answer: 0 }); // good -> 1093
+      await advancePractice({ onlyIds: [1092], answer: 0 });
       setStep("consent");
     } else {
-      await advancePractice({ onlyIds: [1092], answer: 1 }); // bad -> 1593
-      // ❗ consent로 넘어가지 않음(Scenario15 화면 유지 + 엔진이 1593부터 오버레이/이미지 보여줌)
+      await advancePractice({ onlyIds: [1092], answer: 1 });
     }
   };
 
-
   const handleConsentCompleted = async () => {
-    // 1098 같은 PRACTICE는 Scenario16 내부에서 소비됨. 여기서는 그냥 진행.
     const success = await registerAutoPayment(selectedAccount, selectedBank, accountNumber, recipientName, amount);
 
     if (success) setStep("complete");
@@ -287,7 +272,7 @@ export default function Scenario12({
 
   const handleSuccessConfirm = async () => {
     await advancePractice({ onlyIds: [1101] });
-    onComplete?.();
+    onComplete?.(selectedAccount?.id ?? null);
   };
 
   return (

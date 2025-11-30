@@ -17,7 +17,6 @@ function pickAnswerIndexByGood(choices: any[] | undefined, wantGood: boolean) {
   const idx = choices.findIndex((c) => c?.good === wantGood);
   if (idx >= 0) return idx;
 
-  // fallback: success=0, fail=1
   return wantGood ? 0 : (choices.length > 1 ? 1 : 0);
 }
 
@@ -38,7 +37,6 @@ function TransferOverlayHost({
 }) {
   if (!step || step.type === "PRACTICE") return null;
 
-  // DIALOG만 추가 props가 필요해서 예외 처리
   if (step.type === "DIALOG") {
     return (
       <DialogStep

@@ -8,7 +8,7 @@ import type { Scenario18Detail } from "./Scenario18";
 
 type Scenario19Props = {
   detail: Scenario18Detail;
-  onNavigateToQuiz: () => void; // ✅ 1116 PRACTICE 소비는 컨테이너에서 처리
+  onNavigateToQuiz: () => void;
 };
 
 export default function Scenario19({ detail, onNavigateToQuiz }: Scenario19Props) {

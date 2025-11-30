@@ -1,10 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState, Suspense, useRef, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import QuizScreen, { type QuizContent } from "@/components/quiz/QuizScreen";
-import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
-import { devLog, devError } from "@/utils/logger";
+import { useCallback, useEffect, useState, useRef, Suspense, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import QuizScreen, { type QuizContent } from '@/components/quiz/QuizScreen';
+import axiosInstance from '@/utils/axiosInstance';
+import { useScenarioHeader } from '@/lib/context/ScenarioHeaderContext';
+import { devLog, devError } from '@/utils/logger';
+import { useUserStore } from '@/lib/stores/userStore';
+import { getCurrentUser } from '@/lib/api/user.api';
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 
 /**
@@ -13,24 +16,24 @@ import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
  * @returns QuizContent 타입 여부
  */
 function isQuizContent(data: unknown): data is QuizContent {
-  if (!data || typeof data !== "object") return false;
+  if (!data || typeof data !== 'object') return false;
 
   const quiz = data as Record<string, unknown>;
 
   // 필수 필드 검증
-  if (typeof quiz.id !== "string") return false;
-  if (typeof quiz.title !== "string") return false;
-  if (typeof quiz.prompt !== "string") return false;
-  if (typeof quiz.correctAnswerId !== "string") return false;
+  if (typeof quiz.id !== 'string') return false;
+  if (typeof quiz.title !== 'string') return false;
+  if (typeof quiz.prompt !== 'string') return false;
+  if (typeof quiz.correctAnswerId !== 'string') return false;
 
   // options 배열 검증
   if (!Array.isArray(quiz.options)) return false;
 
   // 각 옵션의 구조 검증
   return quiz.options.every((option: unknown) => {
-    if (!option || typeof option !== "object") return false;
+    if (!option || typeof option !== 'object') return false;
     const opt = option as Record<string, unknown>;
-    return typeof opt.id === "string" && typeof opt.text === "string";
+    return typeof opt.id === 'string' && typeof opt.text === 'string';
   });
 }
 
@@ -48,16 +51,25 @@ function QuizPageInner() {
   const scenarioId = scenarioIdParam ? Number(scenarioIdParam) : NaN;
   const stepId = stepIdParam ? Number(stepIdParam) : undefined;
 
-  const { currentStep, isLoading, error, resume, nextStep, quizState, submitQuizAnswer } = useScenarioEngine();
+  const { currentStep, isLoading: engineLoading, error: engineError, resume, nextStep, quizState, submitQuizAnswer } = useScenarioEngine();
 
-  const [jsonQuiz, setJsonQuiz] = useState<QuizContent | null>(null);
-  const [jsonLoading, setJsonLoading] = useState(false);
-  const [jsonError, setJsonError] = useState<string | null>(null);
-  const [jsonWrong, setJsonWrong] = useState(false);
+  const [quiz, setQuiz] = useState<QuizContent | null>(null);
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [quizError, setQuizError] = useState<string | null>(null);
+  const [isWrong, setIsWrong] = useState(false);
+  const [hasDeposited, setHasDeposited] = useState(false);
+  const [isDepositing, setIsDepositing] = useState(false);
+  const [depositMessage, setDepositMessage] = useState<string | null>(null);
+  const { setAvailablePoints } = useUserStore();
+  const inFlightRef = useRef(false);
+
+  const REWARD_QUIZ_ID = "2";
+
+  const REWARD_SCENARIO_ID_JSON = "2";
 
   useEffect(() => {
-    setTitle("Quiz");
-    return () => setTitle("");
+    setTitle('Quiz');
+    return () => setTitle('');
   }, [setTitle]);
 
   const resumedKeyRef = useRef<string | null>(null);
@@ -91,17 +103,24 @@ function QuizPageInner() {
 
   useEffect(() => {
     if (hasEngineParams) return;
+    setHasDeposited(false);
+    setDepositMessage(null);
+    setIsDepositing(false);
+    inFlightRef.current = false;
+  }, [hasEngineParams, quizId]);
+
+  useEffect(() => {
+    if (hasEngineParams) return;
 
     const controller = new AbortController();
 
     async function loadQuiz() {
       try {
-        setJsonLoading(true);
-        setJsonError(null);
-        setJsonWrong(false);
+        setQuizLoading(true);
+        setQuizError(null);
+        setIsWrong(false);
 
-        // JSON 파일에서 퀴즈 데이터 로드
-        const response = await fetch("/data/quizzes.json", { signal: controller.signal });
+        const response = await fetch('/data/quizzes.json', { signal: controller.signal });
 
         if (!response.ok) {
           throw new Error(`퀴즈 데이터 로드 실패: ${response.status}`);
@@ -125,17 +144,17 @@ function QuizPageInner() {
 
         // 타입 가드로 검증
         if (!isQuizContent(foundQuiz)) {
-          devError("[QuizPage] 퀴즈 데이터 구조가 올바르지 않음:", foundQuiz);
-          throw new Error("퀴즈 데이터 구조가 올바르지 않습니다.");
+          devError('[QuizPage] 퀴즈 데이터 구조가 올바르지 않음:', foundQuiz);
+          throw new Error('퀴즈 데이터 구조가 올바르지 않습니다.');
         }
 
         devLog(`[QuizPage] 퀴즈 ${quizId} 로드 완료`);
-        setJsonQuiz(foundQuiz);
+        setQuiz(foundQuiz);
       } catch (err) {
         devError("[QuizPage] 퀴즈 로드 실패:", err);
-        setJsonError(err instanceof Error ? err.message : "퀴즈를 불러올 수 없습니다.");
+        setQuizError(err instanceof Error ? err.message : "퀴즈를 불러올 수 없습니다.");
       } finally {
-        setJsonLoading(false);
+        setQuizLoading(false);
       }
     }
 
@@ -158,43 +177,107 @@ function QuizPageInner() {
     };
   }, [quizState]);
 
-  const handleSelectOptionEngine = async (_quizId: string, optionId: string) => {
-    const idx = Number(optionId);
-    if (!Number.isFinite(idx)) return;
+  const rewardIfEligible = useCallback(
+    async (quizIdStr: string, rewardScenarioId: string) => {
+      if (quizIdStr !== REWARD_QUIZ_ID) return;
 
-    const result = await submitQuizAnswer(idx);
+      if (inFlightRef.current) return;
+      if (hasDeposited || isDepositing) return;
 
-    // 정답이면 woorimain으로 이동
-    if (result && result.status !== "QUIZ_REQUIRED" && result.status !== "QUIZ_WRONG") {
-      router.push(`/woorimain?scenarioId=${scenarioId}`);
-    }
-    // 오답이면 아래 메시지로 처리(페이지 닫히지 않게)
-  };
+      inFlightRef.current = true;
+      try {
+        setIsDepositing(true);
+        setDepositMessage(null);
 
-  const handleSelectOptionJson = (_quizId: string, optionId: string) => {
-    if (!jsonQuiz) return;
+        const res = await axiosInstance.post(`/users/me/scenarios/${rewardScenarioId}/reward`);
 
-    const isCorrect = optionId === jsonQuiz.correctAnswerId;
-    if (isCorrect) {
-      setJsonWrong(false);
-      // 상단 코드 베이스 우선: 여기서는 별도 라우팅 강제하지 않음
-      // (원하면 여기서 router.push(...) 붙이면 됨)
-      return;
-    }
+        const rewarded = res.data?.data?.rewarded;
+        const rewardAmount = Number(res.data?.data?.amount ?? res.data?.data?.points ?? 1000);
 
-    setJsonWrong(true);
-  };
+        if (rewarded) {
+          const serverBalance = Number(
+            res.data?.data?.currentBalance ??
+            res.data?.data?.balance ??
+            res.data?.data?.points
+          );
 
-  const pageLoading = hasEngineParams ? isLoading || !engineQuiz : jsonLoading;
-  const pageError = hasEngineParams ? error : jsonError;
-  const activeQuiz = hasEngineParams ? engineQuiz : jsonQuiz;
+          if (!Number.isNaN(serverBalance)) {
+            setAvailablePoints(serverBalance);
+          } else {
+            try {
+              const user = await getCurrentUser();
+              const p = (user as any).points ?? (user as any).point;
+              if (typeof p === "number") setAvailablePoints(p);
+            } catch (refreshError) {
+              devError("[QuizPage] 보상 후 포인트 새로고침 실패:", refreshError);
+            }
+          }
+        }
+
+        setHasDeposited(true);
+        setDepositMessage(
+          rewarded ? `시나리오 완료! ${rewardAmount}포인트 적립 완료.` : "이미 보상을 받았습니다."
+        );
+        devLog("[QuizPage] 포인트 적립 완료 여부:", rewarded);
+      } catch (err) {
+        setHasDeposited(false);
+        setDepositMessage("포인트 적립에 실패했습니다. 다시 시도해주세요.");
+        devError("[QuizPage] 포인트 적립 실패:", err);
+      } finally {
+        setIsDepositing(false);
+        inFlightRef.current = false;
+      }
+    },
+    [hasDeposited, isDepositing, setAvailablePoints]
+  );
+
+  const handleSelectOptionEngine = useCallback(
+    async (_quizId: string, optionId: string) => {
+      const idx = Number(optionId);
+      if (!Number.isFinite(idx)) return;
+
+      const result = await submitQuizAnswer(idx);
+
+      const isCorrect =
+        !!result && result.status !== "QUIZ_REQUIRED" && result.status !== "QUIZ_WRONG";
+
+      if (!isCorrect) return;
+
+      const rewardScenarioId = Number.isFinite(scenarioId) ? String(scenarioId) : "1";
+      await rewardIfEligible(_quizId, rewardScenarioId);
+
+      router.push(`/woorimain?scenarioId=${Number.isFinite(scenarioId) ? scenarioId : 1}`);
+    },
+    [submitQuizAnswer, router, scenarioId, rewardIfEligible]
+  );
+
+  const handleSelectOptionJson = useCallback(
+    async (_quizId: string, optionId: string) => {
+      if (!quiz || quiz.id !== _quizId) return;
+
+      const isCorrect = optionId === quiz.correctAnswerId;
+
+      if (!isCorrect) {
+        setIsWrong(true);
+        return;
+      }
+
+      setIsWrong(false);
+
+      await rewardIfEligible(quiz.id, REWARD_SCENARIO_ID_JSON);
+    },
+    [quiz, rewardIfEligible]
+  );
+
+  const pageLoading = hasEngineParams ? engineLoading || !engineQuiz : quizLoading;
+  const pageError = hasEngineParams ? engineError : quizError;
+  const activeQuiz = hasEngineParams ? engineQuiz : quiz;
 
   const showWrongMessage = hasEngineParams
     ? quizState?.status === "QUIZ_WRONG"
-    : jsonWrong;
+    : isWrong;
 
   const onSelectOption = hasEngineParams ? handleSelectOptionEngine : handleSelectOptionJson;
-
 
   if (pageLoading) {
     return (
@@ -206,18 +289,8 @@ function QuizPageInner() {
 
   if (pageError || !activeQuiz) {
     return (
-      <div className="flex h-[100dvh] items-center justify-center bg-white">
-        <div className="text-center">
-          <p className="text-gray-500">{pageError || "퀴즈를 불러올 수 없습니다."}</p>
-          {hasEngineParams && (
-            <button
-              onClick={() => router.back()}
-              className="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white"
-            >
-              돌아가기
-            </button>
-          )}
-        </div>
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500">{pageError || '퀴즈를 불러올 수 없습니다.'}</p>
       </div>
     );
   }
@@ -232,6 +305,9 @@ function QuizPageInner() {
             정답이 아니에요. 다시 한 번 생각해볼까요?
           </p>
         )}
+        {depositMessage && (
+          <p className="text-center text-sm text-gray-700">{depositMessage}</p>
+        )}
       </div>
     </div>
   );
@@ -239,11 +315,13 @@ function QuizPageInner() {
 
 export default function QuizPage() {
   return (
-    <Suspense fallback={
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-gray-500">퀴즈를 불러오는 중...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          <p className="text-gray-500">퀴즈를 불러오는 중...</p>
+        </div>
+      }
+    >
       <QuizPageInner />
     </Suspense>
   );

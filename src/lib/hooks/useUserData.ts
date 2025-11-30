@@ -1,37 +1,78 @@
-import { useState, useEffect } from "react"; // 사용자 이름과 포인트 정보를 상태로 관리하기 위해 React 훅을 사용합니다.
-import axiosInstance from "@/utils/axiosInstance";
-import { ApiError } from "@/utils/apiError";
+import { useState, useEffect } from "react";
+import { getCurrentUser } from "@/lib/api/user.api";
+import { useUserStore } from "@/lib/stores/userStore";
 
 export function useUserData() {
-  // 사용자 ID, 이름, 보유 포인트를 제공하는 커스텀 훅입니다.
-  const [userId, setUserId] = useState<number | null>(null); // 사용자 ID를 상태로 관리합니다.
-  const [userName, setUserName] = useState(""); // 사용자 이름을 상태로 관리하며 기본값을 설정합니다.
-  const [availablePoints, setAvailablePoints] = useState(0); // 보유 포인트를 상태로 관리합니다.
-  const [account, setAccount] = useState<number | null>(null); // account_number 저장할 account
+  const [userId, setUserId] = useState<number | null>(null);
+  const [account, setAccount] = useState<string | null>(null);
+  const [userName, setUserName] = useState("고객님");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { availablePoints, setAvailablePoints } = useUserStore();
 
   useEffect(() => {
-    // 컴포넌트 마운트 시 로컬 저장소에서 사용자 데이터를 불러옵니다.
-    if (typeof window === "undefined") return; // ✅ SSR 환경 안전 처리
+    if (typeof window === "undefined") return;
 
-    async function loadUserData() {
+    const fetchUserData = async () => {
       try {
-        const response = await axiosInstance.get("/users/me");
-        const data = response.data.data;
-        setUserId(data.id);
-        setUserName(data.nickname);
-        setAvailablePoints(data.point);
-        setAccount(data.account);
-      } catch (error) {
-        if (error instanceof ApiError) {
-          console.error("사용자 정보를 불러오는 중 오류:", error.message);
-        } else {
-          console.error("알 수 없는 오류 발생:", error);
-        }
-      }
-    }
+        setIsLoading(true);
+        setError(null);
 
-    loadUserData();
+        const data = await getCurrentUser();
+
+        const safeId = data.id ?? null;
+        const safeName = data.name ?? (data as { nickname?: string }).nickname ?? "고객님";
+
+        const pointsRaw = data.points ?? (data as { point?: number }).point;
+        const safePoints = typeof pointsRaw === "number" ? pointsRaw : 0;
+        const safeAccount = (data as { account?: string | null }).account ?? null;
+
+        setUserId(safeId);
+        setUserName(safeName);
+        setAvailablePoints(safePoints);
+        setAccount(safeAccount);
+
+        localStorage.setItem("userId", String(safeId));
+        localStorage.setItem("userName", safeName);
+        if (safeAccount) localStorage.setItem("account", safeAccount);
+
+      } catch (err) {
+        console.warn("API 호출 실패. 캐시 데이터 사용:", err);
+        setError("사용자 정보를 불러오는 중 문제가 발생했습니다.");
+
+        const cachedId = Number(localStorage.getItem("userId"));
+        if (!isNaN(cachedId)) setUserId(cachedId);
+
+        const cachedName = localStorage.getItem("userName");
+        if (cachedName) setUserName(cachedName);
+
+        setAvailablePoints(0);
+        const cachedAccount = localStorage.getItem("account");
+        if (cachedAccount) setAccount(cachedAccount);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+
   }, []);
 
-  return { userName, availablePoints, account }; // 컴포넌트에서 사용자 이름, 보유 포인트, 계좌 정보를 사용할 수 있도록 반환합니다.
+  const updateUserName = (name: string) => {
+    setUserName(name);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userName", name);
+    }
+  };
+
+  return {
+    userId,
+    userName,
+    account,
+    availablePoints,
+    isLoading,
+    error,
+    updateUserName,
+  };
 }
