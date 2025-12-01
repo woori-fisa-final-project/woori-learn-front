@@ -7,7 +7,7 @@ import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
 import { signup, checkDuplicateId } from "./signup";
 import Image from "next/image";
-import { checkId, checkPassword } from "@/utils/validate";
+import { checkEmail, checkId, checkPassword } from "@/utils/validate";
 import { ApiError } from "@/utils/apiError";
 
 const backIcon = "/images/backicon.png"; // 뒤로가기 버튼에서 사용할 아이콘 경로입니다.
@@ -64,10 +64,17 @@ export default function SignupPage() {
         return;
       }
 
+      const emailError = checkEmail(email);
+      if (emailError.length !== 0) {
+        setFormError(emailError);
+        return;
+      }
+
       const success = await signup({
         userId: id,
         password,
         nickname: name,
+        email: email
       });
 
       if (success) {

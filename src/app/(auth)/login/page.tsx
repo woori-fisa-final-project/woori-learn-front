@@ -55,29 +55,10 @@ export default function LoginPage() {
       }
     }
 
-    // try{
-    //   // 로그인 시도
-    //   await loginUser(id, password);
-    //   // 로그인 성공 후 홈 화면으로 이동
-    //   router.push("/home");
-    //   } catch (error) {
-    //   console.error("로그인 요청 오류:", error);
-    //   const errorMessage = error instanceof ApiError ? error.message : "로그인에 실패했습니다. 다시 시도해주세요.";
-    //   alert(errorMessage);
-    // }finally {
-    //   setIsLoading(false);
-    // }
-
     try {
       // 로그인 요청 → 응답(result) 받기
       const result = await loginUser(id, password);
-
-      // 응답 구조: { data: { accessToken: string } }
       const role = result.data.role;
-
-      // // JWT decode
-      // const decoded: any = jwtDecode(accessToken);
-      // const role = decoded.role;
 
       // 권한에 따른 라우팅
       if (role === "ROLE_ADMIN") {
