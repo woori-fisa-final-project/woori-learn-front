@@ -116,7 +116,7 @@ export default function DialogStep({
         <div className="flex flex-1 flex-col items-center justify-center gap-6 min-h-screen">
           {/* 위쪽 말풍선 */}
           <div className="flex justify-center">
-            <div className={balloonBase}>
+            <div className={`${balloonBase} pointer-events-none bottom-[90px]`}>
               <p>{(previousStep!.content as any).text}</p>
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function DialogStep({
           {/* 아래 Weebee 캐릭터 */}
           <Weebee
             emotion={(previousStep!.content as any).emotion}
-            className="z-1 flex h-[348px] w-[348px] items-center justify-center pointer-events-none"
+            className="z-1 flex h-[348px] w-[348px] items-center justify-center pointer-events-none -translate-y-20"
           />
         </div>
       )}
