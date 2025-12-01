@@ -25,8 +25,7 @@ const axiosInstance = axios.create({
 
 // 토큰 갱신 전용 axios 인스턴스
 const refreshAxios = axios.create({
-
-  baseURL: "",
+  baseURL: "/api",
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
