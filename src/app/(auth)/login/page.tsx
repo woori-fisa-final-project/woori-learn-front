@@ -143,18 +143,30 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 아이디 기억하기 체크박스: 사용자의 선택을 rememberId 상태에 반영합니다. */}
-          <div className="mt-8 flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="remember-id"
-              checked={rememberId}
-              onChange={(event) => setRememberId(event.target.checked)}
-              className="h-4 w-4 rounded-sm border-primary-400 text-primary-400 focus:ring-primary-400"
-            />
-            <label htmlFor="remember-id" className="text-[14px] text-gray-600">
-              아이디 기억하기
-            </label>
+          {/* 아이디 기억하기 + 아이디/비밀번호 찾기 한 줄 배치 */}
+          <div className="mt-8 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="remember-id"
+                checked={rememberId}
+                onChange={(event) => setRememberId(event.target.checked)}
+                className="h-4 w-4 rounded-sm border-primary-400 text-primary-400 focus:ring-primary-400"
+              />
+              <label
+                htmlFor="remember-id"
+                className="text-[14px] text-gray-600"
+              >
+                아이디 기억하기
+              </label>
+            </div>
+
+            <Link
+              href="/find-credentials"
+              className="text-sm text-gray-500 underline underline-offset-2 hover:text-primary-400"
+            >
+              아이디 / 비밀번호 찾기
+            </Link>
           </div>
         </div>
 

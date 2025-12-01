@@ -44,8 +44,10 @@ export default function Scenario11({
   accountSuffix,
   hasAutoTransfer,
   autoTransferList = [],
-  onNavigateToRegister = () => console.warn("[Scenario11] onNavigateToRegister not provided"),
-  onNavigateToDetail = (id) => console.warn("[Scenario11] onNavigateToDetail not provided: ", id),
+  onNavigateToRegister = () =>
+    console.warn("[Scenario11] onNavigateToRegister not provided"),
+  onNavigateToDetail = (id) =>
+    console.warn("[Scenario11] onNavigateToDetail not provided: ", id),
 }: Scenario11Props) {
   // 페이지 이동과 세부 플로우 전환을 처리하기 위해 라우터 인스턴스를 가져온다.
   const router = useRouter();
@@ -71,7 +73,7 @@ export default function Scenario11({
 
   // 등록하기 버튼을 눌렀을 때 바텀시트를 열어 자동이체 유형을 고르게 한다.
   const handleRegister = () => {
-    if (isSheetOpen) return;  // <-- 중복 열림 방지
+    if (isSheetOpen) return; // <-- 중복 열림 방지
     setSheetOpen(true);
   };
 
@@ -211,12 +213,7 @@ function EmptyState() {
   // 자동이체가 하나도 없을 때 보여줄 일러스트와 안내 문구를 렌더링한다.
   return (
     <div className=" mt-[150px] flex flex-col items-center justify-center text-center">
-      <Image
-        src="/images/file.png"
-        alt="빈 상태"
-        width={56}
-        height={70}
-      />
+      <Image src="/images/file.png" alt="빈 상태" width={56} height={70} />
       <p className="mt-[18px] text-[15px] text-gray-500">
         등록된 자동이체가 없어요
       </p>
@@ -237,7 +234,7 @@ function AutoTransferCard({
       onClick={onSelect}
       className="w-full text-left transition hover:scale-[1.01]"
     >
-      <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px] shadow-[0_4px_16px_rgba(34,58,124,0.08)]">
+      <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px]">
         <div className="flex items-start justify-between">
           <span className="rounded-full border border-[#1BAA90] px-[12px] py-[4px] text-[12px] font-semibold text-[#1BAA90]">
             {info.status}
@@ -247,9 +244,14 @@ function AutoTransferCard({
         <div className="mt-[16px] space-y-[16px] text-[14px] text-gray-500">
           <div>
             <p className="text-[13px] text-gray-400">자동이체</p>
-            <p className="mt-[6px] text-[17px] font-semibold text-gray-900">{info.title}</p>
+            <p className="mt-[6px] text-[17px] font-semibold text-gray-900">
+              {info.title}
+            </p>
           </div>
-          <InfoRow label="입금정보" value={`${info.bankName} ${info.bankAccount}`} />
+          <InfoRow
+            label="입금정보"
+            value={`${info.bankName} ${info.bankAccount}`}
+          />
           <InfoRow label="이체금액" value={info.amount} />
           <InfoRow label="이체일자/주기" value={info.schedule} />
         </div>
@@ -257,4 +259,3 @@ function AutoTransferCard({
     </button>
   );
 }
-
