@@ -64,6 +64,7 @@ export default function SignupPage() {
         return;
       }
 
+      // 이메일 유효성 검사
       const emailError = checkEmail(email);
       if (emailError.length !== 0) {
         setFormError(emailError);

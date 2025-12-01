@@ -25,7 +25,7 @@ export function checkPassword(password: string) {
 
 export function checkEmail(email: string) {
   let error = "";
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;  
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;  
   if (!emailRegex.test(email)) {
     error = "유효한 이메일 주소를 입력해주세요.";
   }
