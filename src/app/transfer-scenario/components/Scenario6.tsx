@@ -20,9 +20,8 @@ export default function Scenario6({
   onReenterAccount,
   onReenterAmount,
   onBackToPassword,
-  onCancel,
 }: Scenario6Props) {
-  // setTransferResult 함수를 꺼내옵니다.
+
   const {
     selectedBank,
     accountNumber,
@@ -80,6 +79,7 @@ export default function Scenario6({
           onBackToPassword();
         }, 1200);
       }
+    }
   };
 
   return (

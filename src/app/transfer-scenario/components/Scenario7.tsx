@@ -72,9 +72,17 @@ export default function Scenario7({ onRestart }: Scenario7Props) {
           value={`${balanceAfter.toLocaleString()}원`}
         />
       </section>
-
+      
       <div className="mt-auto w-full pb-[32px]">
-        <Button onClick={onRestart}>확인</Button>
+        <div className="relative">
+
+            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[30px]" aria-hidden="true">👇</span>
+            </div>
+
+          <Button onClick={onRestart}>확인</Button>
+        </div>
+        
       </div>
     </div>
   );

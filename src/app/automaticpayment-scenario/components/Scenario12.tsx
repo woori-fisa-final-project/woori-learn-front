@@ -3,13 +3,13 @@
 // 자동이체 등록 플로우에서 필요한 React 훅과 유틸리티, 하위 시나리오 컴포넌트를 불러온다.
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUserData } from "@/lib/hooks/useUserData";
 // 헤더 제어와 이체 흐름 상태 관리를 위해 내부 컨텍스트와 훅을 이용한다.
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { useAccountSelection } from "@/lib/hooks/useAccountSelection";
 import { useAutoPaymentSteps } from "@/lib/hooks/useAutoPaymentSteps";
 import { useAutoPaymentRegistration } from "@/lib/hooks/useAutoPaymentRegistration";
-import { useUserData } from "@/lib/hooks/useUserData";
 // 공통 유틸리티 함수를 불러온다.
 import { formatAccountNumber } from "@/utils/accountUtils";
 // 다른 시나리오 단계 컴포넌트를 순차적으로 사용하여 전체 플로우를 완성한다.
@@ -35,14 +35,8 @@ function AccountSelectStep({
   isLoading: boolean;
   onSelectAccount: (accountId: number) => void;
 }) {
-  // 손가락 표시 여부 상태
-  const [isFingerVisible, setIsFingerVisible] = useState(true);
-
-  // 계좌 선택 시 손가락 숨기기
-  const handleAccountClick = (id: number) => {
-    setIsFingerVisible(false);
-    onSelectAccount(id);
-  };
+  // 클릭 여부를 추적하는 상태 추가
+  const [hasClicked, setHasClicked] = useState(false);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -63,41 +57,47 @@ function AccountSelectStep({
       ) : (
         <section className="mt-[28px] space-y-[16px]">
           {accounts.map((account, index) => (
-            
-            <div key={account.id} className="relative">
-              
-              {/* 첫 번째 계좌이고, 아직 클릭 안 했을 때만 손가락 표시 */}
-              {index === 0 && isFingerVisible && (
-                <div className="absolute -top-[30px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+            <button
+              key={account.id}
+              type="button"
+              onClick={() => {
+                // 1. 클릭 시 상태를 true로 변경하여 애니메이션을 즉시 숨깁니다.
+                setHasClicked(true);
+                // 2. 기존 선택 로직을 실행합니다.
+                onSelectAccount(account.id);
+              }}
+              className="relative w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
+            >
+              {/* index가 0이고, 아직 클릭하지 않았을 때만(!hasClicked) 표시 */}
+              {index === 0 && !hasClicked && (
+                <div className="absolute left-1/2 -top-12 z-20 -translate-x-1/2 animate-bounce">
                   <span className="text-[30px]" aria-hidden="true">👇</span>
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={() => handleAccountClick(account.id)}
-                className="w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
-              >
-                <div className="flex items-start gap-[12px]">
-                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#E8F1FF]">
-                    <Image
-                      src="/images/woorilogo.png"
-                      alt="우리은행"
-                      width={24}
-                      height={24}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-[4px]">
-                    <p className="text-[17px] font-semibold text-gray-900">{account.accountName}</p>
-                    <p className="text-[13px] text-gray-500">
-                      우리은행 {formatAccountNumber(account.accountNumber)}
-                    </p>
-                    <p className="text-[13px] text-gray-500">잔액 {account.balance.toLocaleString()}원</p>
-                  </div>
+              <div className="flex items-start gap-[12px]">
+                <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#E8F1FF]">
+                  <Image
+                    src="/images/woorilogo.png"
+                    alt="우리은행"
+                    width={24}
+                    height={24}
+                    className="object-contain"
+                  />
                 </div>
-              </button>
-            </div>
+                <div className="flex flex-col gap-[4px]">
+                  <p className="text-[17px] font-semibold text-gray-900">
+                    {account.accountName}
+                  </p>
+                  <p className="text-[13px] text-gray-500">
+                    우리은행 {formatAccountNumber(account.accountNumber)}
+                  </p>
+                  <p className="text-[13px] text-gray-500">
+                    잔액 {account.balance.toLocaleString()}원
+                  </p>
+                </div>
+              </div>
+            </button>
           ))}
         </section>
       )}
@@ -134,7 +134,7 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
     isPasswordSheetOpen,
     errorMessage: registrationError,
     handleScheduleComplete,
-    handlePasswordSuccess: onPasswordSuccessFromHook,
+    handlePasswordSuccess: onPasswordSuccess,
     handlePasswordClose: onPasswordClose,
     registerAutoPayment,
     setPasswordSheetOpen,
@@ -201,12 +201,11 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   const inboundBank = selectedBank ?? "국민은행";
   const inboundAccount = accountNumber || "-";
   const inboundName = recipientName || "받는 분";
-  const ownerName = currentUserName ?? "김우리";
+  const ownerName = currentUserName ?? "김집주";
 
-  // 인자를 비워서 Scenario5 타입과 맞춤
-  const handlePasswordSuccess = () => {
-    // 훅에는 더미 문자열이나 성공 신호를 전달 (이미 Scenario5에서 전역상태 저장함)
-    onPasswordSuccessFromHook("AUTH_SUCCESS"); 
+  // 비밀번호 인증에 성공하면 확인 단계로 이동한다.
+  const handlePasswordSuccess = (password: string) => {
+    onPasswordSuccess(password);
     setStep("confirm");
   };
 
@@ -347,7 +346,7 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
       {/* 비밀번호 인증 바텀시트는 자동이체 등록 직전에 호출된다. */}
       {isPasswordSheetOpen && (
         <Scenario5
-          onSuccess={handlePasswordSuccess} // 매개변수 없는 함수 전달 -> 에러 해결!
+          onSuccess={handlePasswordSuccess}
           onClose={handlePasswordClose}
         />
       )}

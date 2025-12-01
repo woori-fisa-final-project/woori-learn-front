@@ -6,107 +6,77 @@ import NumericKeypad from "@/components/common/NumericKeypad";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import axiosInstance from "@/utils/axiosInstance";
 
-
-/**
- * ------------------------------------------------------------------
- * [Scenario 5] 계좌 비밀번호 입력 모달
- * : 송금 최종 단계 직전, 보안을 위해 계좌 비밀번호 4자리를 입력받습니다.
- * ------------------------------------------------------------------
- */
-
 type Scenario5Props = {
-  /** 비밀번호 검증 성공 시 실행될 콜백 (다음 시나리오로 이동) */
-  onSuccess: () => void;
-  /** 모달 닫기 버튼 또는 배경 클릭 시 실행될 콜백 */
+  // 비밀번호 문자열을 받아야 하므로 타입을 명시합니다.
+  onSuccess: (password: string) => void;
   onClose: () => void;
 };
 
 export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
-  // 전역 상태에서 '출금 계좌번호'와 '비밀번호 저장 함수' 가져오기
-  const { sourceAccountNumber, setEnteredPassword } = useTransferFlow();
+  const { sourceAccountNumber } = useTransferFlow();
 
-  const [password, setPassword] = useState("");       // 현재 입력된 비밀번호 (4자리)
-  const [hasError, setHasError] = useState(false);    // 비밀번호 불일치 에러 상태
-  const [failureCount, setFailureCount] = useState(0); // 비밀번호 틀린 횟수 카운트
+  const [password, setPassword] = useState("");
+  const [hasError, setHasError] = useState(false);
+  const [failureCount, setFailureCount] = useState(0);
   
-  // 성공 시 딜레이를 주기 위한 타이머 Ref (메모리 누수 방지용)
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 컴포넌트 언마운트 시 타이머 정리 (Cleanup)
   useEffect(() => {
+    setPassword("");
+    setHasError(false);
+    setFailureCount(0);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
 
-
-  /** * 백엔드 비밀번호 검증 요청 
-   * @param pw 사용자가 입력한 4자리 비밀번호
-   */
- const validatePasswordFromBackend = async (pw: string) => {
+  const validatePasswordFromBackend = async (pw: string) => {
     try {
-      // 숫자만 남기기 (DB 형식에 맞춤)
       const rawAccount = sourceAccountNumber.replace(/\D/g, ""); 
-      
-      console.log("🔍 요청 계좌:", rawAccount);
-
-      // 👇 [핵심 변경] 복잡한 fetch 로직을 한 줄로 대체!
-      // - 헤더 설정 불필요 (Interceptors가 알아서 토큰 넣음)
-      // - 401 발생 시 자동 갱신 및 재시도 (Interceptors가 처리)
       const res = await axiosInstance.post("/education/accounts/transactions-password", {
           accountNumber: rawAccount,
           password: pw
       });
-
-      // axios 응답 구조 분해 (res.data 안에 서버 응답이 있음)
-      // 백엔드 ApiResponse가 { code: 200, data: boolean, message: ... } 형태라고 가정
       const { code, data } = res.data;
-
       return code === 200 && data === true;
-
     } catch (err) {
       console.error("비밀번호 검증 실패:", err);
-      // axiosInstance가 던진 ApiError를 여기서 잡을 수 있음
       return false;
     }
   };
 
-
-  /** * 숫자 키패드 입력 처리 핸들러 
-   * : 4자리가 입력되면 자동으로 검증 로직을 수행합니다.
-   */
   const handleValueChange = async (value: string) => {
-    if (value.length > 4) return; // 4자리 초과 입력 방지
-    setPassword(value);
+    if (value.length > 4) return;
+    
+    // ⚠️ setPassword는 비동기라 password 값이 즉시 변하지 않습니다.
+    setPassword(value); 
 
-    // 입력이 시작되면 에러 상태 초기화
     if (hasError) setHasError(false);
 
-    // 4자리가 모두 입력되었을 때 자동 검증 시작
     if (value.length === 4) {
+      // 검증할 때도 최신 값(value) 사용
       const isValid = await validatePasswordFromBackend(value);
 
       if (isValid) {
-        // 1. 검증 성공: 전역 상태에 비밀번호 저장
-        setEnteredPassword(value);
-
-        // 2. UX를 위해 약간의 딜레이(150ms) 후 성공 콜백 실행
+        setFailureCount(0);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        
         timerRef.current = setTimeout(() => {
-          setPassword(""); // 보안을 위해 로컬 상태 초기화
-          onSuccess();
-        }, 150);
+          // ✅ [핵심 수정] 여기서 password(상태)를 쓰면 '123'이 나갈 수 있습니다.
+          // 반드시 value(방금 입력완료된 '1234')를 전달해야 합니다.
+          console.log("✅ Scenario5 -> 부모에게 전달:", value);
+          
+          setPassword(""); // 초기화는 전달 후에!
+          onSuccess(value); 
+        }, 120);
       } else {
-        // 1. 검증 실패: 에러 표시 및 실패 횟수 증가
         setHasError(true);
         setFailureCount((prev) => prev + 1);
-        setPassword(""); // 입력 필드 초기화
+        setPassword("");
       }
     }
   };
 
-  /** * [확인] 버튼 클릭 핸들러 
-   * : 보통 4자리 입력 시 자동 수행되지만, 수동 클릭을 위한 예비 로직입니다.
-   */
   const handleSubmit = async () => {
     if (password.length < 4) return;
 
@@ -119,14 +89,17 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
       return;
     }
 
-    setEnteredPassword(password);
+    // 제출 시점에는 이미 입력이 끝났으므로 password 상태를 써도 안전하지만
+    // 확실하게 지역 변수에 담아서 보냅니다.
+    const finalPassword = password;
+    
+    setFailureCount(0);
     setPassword("");
-    onSuccess();
+    
+    console.log("✅ Scenario5(수동) -> 부모에게 전달:", finalPassword);
+    onSuccess(finalPassword);
   };
 
-  /** * 모달 닫기 핸들러 
-   * : 상태를 모두 초기화하고 부모 컴포넌트에 닫힘을 알립니다.
-   */
   const handleClose = () => {
     setPassword("");
     setHasError(false);
@@ -135,23 +108,18 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
   };
 
   return (
-    // 1. 배경 (Backdrop) - 클릭 시 모달 닫힘
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
-      onClick={(event) => {
-        // 배경(dimmed 영역)을 직접 클릭했을 때만 닫기 (내부 클릭 무시)
-        if (event.target === event.currentTarget) {
-          handleClose();
-        }
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
       }}
     >
-      {/* 2. 모달 컨텐츠 (Bottom Sheet 스타일) */}
       <div
         className="w-full max-w-[430px] rounded-t-[32px] bg-white"
-        onClick={(e) => e.stopPropagation()} // 배경 클릭 이벤트 전파 방지
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* 2-1. 헤더 (닫기 버튼) */}
         <header className="flex items-center justify-between px-[20px] pt-[24px]">
+          <span className="text-[16px] font-semibold text-gray-900"></span>
           <button
             type="button"
             onClick={handleClose}
@@ -162,7 +130,6 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
           </button>
         </header>
 
-        {/* 2-2. 본문 영역 */}
         <div className="mt-[12px] px-[20px] pb-[32px]">
           <section className="text-center">
             <h2 className="text-[22px] font-semibold text-gray-900">
@@ -173,14 +140,12 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
             </p>
           </section>
 
-          {/* 2-3. 보안 키패드 및 에러 메시지 */}
           <div className="mt-[28px]">
             <NumericKeypad
               value={password}
               onValueChange={handleValueChange}
-              shuffleNumbers // 보안을 위해 숫자 배열 랜덤 섞기
+              shuffleNumbers
             />
-
             {hasError && (
               <p className="mt-[16px] text-center text-[13px] font-medium text-[#D63333]">
                 비밀번호가 올바르지 않습니다. (실패 {failureCount}회)
@@ -188,7 +153,6 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
             )}
           </div>
 
-          {/* 2-4. 하단 액션 버튼 */}
           <div className="mt-[28px]">
             <Button onClick={handleSubmit} disabled={password.length < 4}>
               확인
