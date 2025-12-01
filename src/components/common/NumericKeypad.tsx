@@ -68,6 +68,8 @@ export default function NumericKeypad({
         {topDigits.map((num) => (
           <button
             key={num}
+
+            data-testid={`keypad-${num}`}
             onClick={() => handleNumberClick(num)}
             disabled={value.length >= maxLength}
             className="h-[58px] rounded-[16px] bg-white text-[18px] font-semibold text-gray-900 transition-colors hover:bg-gray-50 active:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
@@ -85,6 +87,7 @@ export default function NumericKeypad({
         </button>
 
         <button
+          data-testid={`keypad-${bottomDigit}`}
           onClick={() => handleNumberClick(bottomDigit)}
           disabled={value.length >= maxLength}
           className="h-[58px] rounded-[16px] bg-white text-[18px] font-semibold text-gray-900 transition-colors hover:bg-gray-50 active:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"

@@ -55,3 +55,8 @@ next-env.d.ts
 *.tmp
 *.temp
 
+# Cypress
+cypress.env.json
+cypress/videos
+cypress/screenshots
+

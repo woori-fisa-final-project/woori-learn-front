@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test:demo": "cypress run --spec cypress/e2e/demo-flow.cy.ts"
   },
   "dependencies": {
     "axios": "^1.13.2",
@@ -18,12 +21,14 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@cypress/grep": "^5.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "baseline-browser-mapping": "^2.8.32",
+    "cypress": "^15.7.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",
