@@ -112,7 +112,7 @@
       } catch (e) {
         console.error(e);
         alert("승인에 실패했습니다. 다시 시도해주세요.");
-        return; // ❗ finally 실행 막음
+        return;
       } finally {
         setModalOpen(false);
         setSelectedId(null);
