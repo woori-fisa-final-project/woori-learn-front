@@ -165,7 +165,7 @@ export default function PointListPage() {
             </button>
 
             <button
-              onClick={() => router.push("/points/exchange")}
+              onClick={() => router.push("/point/exchange")}
               className="flex-1 pb-3 text-[16px] font-medium text-gray-400"
             >
               포인트 환전

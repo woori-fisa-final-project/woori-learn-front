@@ -51,7 +51,7 @@ export default function ProfilePage() {
   }, []);
 
   const handlePointTransfer = () => {
-    router.push("/points/list"); // 포인트 관련 내역/환전 페이지로 이동합니다.
+    router.push("/point/list"); // 포인트 관련 내역/환전 페이지로 이동합니다.
   };
 
   const handleChangeName = () => {
@@ -124,7 +124,7 @@ export default function ProfilePage() {
 
           {/* 🔵 파란색 숫자만 클릭하면 이동 */}
           <button
-            onClick={() => router.push("/points")}
+            onClick={() => router.push("/point")}
             className="text-[17px] font-semibold leading-[1.38] tracking-[-0.34px] text-primary-400 hover:underline"
           >
             <span suppressHydrationWarning>
