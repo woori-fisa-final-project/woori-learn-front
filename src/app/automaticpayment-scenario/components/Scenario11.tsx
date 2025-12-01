@@ -29,6 +29,14 @@ export type AutoTransferInfo = {
   sourceAccountNumber?: string | null;
 };
 
+/**
+ * Scenario11 Props
+ * - hasAutoTransfer: 자동이체 존재 여부
+ * - autoTransferList: 자동이체 목록
+ * - onNavigateToRegister: "원화 자동이체 등록" 화면으로 이동시키는 외부 핸들러
+ * - onNavigateToDetail: 자동이체 상세 화면으로 이동시키는 외부 핸들러
+ * - engineStep / onPracticeNext: 시나리오 엔진과 연결될 때 사용
+ */
 type Scenario11Props = {
   accountSuffix: string;
   hasAutoTransfer: boolean;
@@ -54,6 +62,9 @@ export default function Scenario11({
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [isFxInfoModalOpen, setFxInfoModalOpen] = useState(false);
 
+  /**
+   * 엔진 step이 특정 PRACTICE id로 들어오면 바텀시트를 열기
+   */
   useEffect(() => {
     if (!engineStep) return;
     if ([1066, 1067, 1068].includes(engineStep.id)) {
@@ -73,6 +84,11 @@ export default function Scenario11({
     };
   }, [router, setOnBack, setTitle]);
 
+  /**
+   * 자동이체 등록 버튼 핸들러
+   * - 엔진 PRACTICE 단계면: 서버 next-step을 먼저 호출하여 시나리오 진행
+   * - 그 외에는: 바텀시트를 열어 유형 선택 UI 노출
+   */
   const handleRegister = async () => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1065) {
       await onPracticeNext?.(engineStep.id);
@@ -97,6 +113,11 @@ export default function Scenario11({
     setFxInfoModalOpen(true);
   };
 
+  /**
+   * 자동이체 카드 클릭(상세 이동)
+   * - 엔진 PRACTICE 단계면 먼저 next-step 호출하여 시나리오 진행 기록
+   * - 이후 상세 화면으로 이동
+   */
   const handleOpenDetail = async (id: number) => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1107) {
       await onPracticeNext?.(engineStep.id);

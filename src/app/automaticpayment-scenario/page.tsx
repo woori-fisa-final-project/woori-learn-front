@@ -7,6 +7,12 @@ import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
 import ScenarioContainer from "./components/ScenarioContainer";
 import { getNextStepId } from "@/utils/stepUtil";
 
+/**
+ * 자동이체 시나리오 페이지의 컨텐츠 컴포넌트
+ * - URL 쿼리로 scenarioId/stepId를 받아 시나리오를 재개
+ * - PRACTICE 스텝은 ScenarioContainer에서 진행
+ * - 그 외 스텝은 ScenarioRenderer 활용
+ */
 function AutomaticPaymentScenarioContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,6 +26,10 @@ function AutomaticPaymentScenarioContent() {
     return Number.isFinite(n) ? n : 1;
   }, [scenarioIdParam]);
 
+  /**
+   * scenarioId/stepId 쿼리가 바뀌면 해당 위치에서 시나리오를 재개
+   * - stepId가 없으면 서버가 저장한 progress 기반으로 재개하는 흐름
+   */
   useEffect(() => {
     const scenarioId = scenarioIdParam ? Number(scenarioIdParam) : NaN;
     const stepId = stepIdParam ? Number(stepIdParam) : undefined;
@@ -29,6 +39,10 @@ function AutomaticPaymentScenarioContent() {
     }
   }, [resume, scenarioIdParam, stepIdParam]);
 
+  /**
+   * PRACTICE 단계에서 다음 처리가 필요할 때 호출되는 함수
+   * - 호출 시점의 nowStepId(+ 선택지 answer)를 엔진에 전달하여 nextStep을 진행
+   */
   const onPracticeNext = useCallback(
     async (nowStepId: number, answer?: number): Promise<void> => {
       await nextStep(nowStepId, answer);
@@ -59,7 +73,6 @@ function AutomaticPaymentScenarioContent() {
 
             if (currentStep?.id != null) await nextStep(currentStep.id);
           }}
-
           onRestartFromBeginning={async () => {
             if (Number.isNaN(scenarioId)) {
               router.replace("/woorimain");

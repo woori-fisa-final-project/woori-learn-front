@@ -59,6 +59,7 @@ function convertToAutoTransferInfo(payment: AutoPayment, account: EducationalAcc
     };
 }
 
+/** URL의 stepId를 기반으로, 최초 진입 시 어느 화면을 보여줄지 유추 */
 function inferInitialScreenFromStepId(stepId: number): Screen {
     if (stepId >= 1069 && stepId <= 1101) return "register";
 
@@ -69,10 +70,15 @@ function inferInitialScreenFromStepId(stepId: number): Screen {
     return "list";
 }
 
+/**
+ * 자동이체 시나리오 컨테이너
+ * - API 호출(목록/상세/해지) + 엔진 PRACTICE step 연동을 함께 처리
+ */
 export default function ScenarioContainer({ engineStep, onPracticeNext }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    /** URL의 stepId를 읽어 최초 화면을 유추 */
     const urlStepId = useMemo(() => {
         const raw = searchParams.get("stepId");
         const n = raw ? Number(raw) : NaN;
@@ -110,6 +116,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         }
     }, [urlStepId]);
 
+    /** 대표 계좌 조회 */
     const fetchRepresentativeAccount = useCallback(async (signal?: AbortSignal) => {
         const accounts = await getAccountList(signal);
         const representative = getRepresentativeAccount(accounts);
@@ -117,6 +124,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         return representative;
     }, []);
 
+    /** 자동이체 목록 데이터 조회 */
     const fetchData = useCallback(async () => {
         if (isFetchingRef.current) {
             devLog("[fetchData] already fetching - skip");
@@ -207,8 +215,14 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         onPracticeNext,
     ]);
 
+    // 목록 -> 등록 화면 전환
     const handleNavigateToRegister = () => setCurrentScreen("register");
 
+    /**
+     * 등록 완료 시:
+     * - 목록 화면으로 돌아가고
+     * - 최신 목록을 재조회
+     */
     const handleRegisterComplete = () => {
         setCurrentScreen("list");
         fetchData();

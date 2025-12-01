@@ -31,6 +31,7 @@ type EngineStep = {
   content?: any;
 };
 
+/** 정답 검증 기준 */
 export const AUTO_PAYMENT_EXPECTED = {
   targetBank: "국민은행",
   targetAccountDigits: "110123456789",
@@ -39,8 +40,10 @@ export const AUTO_PAYMENT_EXPECTED = {
   durationMonths: 12,
 } as const;
 
+// 계좌번호에서 숫자만 추출
 const onlyDigits = (v: string | null | undefined) => (v ?? "").replace(/\D/g, "");
 
+/** YYYY-MM 간의 개월 수 차이 계산 */
 const monthDiff = (startYmd: string, endYmd: string) => {
   const [sy, sm] = startYmd.split("-").map(Number);
   const [ey, em] = endYmd.split("-").map(Number);
@@ -48,6 +51,7 @@ const monthDiff = (startYmd: string, endYmd: string) => {
   return (ey - sy) * 12 + (em - sm);
 };
 
+/** 스토리 입력값이 검증 기준과 일치하는지 검증 */
 const isStoryInputValid = (params: {
   selectedBank: string | null | undefined;
   accountNumber: string | null | undefined;
@@ -163,6 +167,11 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
 
   const [isBankSheetOpen, setBankSheetOpen] = useState(false);
 
+  /**
+   * PRACTICE 단계에서만 onPracticeNext 호출을 수행하는 helper
+   * - onlyIds: 특정 id에서만 호출하도록 제한(의도치 않은 step에서 호출 방지)
+   * - answer: 분기(정답/오답) 선택이 필요할 때 사용
+   */
   const advancePractice = useCallback(
     async (opts?: { onlyIds?: number[]; answer?: number }) => {
       if (!engineStep) return false;
@@ -188,6 +197,7 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     };
   }, [resetFlow, setPasswordSheetOpen]);
 
+  /** 출금 계좌 선택 처리 */
   const handleSelectAccount = async (accountId: number) => {
     await advancePractice({ onlyIds: [1071] });
 
@@ -201,11 +211,13 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     setStep("select");
   };
 
+  /** 은행 선택 바텀시트 오픈 */
   const handleOpenBankSheet = async () => {
     await advancePractice({ onlyIds: [1074] });
     setBankSheetOpen(true);
   };
 
+  /** 입금은행 선택 완료 */
   const handleSelectBank = async (bankName: string) => {
     await advancePractice({ onlyIds: [1075] });
     setSelectedBank(bankName);
@@ -222,6 +234,9 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
   const inboundName = recipientName || "받는 분";
   const ownerName = currentUserName ?? "김우리";
 
+  /** 비밀번호 입력 성공
+   * - PRACTICE : 성공(answer:0)로 엔진 진행
+   */
   const handlePasswordSuccess = async (password: string) => {
     await advancePractice({ onlyIds: [1089], answer: 0 });
     onPasswordSuccess(password);
@@ -233,6 +248,7 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     setStep("schedule");
   };
 
+  /** 일정 설정 완료 */
   const handleScheduleCompleteWithEngine = useCallback(
     async (options: ScheduleSummary) => {
       await advancePractice({ onlyIds: [1085] });
@@ -241,6 +257,11 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     [advancePractice, handleScheduleComplete]
   );
 
+  /**
+   * 약관 동의 화면으로 진입 시도
+   * - 입력값이 정답 경로와 일치하면 answer:0으로 성공 브랜치
+   * - 아니면 answer:1로 실패 브랜치
+   */
   const handleOpenConsent = async () => {
     if (!scheduleSummary) return;
 
@@ -263,6 +284,7 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
     }
   };
 
+  /** 약관 동의 완료 후 실제 자동이체 등록 요청 */
   const handleConsentCompleted = async () => {
     const success = await registerAutoPayment(selectedAccount, selectedBank, accountNumber, recipientName, amount);
 
