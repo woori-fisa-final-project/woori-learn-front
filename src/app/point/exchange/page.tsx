@@ -42,7 +42,7 @@ export default function PointExchangePage() {
   };
 
   const handleHistoryTab = () => {
-    router.push("/points/list"); // 포인트 내역 탭으로 전환합니다.
+    router.push("/point/list"); // 포인트 내역 탭으로 전환합니다.
   };
 
   const expectedAmount = withdrawalAmount

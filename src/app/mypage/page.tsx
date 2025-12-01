@@ -124,7 +124,7 @@ export default function ProfilePage() {
 
           {/* 🔵 파란색 숫자만 클릭하면 이동 */}
           <button
-            onClick={() => router.push("/points")}
+            onClick={() => router.push("/point")}
             className="text-[17px] font-semibold leading-[1.38] tracking-[-0.34px] text-primary-400 hover:underline"
           >
             <span suppressHydrationWarning>
