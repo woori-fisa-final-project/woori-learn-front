@@ -11,7 +11,7 @@ function formatAmount(amount: number) {
 
 type Scenario10Props = {
   transaction: Transaction | null;
-  onConfirm: () => void | Promise<void>; // PRACTICE(1047)
+  onConfirm: () => void | Promise<void>;
 };
 
 export default function Scenario10({ transaction, onConfirm }: Scenario10Props) {
