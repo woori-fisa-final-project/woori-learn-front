@@ -1,10 +1,11 @@
 "use client";
 
 // 자동이체 일정 입력 단계에서 필요한 React 상태와 공통 컴포넌트를 불러온다.
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Button from "@/components/common/Button";
 import { clampDayToMonth, formatYMD } from "@/utils/dateUtils";
 import type { ScheduleSummary } from "./types";
+import { createPortal } from "react-dom";
 
 // 상위 컴포넌트에서 완료 콜백을 전달받기 위한 props 타입을 정의한다.
 type Scenario14Props = {
@@ -19,6 +20,142 @@ const DURATION_OPTIONS: Array<{ label: string; months: number | null }> = [
   { label: "36개월", months: 36 },
   { label: "미지정", months: null },
 ];
+
+const TRANSFER_DAY_OPTIONS = ["1일", "5일", "10일", "15일", "20일", "25일", "말일"] as const;
+type TransferDay = (typeof TRANSFER_DAY_OPTIONS)[number];
+
+function DropdownSelect({ value, options, onChange, disabled }: {
+  value: string;
+  options: readonly string[];
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const [open, setOpen] = useState(false);
+
+  // 포털 메뉴 위치 계산용 상태
+  const [pos, setPos] = useState<{
+    left: number;
+    top?: number;
+    bottom?: number;
+    width: number;
+    maxHeight: number;
+    openUp: boolean;
+  } | null>(null);
+
+  const close = () => setOpen(false);
+
+  // 열릴 때 화면(뷰포트) 기준으로 메뉴 위치/높이를 계산해서 "넘치지 않게" 함
+  useLayoutEffect(() => {
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    const el = triggerRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+
+    const margin = 12;
+    const desiredMax = 280;
+    const minWanted = 200;
+
+    const spaceBelow = viewportH - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+
+    const openUp = spaceBelow < minWanted && spaceAbove > spaceBelow;
+
+    const maxHeight = Math.max(120, Math.min(desiredMax, openUp ? spaceAbove : spaceBelow));
+
+    const width = Math.min(rect.width, viewportW - margin * 2);
+    const left = Math.max(margin, Math.min(rect.left, viewportW - margin - width));
+
+    if (openUp) {
+      // trigger 위로 메뉴가 뜨게: bottom 기준 배치
+      const bottom = viewportH - rect.top;
+      setPos({ left, bottom, width, maxHeight, openUp });
+    } else {
+      // trigger 아래로 메뉴가 뜨게: top 기준 배치
+      const top = rect.bottom;
+      setPos({ left, top, width, maxHeight, openUp });
+    }
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((v) => !v)}
+        className="relative w-full appearance-none rounded-[12px] border border-gray-200 bg-white px-[14px] py-[12px] text-left text-[15px] text-gray-800 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-400"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        {value}
+        <span className="pointer-events-none absolute right-[14px] top-1/2 -translate-y-1/2 text-[18px] text-gray-400">
+          ▾
+        </span>
+      </button>
+
+      {open && pos
+        ? createPortal(
+          <>
+            {/* 바깥 클릭 닫기용 투명 오버레이 */}
+            <div
+              className="fixed inset-0 z-[90]"
+              onMouseDown={close}
+              onTouchStart={close}
+              aria-hidden
+            />
+
+            {/* 드롭다운 메뉴 */}
+            <div
+              className="fixed z-[100] rounded-[12px] border border-gray-200 bg-white overflow-auto"
+              style={{
+                left: pos.left,
+                width: pos.width,
+                top: pos.top,
+                bottom: pos.bottom,
+                maxHeight: pos.maxHeight,
+              }}
+              role="listbox"
+            >
+              <div className="py-[6px]">
+                {options.map((opt) => {
+                  const active = opt === value;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`w-full px-[14px] py-[12px] text-left text-[15px] transition ${active
+                        ? "bg-primary-600 text-white"
+                        : "bg-white text-gray-800 hover:bg-gray-50"
+                        }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onChange(opt);
+                        close();
+                      }}
+                      role="option"
+                      aria-selected={active}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>,
+          document.body
+        )
+        : null}
+    </>
+  );
+}
 
 // 자동이체의 시작일, 종료일, 지정일을 입력받는 단계 컴포넌트이다.
 export default function Scenario14({ onComplete }: Scenario14Props) {
@@ -107,23 +244,12 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                   ▾
                 </span>
               </div>
-              <div className="relative w-full max-w-[350px]">
-                <select
+              <div className="w-full max-w-[350px]">
+                <DropdownSelect
                   value={transferDay}
-                  onChange={(event) => setTransferDay(event.target.value)}
-                  className="w-full appearance-none rounded-[12px] border border-gray-200 bg-white px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none"
-                >
-                  <option value="1일">1일</option>
-                  <option value="5일">5일</option>
-                  <option value="10일">10일</option>
-                  <option value="15일">15일</option>
-                  <option value="20일">20일</option>
-                  <option value="25일">25일</option>
-                  <option value="말일">말일</option>
-                </select>
-                <span className="pointer-events-none absolute right-[14px] top-1/2 -translate-y-1/2 text-[18px] text-gray-400">
-                  ▾
-                </span>
+                  options={TRANSFER_DAY_OPTIONS}
+                  onChange={(v) => setTransferDay(v as TransferDay)}
+                />
               </div>
             </div>
           </div>
