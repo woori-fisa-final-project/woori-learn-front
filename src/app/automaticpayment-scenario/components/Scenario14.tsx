@@ -22,7 +22,8 @@ const DURATION_OPTIONS: Array<{ label: string; months: number | null }> = [
 
 // 자동이체의 시작일, 종료일, 지정일을 입력받는 단계 컴포넌트이다.
 export default function Scenario14({ onComplete }: Scenario14Props) {
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const today = formatYMD(now.getFullYear(), now.getMonth() + 1, now.getDate());
   // 시작일과 종료일, 지정일, 기간 옵션 선택 상태를 관리한다.
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState("");
@@ -50,14 +51,13 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
     target.setMonth(baseDate.getMonth() + months);
     const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
     target.setDate(Math.min(baseDate.getDate(), lastDay));
-    return target.toISOString().slice(0, 10);
+    return formatYMD(target.getFullYear(), target.getMonth() + 1, target.getDate());
   };
 
   // 기간 버튼을 선택했을 때 종료일을 자동으로 갱신한다.
   useEffect(() => {
-    if (selectedDuration !== null) {
-      const computed = addMonths(startDate, selectedDuration);
-      setEndDate(computed);
+    if (selectedDuration !== null && startDate) {
+      setEndDate(addMonths(startDate, selectedDuration));
     }
   }, [selectedDuration, startDate]);
 
@@ -141,11 +141,10 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                     type="button"
                     key={option.label}
                     onClick={() => handleSelectDuration(option.months)}
-                    className={`h-[40px] rounded-[12px] border px-[12px] text-[14px] font-medium transition ${
-                      isActive
-                        ? "border-primary-500 bg-primary-50 text-primary-600"
-                        : "border-gray-200 bg-white text-gray-700 hover:border-primary-300"
-                    }`}
+                    className={`h-[40px] rounded-[12px] border px-[12px] text-[14px] font-medium transition ${isActive
+                      ? "border-primary-500 bg-primary-50 text-primary-600"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-primary-300"
+                      }`}
                   >
                     {option.label}
                   </button>
