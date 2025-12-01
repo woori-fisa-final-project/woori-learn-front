@@ -136,7 +136,6 @@ export default function ScenarioContainer() {
             onBackToPassword={() => {
                 // 비밀번호 오류 시 다시 입력창 열기
                 goToStep(5);
-                setPasswordSheetOpen(true);
             }}
           />
         )}

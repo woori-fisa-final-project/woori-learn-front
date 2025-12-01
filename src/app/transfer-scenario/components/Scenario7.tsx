@@ -62,7 +62,7 @@ export default function Scenario7({ onRestart }: Scenario7Props) {
       </div>
 
       <section className="mt-[28px] w-full space-y-[12px] rounded-[20px] bg-[#F5F7FA] px-[24px] py-[24px] text-[14px]">
-        <Row label="보내는 분" value={currentUserName || "사용자"} highlight />
+        <Row label="보내는 분" value={currentUserName} highlight />
         <Row label="이체금액" value={formattedAmount} highlight />
         <Row label="출금 계좌" value={`우리은행 ${formattedFromAccount}`} />
         <Row label="입금 계좌" value={`${depositBank} ${depositAccount}`} />

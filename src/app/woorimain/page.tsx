@@ -235,6 +235,7 @@ export default function WooriMainPage() {
         const representativeAccount = getRepresentativeAccount(allAccounts);
         if (!representativeAccount) {
           devError(`[fetchRepresentativeAccount] 계좌가 없습니다.`);
+          handleOpenNotice("등록된 계좌 정보를 불러올 수 없습니다.");
           setRepresentativeAccount(null);
           return;
         }

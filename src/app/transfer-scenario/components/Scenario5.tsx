@@ -13,7 +13,7 @@ type Scenario5Props = {
 };
 
 export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
-  const { sourceAccountNumber } = useTransferFlow();
+  const { sourceAccountNumber } = useTransferFlow();4
 
   const [password, setPassword] = useState("");
   const [hasError, setHasError] = useState(false);
@@ -30,10 +30,14 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
     };
   }, []);
 
-  const validatePasswordFromBackend = async (pw: string) => {
+    const validatePasswordFromBackend = async (pw: string) => {
+    if (!sourceAccountNumber) {
+      console.error("출금 계좌 번호가 유효하지 않습니다.");
+      return false;
+    }
     try {
       const rawAccount = sourceAccountNumber.replace(/\D/g, ""); 
-      const res = await axiosInstance.post("/education/accounts/transactions-password", {
+      const res = await axiosInstance.post("/education/accounts/transactions-password-verification", {
           accountNumber: rawAccount,
           password: pw
       });
@@ -48,7 +52,6 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
   const handleValueChange = async (value: string) => {
     if (value.length > 4) return;
     
-    // ⚠️ setPassword는 비동기라 password 값이 즉시 변하지 않습니다.
     setPassword(value); 
 
     if (hasError) setHasError(false);
@@ -62,11 +65,10 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
         if (timerRef.current) clearTimeout(timerRef.current);
         
         timerRef.current = setTimeout(() => {
-          // ✅ [핵심 수정] 여기서 password(상태)를 쓰면 '123'이 나갈 수 있습니다.
-          // 반드시 value(방금 입력완료된 '1234')를 전달해야 합니다.
-          console.log("✅ Scenario5 -> 부모에게 전달:", value);
+
+          console.log("Scenario5 -> 부모에게 전달:", value);
           
-          setPassword(""); // 초기화는 전달 후에!
+          setPassword(""); 
           onSuccess(value); 
         }, 120);
       } else {
@@ -96,7 +98,7 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
     setFailureCount(0);
     setPassword("");
     
-    console.log("✅ Scenario5(수동) -> 부모에게 전달:", finalPassword);
+    console.log("Scenario5(수동) -> 부모에게 전달:", finalPassword);
     onSuccess(finalPassword);
   };
 

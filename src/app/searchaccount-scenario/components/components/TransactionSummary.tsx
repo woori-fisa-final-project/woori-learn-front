@@ -44,7 +44,7 @@ export default function TransactionSummary({
             className="flex items-center gap-[6px]"
           >
             {filters.period} · {filters.type} · {filters.sortOrder}
-            <img src="/images/search.png" className="h-[16px] w-[16px] opacity-60" alt="search" />
+            <img src="/images/search.png" className="h-[16px] w-[16px] opacity-60" alt="거래내역 필터" />
           </button>
         </div>
 
