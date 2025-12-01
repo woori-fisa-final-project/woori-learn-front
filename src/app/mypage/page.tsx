@@ -51,7 +51,7 @@ export default function ProfilePage() {
   }, []);
 
   const handlePointTransfer = () => {
-    router.push("/points/list"); // 포인트 관련 내역/환전 페이지로 이동합니다.
+    router.push("/points/history"); // 포인트 관련 내역/환전 페이지로 이동합니다.
   };
 
   const handleChangeName = () => {
