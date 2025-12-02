@@ -7,6 +7,7 @@ import PageHeader from "@/components/common/PageHeader"; // 페이지 상단의 
 import PageContainer from "@/components/common/PageContainer"; // 페이지 전반 레이아웃을 감싸는 컨테이너입니다.
 import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름, 포인트 등 마이페이지에 필요한 데이터를 제공하는 커스텀 훅입니다.
 import Image from "next/image";
+import { useIsClient } from "@/lib/hooks/useIsClient";
 import axiosInstance from "@/utils/axiosInstance";
 import { useAuthStore } from "@/utils/tokenStorage";
 import Button from "@/components/common/Button";
@@ -23,6 +24,7 @@ export default function ProfilePage() {
     "processing" | "success"
   >("processing");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isClient = useIsClient();
 
   const handleBack = () => {
     router.push("/home"); // 뒤로가기 시 홈 화면으로 이동합니다.
@@ -49,7 +51,7 @@ export default function ProfilePage() {
   }, []);
 
   const handlePointTransfer = () => {
-    router.push("/points/list"); // 포인트 관련 내역/환전 페이지로 이동합니다.
+    router.push("/point/list"); // 포인트 관련 내역/환전 페이지로 이동합니다.
   };
 
   const handleChangeName = () => {
@@ -122,10 +124,12 @@ export default function ProfilePage() {
 
           {/* 🔵 파란색 숫자만 클릭하면 이동 */}
           <button
-            onClick={() => router.push("/points")}
+            onClick={() => router.push("/point")}
             className="text-[17px] font-semibold leading-[1.38] tracking-[-0.34px] text-primary-400 hover:underline"
           >
-            {availablePoints.toLocaleString()} p
+            <span suppressHydrationWarning>
+              {isClient ? `${availablePoints.toLocaleString()} p` : ""}
+            </span>
           </button>
         </div>
 

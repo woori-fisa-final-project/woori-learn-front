@@ -64,3 +64,13 @@ export interface AdminUserDetailResponse {
     type: "earn" | "exchange_request" | "exchange_complete" | "exchange_failed";
   }[];
 }
+
+export interface ExchangeHistoryDto {
+  id: number;
+  userId: string;
+  nickname: string;
+  createdAt: string;
+  amount: number;
+  status: 'APPLY' | 'SUCCESS' | 'FAILED';
+  processedAt?: string;
+}

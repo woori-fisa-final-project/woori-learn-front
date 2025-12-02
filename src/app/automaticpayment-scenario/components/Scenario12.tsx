@@ -106,13 +106,13 @@ function AccountSelectStep({
 }
 
 type Scenario12Props = {
-  onComplete?: () => void;
+  onComplete?: (accountId?: number | null) => void;
   onCancel?: () => void;
 };
 
 export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 자동이체 등록 흐름 전체를 제어하는 메인 페이지 컴포넌트이다.
-  const router = useRouter();
+  
   const { setTitle, setOnBack } = useScenarioHeader();
   const {
     setSelectedBank,
@@ -258,7 +258,7 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 완료 화면에서 확인을 누르면 메인 자동이체 페이지로 돌아간다.
   const handleSuccessConfirm = () => {
     // 메인 페이지에서 API로 목록을 다시 조회할 것이므로 콜백 호출
-    onComplete?.();
+    onComplete?.(selectedAccount?.id ?? null);
   };
 
   return (

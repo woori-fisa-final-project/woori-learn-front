@@ -11,10 +11,10 @@ declare module "axios" {
 }
 
 let refreshPromise: Promise<string> | null = null;
+const isServer = typeof window === 'undefined';
 
 const axiosInstance = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  baseURL: "", // 테스트용으로 proxy 설정
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -23,7 +23,8 @@ const axiosInstance = axios.create({
 
 // 토큰 갱신 전용 axios 인스턴스
 const refreshAxios = axios.create({
-  baseURL: "",
+
+  baseURL: isServer ? process.env.NEXT_PUBLIC_API_BASE_URL : undefined,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
@@ -60,6 +61,7 @@ const getRefreshToken = async (): Promise<string> => {
 
   return refreshPromise;
 };
+
 
 // 🔥 요청 인터셉터
 axiosInstance.interceptors.request.use(

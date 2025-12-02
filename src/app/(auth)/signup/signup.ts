@@ -5,6 +5,7 @@ export interface SignupParams {
   userId: string;
   password: string;
   nickname: string;
+  email: string;
 }
 
 export const checkDuplicateId = async (userId: string) => {

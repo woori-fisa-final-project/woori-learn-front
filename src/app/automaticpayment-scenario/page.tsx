@@ -25,6 +25,7 @@ import { runPromisesInChunks } from "@/utils/promiseUtils";
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
 
+// AutoPayment → UI 표시용 데이터 변환 함수
 function convertToAutoTransferInfo(
   payment: AutoPayment,
   account: EducationalAccount
@@ -45,12 +46,17 @@ function convertToAutoTransferInfo(
     bankAccount: formatAccountNumber(payment.depositNumber),
     amount: formattedAmount,
     schedule,
+    schedule,
     transferDay: payment.designatedDate.toString(),
     frequency: payment.transferCycle.toString(),
     startDate: payment.startDate,
     endDate: payment.expirationDate,
     ownerName: account.accountName,
+    ownerName: account.accountName,
     recipientName: payment.counterpartyName,
+    registerDate: payment.startDate,
+    sourceAccountBank: account.bankName ?? "우리은행",
+    sourceAccountNumber: formatAccountNumber(account.accountNumber),
     registerDate: payment.startDate,
     sourceAccountBank: account.bankName ?? "우리은행",
     sourceAccountNumber: formatAccountNumber(account.accountNumber),
@@ -79,10 +85,12 @@ function AutomaticPaymentScenarioContent() {
 
   // 에러 모달
   const [errorModal, setErrorModal] = useState({
+  const [errorModal, setErrorModal] = useState({
     isOpen: false,
     message: "",
   });
 
+  // 중복 로딩 방지 & 취소 제어
   // 중복 로딩 방지 & 취소 제어
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -90,6 +98,9 @@ function AutomaticPaymentScenarioContent() {
   /**
    * 대표 계좌 조회 및 가져오기 (JWT 토큰 기반)
    */
+  const fetchRepresentativeAccount = async (
+    signal?: AbortSignal
+  ): Promise<EducationalAccount | undefined> => {
   const fetchRepresentativeAccount = async (
     signal?: AbortSignal
   ): Promise<EducationalAccount | undefined> => {
@@ -108,6 +119,7 @@ function AutomaticPaymentScenarioContent() {
    */
   const fetchData = useCallback(async () => {
     if (isFetchingRef.current) {
+      devLog("[fetchData] 이미 로딩 중 → 중복 호출 차단");
       devLog("[fetchData] 이미 로딩 중 → 중복 호출 차단");
       return;
     }
@@ -134,8 +146,26 @@ function AutomaticPaymentScenarioContent() {
       }
 
       // 2) 계좌번호 뒷자리
+      // 2) 계좌번호 뒷자리
       const suffix = getAccountSuffix(representativeAccount.accountNumber);
       setAccountSuffix(suffix);
+
+      // 3) 첫 페이지만 먼저 조회 → 즉시 UI 표시
+      const firstPage = await getAutoPaymentList(
+        {
+          educationalAccountId: representativeAccount.id,
+          page: 0,
+          size: AUTO_PAYMENT.PAGE_SIZE,
+        },
+        controller.signal
+      );
+
+      const convertedFirstPage = firstPage.content.map((payment) =>
+        convertToAutoTransferInfo(payment, representativeAccount)
+      );
+
+      setAutoTransferList(convertedFirstPage);
+      firstPageLoaded = true;
 
       // 3) 첫 페이지만 먼저 조회 → 즉시 UI 표시
       const firstPage = await getAutoPaymentList(
@@ -157,9 +187,13 @@ function AutomaticPaymentScenarioContent() {
       setIsLoading(false);
 
       // 4) 나머지 페이지 백그라운드 로딩
+      // 4) 나머지 페이지 백그라운드 로딩
       const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
 
       if (totalRemainingPages > 0) {
+        devLog(
+          `[fetchData] 백그라운드 로드 시작 (남은 페이지: ${totalRemainingPages})`
+        );
         devLog(
           `[fetchData] 백그라운드 로드 시작 (남은 페이지: ${totalRemainingPages})`
         );
@@ -167,6 +201,15 @@ function AutomaticPaymentScenarioContent() {
         try {
           const remainingPromises = Array.from(
             { length: totalRemainingPages },
+            (_, i) => () =>
+              getAutoPaymentList(
+                {
+                  educationalAccountId: representativeAccount.id,
+                  page: i + 1,
+                  size: AUTO_PAYMENT.PAGE_SIZE,
+                },
+                controller.signal
+              )
             (_, i) => () =>
               getAutoPaymentList(
                 {
@@ -186,6 +229,9 @@ function AutomaticPaymentScenarioContent() {
           const morePayments = remainingResults.flatMap((r) => r.content);
           const convertedRemaining = morePayments.map((p) =>
             convertToAutoTransferInfo(p, representativeAccount)
+          const morePayments = remainingResults.flatMap((r) => r.content);
+          const convertedRemaining = morePayments.map((p) =>
+            convertToAutoTransferInfo(p, representativeAccount)
           );
 
           devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
@@ -197,12 +243,16 @@ function AutomaticPaymentScenarioContent() {
 
             const message = isApiError(backgroundError)
               ? backgroundError.message
+            const message = isApiError(backgroundError)
+              ? backgroundError.message
               : "일부 자동이체 데이터를 불러오지 못했습니다.";
 
+            setErrorModal({ isOpen: true, message });
             setErrorModal({ isOpen: true, message });
           }
         }
       }
+
 
     } catch (error: unknown) {
       if (isAbortError(error)) {
@@ -210,6 +260,7 @@ function AutomaticPaymentScenarioContent() {
         return;
       }
 
+      devError("[fetchData] 전체 로딩 실패:", error);
       devError("[fetchData] 전체 로딩 실패:", error);
 
       if (!firstPageLoaded) {
@@ -231,11 +282,14 @@ function AutomaticPaymentScenarioContent() {
     fetchData();
     return () => {
       abortControllerRef.current?.abort();
+      abortControllerRef.current?.abort();
     };
   }, [fetchData]);
 
   // 페이지 포커스 복원 시 자동 새로고침
+  // 페이지 포커스 복원 시 자동 새로고침
   usePageFocusRefresh(() => {
+    devLog("[usePageFocusRefresh] 포커스 복귀 → 목록 새로고침");
     devLog("[usePageFocusRefresh] 포커스 복귀 → 목록 새로고침");
     if (currentScreen === "list") {
       fetchData();
@@ -243,11 +297,13 @@ function AutomaticPaymentScenarioContent() {
   });
 
   /** 등록 페이지 이동 */
+  /** 등록 페이지 이동 */
   const handleNavigateToRegister = () => {
     setIsAfterRegistration(false); // 등록 시작하면 초기화
     setCurrentScreen("register");
   };
 
+  /** 등록 완료 후 목록 새로고침 */
   /** 등록 완료 후 목록 새로고침 */
   const handleRegisterComplete = () => {
     setCurrentScreen("list");
@@ -255,6 +311,7 @@ function AutomaticPaymentScenarioContent() {
     fetchData();
   };
 
+  /** 상세 화면 이동 */
   /** 상세 화면 이동 */
   const handleNavigateToDetail = async (autoPaymentId: number) => {
     // 상세로 진입하면 등록 직후 상태 해제
@@ -264,6 +321,7 @@ function AutomaticPaymentScenarioContent() {
       setIsDetailLoading(true);
       setSelectedAutoPaymentId(autoPaymentId);
 
+      // 상세 정보 + 계좌 정보 병렬 조회
       // 상세 정보 + 계좌 정보 병렬 조회
       const [payment, accountsResult] = await Promise.allSettled([
         getAutoPaymentDetail(autoPaymentId),
@@ -276,6 +334,11 @@ function AutomaticPaymentScenarioContent() {
           isOpen: true,
           message: "자동이체 정보를 불러오지 못했습니다.",
         });
+        devError("[handleNavigateToDetail] 상세 조회 실패:", payment.reason);
+        setErrorModal({
+          isOpen: true,
+          message: "자동이체 정보를 불러오지 못했습니다.",
+        });
         return;
       }
 
@@ -283,7 +346,17 @@ function AutomaticPaymentScenarioContent() {
 
       let sourceAccount: EducationalAccount | undefined;
 
+
       if (accountsResult.status === "fulfilled") {
+        sourceAccount = accountsResult.value.find(
+          (acc) => acc.id === payment.value.educationalAccountId
+        );
+      }
+
+      const convertedDetail = convertToScenario18Detail(
+        payment.value,
+        sourceAccount
+      );
         sourceAccount = accountsResult.value.find(
           (acc) => acc.id === payment.value.educationalAccountId
         );
@@ -301,14 +374,25 @@ function AutomaticPaymentScenarioContent() {
         isOpen: true,
         message: "자동이체 정보를 불러오지 못했습니다.",
       });
+      devError("[handleNavigateToDetail] 오류:", error);
+      setErrorModal({
+        isOpen: true,
+        message: "자동이체 정보를 불러오지 못했습니다.",
+      });
     } finally {
       setIsDetailLoading(false);
     }
   };
 
   /** 자동이체 해지 */
+  /** 자동이체 해지 */
   const handleCancelAutoPayment = async () => {
     if (!selectedAutoPaymentId || !selectedPayment) {
+      devError("[handleCancelAutoPayment] 정보 없음");
+      setErrorModal({
+        isOpen: true,
+        message: "자동이체 정보를 찾을 수 없습니다.",
+      });
       devError("[handleCancelAutoPayment] 정보 없음");
       setErrorModal({
         isOpen: true,
@@ -318,6 +402,10 @@ function AutomaticPaymentScenarioContent() {
     }
 
     try {
+      await cancelAutoPayment(
+        selectedAutoPaymentId,
+        selectedPayment.educationalAccountId
+      );
       await cancelAutoPayment(
         selectedAutoPaymentId,
         selectedPayment.educationalAccountId
@@ -338,6 +426,14 @@ function AutomaticPaymentScenarioContent() {
           isOpen: true,
           message: "해지된 자동이체 정보를 불러오지 못했습니다.",
         });
+        devError(
+          "[handleCancelAutoPayment] 해지 후 조회 실패:",
+          updatedPayment.reason
+        );
+        setErrorModal({
+          isOpen: true,
+          message: "해지된 자동이체 정보를 불러오지 못했습니다.",
+        });
         return;
       }
 
@@ -345,7 +441,18 @@ function AutomaticPaymentScenarioContent() {
 
       let sourceAccount: EducationalAccount | undefined;
 
+
       if (accountsResult.status === "fulfilled") {
+        sourceAccount = accountsResult.value.find(
+          (acc) => acc.id === updatedPayment.value.educationalAccountId
+        );
+      }
+
+      const converted = convertToScenario18Detail(
+        updatedPayment.value,
+        sourceAccount
+      );
+      setDetailData(converted);
         sourceAccount = accountsResult.value.find(
           (acc) => acc.id === updatedPayment.value.educationalAccountId
         );
@@ -363,9 +470,15 @@ function AutomaticPaymentScenarioContent() {
         isOpen: true,
         message: "자동이체 해지에 실패했습니다. 다시 시도해주세요.",
       });
+      devError("[handleCancelAutoPayment] 해지 실패:", error);
+      setErrorModal({
+        isOpen: true,
+        message: "자동이체 해지에 실패했습니다. 다시 시도해주세요.",
+      });
     }
   };
 
+  /** 해지 완료 → 목록으로 복귀 */
   /** 해지 완료 → 목록으로 복귀 */
   const handleBackToList = () => {
     setCurrentScreen("list");
@@ -374,11 +487,13 @@ function AutomaticPaymentScenarioContent() {
     setSelectedPayment(null);
     setDetailData(null);
     fetchData();
+    fetchData();
   };
 
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-400">로딩 중...</p>
         <p className="text-gray-400">로딩 중...</p>
       </div>
     );
@@ -408,6 +523,7 @@ function AutomaticPaymentScenarioContent() {
         <>
           {isDetailLoading ? (
             <div className="flex h-screen items-center justify-center">
+              <p className="text-gray-400">로딩 중...</p>
               <p className="text-gray-400">로딩 중...</p>
             </div>
           ) : (
@@ -440,6 +556,13 @@ function AutomaticPaymentScenarioContent() {
 
 export default function AutomaticPaymentScenarioPage() {
   return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          <p className="text-gray-400">로딩 중...</p>
+        </div>
+      }
+    >
     <Suspense
       fallback={
         <div className="flex h-screen items-center justify-center">
