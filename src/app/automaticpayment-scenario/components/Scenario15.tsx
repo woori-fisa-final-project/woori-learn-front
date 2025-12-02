@@ -4,13 +4,12 @@
 import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
-import { useUserData } from "@/lib/hooks/useUserData"; // ✅ [추가] 사용자 정보 훅 가져오기
+import { useUserData } from "@/lib/hooks/useUserData"; 
 import { formatDate } from "@/utils/formatDate";
 import { formatDateRange } from "@/utils/formatDateRange";
 import { useMemo } from "react";
 import type { ScheduleSummary } from "./types";
 
-// 확인 화면에서 사용하는 데이터와 콜백을 명시한다.
 type Scenario15Props = {
   sourceAccountName: string;
   sourceAccountNumber: string;
@@ -22,7 +21,6 @@ type Scenario15Props = {
   onSubmit: () => void;
 };
 
-// 자동이체 등록 직전 정보를 검토하고 수정하도록 안내하는 컴포넌트이다.
 export default function Scenario15({
   sourceAccountName,
   sourceAccountNumber,
@@ -33,7 +31,6 @@ export default function Scenario15({
   onEditSchedule,
   onSubmit,
 }: Scenario15Props) {
-  // 이전 단계에서 입력된 은행, 계좌, 금액, 수취인 정보를 가져온다.
   const {
     selectedBank,
     accountNumber,
@@ -44,9 +41,8 @@ export default function Scenario15({
 
   const { userName: currentUserName } = useUserData();
 
-  // 금액과 등록일, 기간 정보를 보기 좋은 문자열로 가공한다.
   const formattedAmount = useMemo(() => {
-    if (!amount) return "0원";
+    if (typeof amount !== "number") return "0원";
     return `${amount.toLocaleString()}원`;
   }, [amount]);
 
@@ -57,7 +53,6 @@ export default function Scenario15({
   const inboundName = recipientName || "받는 분";
   const ownerName = currentUserName ?? "김우리";
 
-  // 일정 요약에 있는 시작일과 종료일을 표시용 문자열로 변환한다.
   const formattedPeriod = useMemo(
     () => formatDateRange(scheduleSummary.startDate, scheduleSummary.endDate),
     [scheduleSummary.endDate, scheduleSummary.startDate],
@@ -71,7 +66,6 @@ export default function Scenario15({
         </h1>
       </header>
 
-      {/* 자동이체에 필요한 모든 정보를 표 형태로 정리한다. */}
       <section className="mt-[28px] divide-y divide-gray-200 rounded-[20px] border border-gray-100 bg-[#F5F7FA] px-[20px] py-[24px]">
         <InfoRow label="받는 분" value={inboundName} highlight />
         <InfoRow label="이체금액" value={formattedAmount} highlight />
@@ -85,7 +79,6 @@ export default function Scenario15({
         <InfoRow label="이체등록일" value={formattedRegisterDate} />
       </section>
 
-      {/* 사용자가 특정 정보를 다시 수정하거나 등록을 확정할 수 있는 버튼 영역이다. */}
       <section className="mt-[40px] mb-[80px] grid grid-cols-2 gap-[10px]">
         <Button variant="secondary" size="sm" onClick={onEditAmount}>
           금액 재입력
@@ -97,14 +90,13 @@ export default function Scenario15({
           날짜 재입력
         </Button>
         
-        {/* 등록하기 버튼에 손가락 추가  */}
         <div className="relative w-full">
           
           <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
             <span className="text-[30px]" aria-hidden="true">👇</span>
           </div>
 
-          <div className="w-full"> {/* Button 컴포넌트의 width 이슈 방지용 래퍼 */}
+          <div className="w-full"> 
             <Button size="sm" onClick={onSubmit}>
               등록하기
             </Button>

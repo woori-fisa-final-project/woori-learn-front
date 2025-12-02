@@ -15,7 +15,7 @@ import Scenario7 from "./Scenario7";
 export default function ScenarioContainer() {
   const router = useRouter();
   
-  const { selectedBank, setSelectedBank, resetFlow, setEnteredPassword } = useTransferFlow(); 
+  const { setSelectedBank, resetFlow, setEnteredPassword } = useTransferFlow(); 
   
   const [step, setStep] = useState<number>(1);
   const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false);

@@ -7,7 +7,6 @@ import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import axiosInstance from "@/utils/axiosInstance";
 
 type Scenario5Props = {
-  // 비밀번호 문자열을 받아야 하므로 타입을 명시합니다.
   onSuccess: (password: string) => void;
   onClose: () => void;
 };
@@ -57,7 +56,6 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
     if (hasError) setHasError(false);
 
     if (value.length === 4) {
-      // 검증할 때도 최신 값(value) 사용
       const isValid = await validatePasswordFromBackend(value);
 
       if (isValid) {
@@ -91,8 +89,6 @@ export default function Scenario5({ onSuccess, onClose }: Scenario5Props) {
       return;
     }
 
-    // 제출 시점에는 이미 입력이 끝났으므로 password 상태를 써도 안전하지만
-    // 확실하게 지역 변수에 담아서 보냅니다.
     const finalPassword = password;
     
     setFailureCount(0);

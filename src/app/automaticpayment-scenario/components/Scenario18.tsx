@@ -87,7 +87,6 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
         </section>
 
         <div className="relative">
-          {/* ★ 조건부 렌더링: 클릭되지 않았을 때(!isCancelClicked)만 표시 */}
           {!isCancelClicked && (
             <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
               <span className="text-[30px]" aria-hidden="true">👇</span>
@@ -100,7 +99,6 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
         </div>
       </main>
 
-      {/* 모달 (네 버튼 손가락 유지) */}
       <Modal
         isOpen={isConfirmOpen}
         onClose={handleCloseConfirm}
@@ -141,7 +139,6 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
         </div>
       </Modal>
 
-      {/* 바텀시트 (확인했습니다 버튼 손가락 유지) */}
       <BottomSheet
         isOpen={isReviewSheetOpen}
         onClose={() => setReviewSheetOpen(false)}

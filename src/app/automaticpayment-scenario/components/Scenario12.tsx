@@ -171,19 +171,19 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
 
   // 컴포넌트가 사라질 때 자동이체 흐름과 선택 상태를 초기화한다.
   useEffect(() => {
-    return () => {
-      resetFlow();
-      setPasswordSheetOpen(false);
-    };
-  }, [resetFlow, setPasswordSheetOpen]);
+  return () => {
+    resetFlow();
+    setPasswordSheetOpen(false);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   // 계좌 선택 단계에서 사용자가 특정 계좌를 고를 때 상태를 갱신한다.
   const handleSelectAccount = (accountId: number) => {
     const account = selectAccount(accountId);
-    if (!account) {
-      console.warn(`[Scenario12] Account not found for id: ${accountId}`);
-      return;
-    }
+
+    if (!account?.accountNumber) return;
+
     setSourceAccountNumber(account.accountNumber);
     setBankSheetOpen(true);
   };
@@ -206,7 +206,7 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   // 비밀번호 인증에 성공하면 확인 단계로 이동한다.
   const handlePasswordSuccess = (password: string) => {
     onPasswordSuccess(password);
-    setStep("confirm");
+    setStep(() => "confirm");
   };
 
   // 비밀번호 입력을 취소하면 다시 일정 설정 단계로 돌아간다.

@@ -25,7 +25,6 @@ import { runPromisesInChunks } from "@/utils/promiseUtils";
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
 
-// AutoPayment → UI 표시용 데이터 변환 함수
 function convertToAutoTransferInfo(
   payment: AutoPayment,
   account: EducationalAccount
@@ -65,7 +64,7 @@ function AutomaticPaymentScenarioContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("list");
   const [selectedAutoPaymentId, setSelectedAutoPaymentId] = useState<number | null>(null);
 
-  // ★ [추가] 등록 직후인지 여부를 체크하는 상태
+  // 등록 직후인지 여부를 체크하는 상태
   const [isAfterRegistration, setIsAfterRegistration] = useState(false);
 
   // 목록 화면 데이터

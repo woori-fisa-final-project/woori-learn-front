@@ -59,7 +59,7 @@ export default function Scenario11({
 
     return () => {
       setTitle("");
-      setOnBack(null);
+      setOnBack(() => undefined);
     };
   }, [router, setOnBack, setTitle]);
 
@@ -262,7 +262,7 @@ function AutoTransferCard({
             <p className="text-[13px] text-gray-400">자동이체</p>
             <p className="mt-[6px] text-[17px] font-semibold text-gray-900">{info.title}</p>
           </div>
-          <InfoRow label="입금정보" value={`${info.bankName} ${info.bankAccount}`} />
+          <InfoRow label="입금정보" value={`${info.bankName ?? ""} ${info.bankAccount ?? ""}`} />
           <InfoRow label="이체금액" value={info.amount} />
           <InfoRow label="이체일자/주기" value={info.schedule} />
         </div>

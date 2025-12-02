@@ -31,7 +31,6 @@ export default function TransactionSummary({
 
         <div className="relative">
           
-          {/* showFinger가 true일 때만 손가락 렌더링 */}
           {showFinger && (
             <div className="absolute -top-[30px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
               <span className="text-[24px]" aria-hidden="true">👇</span>
@@ -40,7 +39,7 @@ export default function TransactionSummary({
 
           <button
             type="button"
-            onClick={handleOpen} // onClick 함수 교체
+            onClick={handleOpen}
             className="flex items-center gap-[6px]"
           >
             {filters.period} · {filters.type} · {filters.sortOrder}

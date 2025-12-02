@@ -21,7 +21,6 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
   const [isChecked, setIsChecked] = useState(false);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
-  // ✅ [추가] 튜토리얼 단계 상태 (0: 약관클릭, 1: 모달확인, 2: 최종확인)
   const [tutorialStep, setTutorialStep] = useState(0);
 
   const handleAgreementClick = () => {
@@ -30,39 +29,33 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
       return;
     }
     setDetailOpen(true);
-    
-    // ✅ [Step 0 -> 1] 약관을 클릭해서 모달을 열면 다음 단계로
+        
     if (tutorialStep === 0) {
       setTutorialStep(1);
     }
   };
 
-  // 사용자가 직접 상세 보기 버튼을 눌렀을 때 모달을 연다.
-  const openDetail = () => {
+   const openDetail = () => {
     setDetailOpen(true);
-    // (선택사항) 보기 버튼으로도 진행 가능하게 처리
-    if (tutorialStep === 0) setTutorialStep(1);
+        if (tutorialStep === 0) setTutorialStep(1);
   };
 
-  // 모달 닫기 버튼이나 배경을 통해 상세 화면을 닫는다.
-  const closeDetail = () => {
+    const closeDetail = () => {
     setDetailOpen(false);
   };
 
-  // 체크 상태가 없으면 다음 단계로 이동하지 않도록 방지한다.
   const handleConfirm = () => {
     if (!isChecked) {
+      console.warn("약관 미동의 상태에서 확인 시도 방지");
       return;
     }
     onConfirm();
   };
-
-  // 모달에서 확인을 누르면 자동으로 체크 상태를 유지한 채 다음 단계로 진행한다.
+  
   const handleModalConfirm = () => {
     setDetailOpen(false);
     setIsChecked(true);
 
-    // ✅ [Step 1 -> 2] 모달 확인을 누르면 최종 단계로
     if (tutorialStep === 1) {
       setTutorialStep(2);
     }
@@ -70,7 +63,6 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
 
   return (
     <div className="flex h-full flex-col">
-      {/* 약관 제목과 안내 문구를 보여주는 상단 영역이다. */}
       <section className="mt-[32px] space-y-[24px]">
         <div>
           <h1 className="text-[24px] font-semibold leading-[1.3] text-gray-900 tracking-[-0.5px]">
@@ -81,10 +73,8 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
         </div>
 
         <div>
-          {/*  relative 추가하여 손가락 위치 기준점 잡기 */}
           <div className="relative flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
-            
-            {/*  약관 버튼 가리키기 */}
+
             {tutorialStep === 0 && (
               <div className="absolute -top-[30px] left-[40%] -translate-x-1/2 animate-bounce z-10 pointer-events-none">
                 <span className="text-[30px]" aria-hidden="true">👇</span>
@@ -122,10 +112,8 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
       </section>
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[32px]">
-        {/* 약관에 동의하기 전까지 비활성화되는 확인 버튼 */}
         <div className="relative">
           
-          {/* 최종 확인 버튼 가리키기 */}
           {tutorialStep === 2 && isChecked && (
             <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
               <span className="text-[30px]">👇</span>
@@ -138,12 +126,10 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
         </div>
       </div>
 
-      {/* 약관 전문을 확인할 수 있는 모달을 조건부로 렌더링한다. */}
       {isDetailOpen && (
         <TermsDetailModal 
           onClose={closeDetail} 
           onConfirm={handleModalConfirm}
-          // 모달 내부 손가락 표시 여부 전달
           showFinger={tutorialStep === 1} 
         />
       )}
@@ -151,7 +137,6 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
   );
 }
 
-// 약관 상세 내용을 모달 형태로 표시하는 컴포넌트이다.
 type TermsDetailModalProps = {
   onClose: () => void;
   onConfirm: () => void;
@@ -162,7 +147,6 @@ function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalPr
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-[18px]">
       <div className="flex h-[560px] w-full max-w-[380px] flex-col overflow-hidden rounded-[24px] bg-white">
-        {/* 모달 상단에서 제목과 닫기 버튼을 제공한다. */}
         <header className="relative flex items-center justify-center border-b border-gray-100 px-[20px] py-[18px]">
           <h2 className="text-[18px] font-semibold text-gray-900">약관/동의서 상세</h2>
           <button
@@ -175,7 +159,6 @@ function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalPr
           </button>
         </header>
 
-        {/* 약관 전문을 스크롤 영역으로 표시한다. */}
         <div className="flex-1 overflow-y-auto px-[20px] py-[24px] text-[14px] leading-[1.6] text-gray-700">
           <h3 className="text-[16px] font-semibold text-gray-900">타행 자동이체 약관</h3>
           <section className="mt-[16px] space-y-[16px]">
@@ -203,11 +186,9 @@ function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalPr
           </section>
         </div>
 
-        {/* 모달 하단에서 약관 확인을 완료할 수 있는 버튼을 제공한다. */}
         <div className="border-t border-gray-100 px-[20px] pb-[24px] pt-[16px]">
           <div className="relative">
             
-            {/* 모달 내부 확인 버튼 가리키기 */}
             {showFinger && (
               <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
                 <span className="text-[30px]" aria-hidden="true">👇</span>

@@ -17,7 +17,6 @@ const DURATION_OPTIONS: Array<{ label: string; months: number | null }> = [
   { label: "미지정", months: null },
 ];
 
-// 이체 지정일 옵션 목록
 const TRANSFER_DAYS = ["1일", "5일", "10일", "15일", "20일", "25일", "말일"];
 
 export default function Scenario14({ onComplete }: Scenario14Props) {
@@ -28,7 +27,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
   const [transferDay, setTransferDay] = useState("1일");
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
 
-  // 튜토리얼 단계 상태 (0: 시작, 1: 드롭다운 열림, 2: 기간 선택, 3: 완료 대기)
   const [tutorialStep, setTutorialStep] = useState(0);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -69,7 +67,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
     const computed = addMonths(startDate, months);
     setEndDate(computed);
 
-    // [Step 2 -> 3] 12개월 선택 시 다음 단계로
     if (months === 12 && tutorialStep === 2) {
       setTutorialStep(3);
     }
@@ -80,20 +77,16 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
     onComplete({ startDate, endDate, frequency, transferDay });
   };
 
-  // 드롭다운 토글 핸들러
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
-    // [Step 0 -> 1] 드롭다운을 열면 다음 단계로
     if (tutorialStep === 0 && !isDropdownOpen) {
       setTutorialStep(1);
     }
   };
 
-  // 지정일 선택 핸들러
   const handleSelectDay = (day: string) => {
     setTransferDay(day);
     setIsDropdownOpen(false);
-    // [Step 1 -> 2] 5일을 선택하면 다음 단계로
     if (day === "5일" && tutorialStep === 1) {
       setTutorialStep(2);
     }
@@ -101,7 +94,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
 
   return (
     <div className="flex h-full flex-col relative" onClick={() => {
-      // 드롭다운 외부 클릭 시 닫기 (간단 구현)
       if (isDropdownOpen) setIsDropdownOpen(false);
     }}>
       <section className="mt-[32px] space-y-[24px]">
@@ -116,7 +108,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
             </label>
             
             <div className="flex flex-col gap-[12px]">
-              {/* 이체주기 */}
               <div className="relative w-full max-w-[350px]">
                 <div className="w-full rounded-[12px] border border-gray-200 bg-gray-50 px-[14px] py-[12px] text-[15px] text-gray-800">
                   {frequency}
@@ -126,7 +117,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
 
               <div className="relative w-full max-w-[350px]">
                 
-                {/* 1일 선택창 가리키기 */}
                 {tutorialStep === 0 && (
                   <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
                     <span className="text-[30px]" aria-hidden="true">👇</span>
@@ -136,7 +126,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.stopPropagation(); // 버블링 방지
+                    e.stopPropagation(); 
                     toggleDropdown();
                   }}
                   className="flex w-full items-center justify-between rounded-[12px] border border-gray-200 bg-white px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none active:bg-gray-50"
@@ -145,13 +135,11 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                   <span className="text-[18px] text-gray-400">▾</span>
                 </button>
 
-                {/* 드롭다운 메뉴 */}
                 {isDropdownOpen && (
                   <ul className="absolute top-full z-20 mt-[4px] w-full overflow-hidden rounded-[12px] border border-gray-200 bg-white shadow-lg max-h-[200px] overflow-y-auto">
                     {TRANSFER_DAYS.map((day) => (
                       <li key={day} className="relative border-b border-gray-100 last:border-none">
                         
-                        {/* 5일 옵션 가리키기 */}
                         {day === "5일" && tutorialStep === 1 && (
                           <div className="absolute top-[8px] right-[40px] animate-pulse z-30 pointer-events-none">
                             <span className="text-[24px]">👈</span>
@@ -187,7 +175,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 return (
                   <div key={option.label} className="relative">
                     
-                    {/* 12개월 버튼 가리키기 */}
                     {option.label === "12개월" && tutorialStep === 2 && (
                       <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
                         <span className="text-[30px]">👇</span>
@@ -255,7 +242,6 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
       <div className="mt-auto flex flex-col gap-[12px] pb-[24px]">
         <div className="relative">
           
-          {/* 다음 버튼 가리키기 */}
           {tutorialStep === 3 && (
             <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
               <span className="text-[30px]">👇</span>

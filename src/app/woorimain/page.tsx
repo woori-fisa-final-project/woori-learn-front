@@ -12,10 +12,9 @@ import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
 import { isAbortError } from "@/types/errors";
 
-// ✅ Zustand 훅 가져오기 (Provider 필요 없음)
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 
-// --- 상수 데이터 (기존과 동일) ---
+
 type NavItem = {
   label: string;
   icon: string;
@@ -206,7 +205,6 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
   );
 }
 
-// --- 메인 페이지 컴포넌트 ---
 export default function WooriMainPage() {
   const router = useRouter();
   const { userName } = useUserData();
@@ -214,13 +212,12 @@ export default function WooriMainPage() {
   const [noticeMessage, setNoticeMessage] = useState("");
   const [isNoticeOpen, setNoticeOpen] = useState(false);
 
-  // ✅ Zustand 사용: setSourceAccountNumber(저장), resetFlow(초기화)
+  // Zustand 사용: setSourceAccountNumber(저장), resetFlow(초기화)
   const { setSourceAccountNumber, resetFlow } = useTransferFlow();
 
   const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
   const [isAccountLoading, setIsAccountLoading] = useState(true);
 
-  // ✅ [필수] 메인 페이지 입장 시 "기존 이체 데이터 청소" (이걸 추가해야 안전합니다)
   useEffect(() => {
     console.log("🧹 메인 페이지 입장: 기존 이체 기록 초기화");
     resetFlow(); 
@@ -261,22 +258,20 @@ export default function WooriMainPage() {
   const handleOpenNotice = (message: string) => { setNoticeMessage(message); setNoticeOpen(true); };
   const handleCloseNotice = () => setNoticeOpen(false);
 
-  // ✅ 이체 버튼 클릭 시 로직
+
   const handleTransfer = () => {
-    console.log("🖱️ 이체 버튼 클릭됨!");
 
     if (!representativeAccount) {
-      console.error("❌ 대표 계좌 데이터가 없습니다 (null)");
+      console.error("대표 계좌 데이터가 없습니다 (null)");
       return;
     }
 
-    console.log("✅ 저장할 계좌번호:", representativeAccount.accountNumber);
+    console.log("저장할 계좌번호:", representativeAccount.accountNumber);
     
     // 1. Zustand에 저장 (페이지 이동해도 유지됨)
     setSourceAccountNumber(representativeAccount.accountNumber);
 
     // 2. 깔끔하게 페이지 이동 (URL 파라미터 필요 없음!)
-    console.log("🚀 페이지 이동 시작...");
     router.push("/transfer-scenario");
   };
 

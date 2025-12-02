@@ -10,14 +10,12 @@ export default function AccountCard({
   onTransfer: (item: AccountCard) => void;
 }) {
 
-  // WON 통장만 손가락 애니메이션 존재
   const showFingerAnimation = item.title === "WON통장";
 
   return (
     <div className="rounded-[16px] bg-white p-[18px] shadow-sm">
       <div className="flex items-center justify-between gap-[10px]">
         <div className="flex items-center gap-[10px]">
-          {/* 이미지 경로는 프로젝트 환경에 맞게 확인해주세요 */}
           <img src="/images/bank1.png" className="h-[28px] w-[28px]" alt="bank logo" />
           <div>
             <p className="text-[16px] font-semibold text-gray-900">{item.title}</p>
@@ -44,10 +42,8 @@ export default function AccountCard({
         </span>
       </div>
 
-      {/* 이체 버튼 영역에 손가락 효과 추가 */}
       <div className="relative mt-[14px] w-full">
         
-        {/* 조건 손가락 애니메이션 */}
         {showFingerAnimation && (
           <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
             <span className="text-[30px]" aria-hidden="true">👇</span>
