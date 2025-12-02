@@ -95,25 +95,32 @@ describe('우리런 발표 시연 플로우', () => {
     // 송금 시나리오 (Scenario 1-7) - 거래 내역 생성을 위해 먼저 실행!
     // ========================================
 
-    // 19. 이체 버튼 클릭
-    cy.contains('button', '이체').click()
+    // 19. 이체 버튼 클릭 (스크롤 안 함)
+    cy.contains('button', '이체').click({ scrollBehavior: false })
     cy.wait(2000)
 
     // 20. Scenario1: 송금 시나리오 시작
     cy.url().should('include', '/transfer-scenario')
-    cy.wait(2000)
+    // 손가락 애니메이션이 나타날 때까지 대기
+    cy.contains('👇').should('be.visible')
+    cy.wait(1500)
 
     // 21. Scenario1 → Scenario2: 계좌번호입력 버튼 클릭
     cy.contains('계좌번호입력').click()
     cy.wait(1500)
 
-    // 22. Scenario2: 은행 선택 (국민은행)
+    // 22. Scenario2: 은행 선택 (국민은행) - 손가락이 가리킴
+    cy.contains('👇').should('be.visible')
+    cy.wait(500)
     cy.contains('button', '국민은행').click()
     cy.wait(1500)
 
     // 23. Scenario3: 계좌번호 입력
     cy.get('input[placeholder="입력"]').type('110-123-456789', { delay: 100 })
     cy.wait(1000)
+    // 손가락이 "다음" 버튼을 가리킬 때까지 대기
+    cy.contains('👇').should('be.visible')
+    cy.wait(500)
     cy.contains('button', '다음').click()
     cy.wait(1500)
 
@@ -149,13 +156,14 @@ describe('우리런 발표 시연 플로우', () => {
     cy.get('[data-testid="keypad-4"]').click({ force: true })
     cy.wait(2500) // 자동 제출 대기
 
-    // 26. Scenario6: 이체 확인 - "이체" 버튼이 나타날 때까지 대기
+    // 26. Scenario6: 이체 확인 - "이체" 버튼 클릭 (손가락 없음)
     cy.contains('button', '이체').should('be.visible').click()
-    cy.wait(2000)
+    cy.wait(3000) // 이체 API 처리 대기
 
-    // 27. Scenario7: 이체 완료 - 확인 버튼 클릭
-    cy.wait(2000)
-    cy.contains('button', '확인').click()
+    // 27. Scenario7: 이체 완료 - 손가락이 "확인" 버튼을 가리킴
+    cy.contains('👇').should('be.visible')
+    cy.wait(500)
+    cy.contains('button', '확인').should('be.visible').click()
     cy.wait(1500)
 
     // 28. 우리메인으로 돌아옴
@@ -167,41 +175,43 @@ describe('우리런 발표 시연 플로우', () => {
     // ========================================
     // TODO: Scenario10 구현 완료 후 주석 해제
 
-    // // 29. 전체계좌보기 버튼 클릭
-    // cy.contains('button', '전체계좌보기').click()
-    // cy.wait(2000)
+    // 29. 전체계좌보기 버튼 클릭 (스크롤 안 함)
+    cy.contains('button', '전체계좌보기').click({ scrollBehavior: false })
+    cy.wait(2000)
 
-    // // 30. Scenario8: 계좌 목록 화면
-    // cy.url().should('include', '/searchaccount-scenario')
-    // cy.wait(2000)
+    // 30. Scenario8: 계좌 목록 화면
+    cy.url().should('include', '/searchaccount-scenario')
+    cy.wait(2000)
 
-    // // 31. Scenario8 → Scenario9: 첫 번째 계좌의 "이체" 버튼 클릭
-    // cy.contains('button', '이체').first().click()
-    // cy.wait(2000)
+    // 31. Scenario8 → Scenario9: 첫 번째 계좌의 "이체" 버튼 클릭
+    cy.contains('button', '이체').first().click()
+    cy.wait(2000)
 
-    // // 32. Scenario9: 거래 내역 화면 - 첫 번째 거래 클릭
-    // cy.wait(1500)
-    // // 거래 내역 리스트에서 클릭 가능한 영역 찾기
-    // cy.get('div').contains(/\+|-/).parents('div').first().click()
-    // cy.wait(2000)
+    // 32. Scenario9: 거래 내역 화면 - 손가락이 첫 번째 거래를 가리킴
+    cy.wait(1500)
+    cy.contains('👇').should('be.visible')
+    cy.wait(500)
+    // 첫 번째 거래 내역 클릭
+    cy.get('li').first().click()
+    cy.wait(2000)
 
-    // // 33. Scenario10: 거래 상세 화면
-    // cy.wait(3000)
-    // // "확인" 버튼이 나타날 때까지 대기하고 클릭
-    // cy.get('button').contains('확인').should('be.visible').click()
-    // cy.wait(1500)
+    // 33. Scenario10: 거래 상세 화면 - 손가락이 "확인" 버튼을 가리킴
+    cy.contains('👇').should('be.visible')
+    cy.wait(500)
+    cy.contains('button', '확인').should('be.visible').click()
+    cy.wait(1500)
 
-    // // 34. Quiz 페이지로 이동됨
-    // cy.url().should('include', '/quiz')
-    // cy.wait(2000)
+    // 34. Quiz 페이지로 이동됨
+    cy.url().should('include', '/quiz')
+    cy.wait(2000)
 
-    // // 35. 홈으로 돌아가기
-    // cy.visit('/home')
-    // cy.wait(2000)
+    // 35. 홈으로 돌아가기
+    cy.visit('/home')
+    cy.wait(2000)
 
-    // // 36. 조회·이체 → 우리메인
-    // cy.contains('조회·이체').click()
-    // cy.wait(2000)
+    // 36. 조회·이체 → 우리메인
+    cy.contains('조회·이체').click()
+    cy.wait(2000)
 
     // ========================================
     // 자동이체 시나리오 (Scenario 11-19)
@@ -334,6 +344,9 @@ describe('우리런 발표 시연 플로우', () => {
 
     // 41. Scenario19: 해지 완료
     cy.wait(1500)
+    // 확인 버튼이 하단에 있으므로 부드럽게 스크롤
+    cy.contains('button', '확인').scrollIntoView({ duration: 800, easing: 'linear' })
+    cy.wait(500)
     cy.contains('button', '확인').click()
     cy.wait(1500)
 
