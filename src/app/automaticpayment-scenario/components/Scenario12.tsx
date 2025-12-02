@@ -2,6 +2,8 @@
 
 // 자동이체 등록 플로우에서 필요한 React 훅과 유틸리티, 하위 시나리오 컴포넌트를 불러온다.
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUserData } from "@/lib/hooks/useUserData";
 // 헤더 제어와 이체 흐름 상태 관리를 위해 내부 컨텍스트와 훅을 이용한다.
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
@@ -33,6 +35,9 @@ function AccountSelectStep({
   isLoading: boolean;
   onSelectAccount: (accountId: number) => void;
 }) {
+  // 클릭 여부를 추적하는 상태 추가
+  const [hasClicked, setHasClicked] = useState(false);
+
   return (
     <div className="flex flex-1 flex-col">
       <section className="mt-[32px] space-y-[16px]">
@@ -51,13 +56,25 @@ function AccountSelectStep({
         </div>
       ) : (
         <section className="mt-[28px] space-y-[16px]">
-          {accounts.map((account) => (
+          {accounts.map((account, index) => (
             <button
               key={account.id}
               type="button"
-              onClick={() => onSelectAccount(account.id)}
-              className="w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
+              onClick={() => {
+                // 1. 클릭 시 상태를 true로 변경하여 애니메이션을 즉시 숨깁니다.
+                setHasClicked(true);
+                // 2. 기존 선택 로직을 실행합니다.
+                onSelectAccount(account.id);
+              }}
+              className="relative w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
             >
+              {/* index가 0이고, 아직 클릭하지 않았을 때만(!hasClicked) 표시 */}
+              {index === 0 && !hasClicked && (
+                <div className="absolute left-1/2 -top-12 z-20 -translate-x-1/2 animate-bounce">
+                  <span className="text-[30px]" aria-hidden="true">👇</span>
+                </div>
+              )}
+
               <div className="flex items-start gap-[12px]">
                 <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#E8F1FF]">
                   <Image
@@ -69,11 +86,15 @@ function AccountSelectStep({
                   />
                 </div>
                 <div className="flex flex-col gap-[4px]">
-                  <p className="text-[17px] font-semibold text-gray-900">{account.accountName}</p>
+                  <p className="text-[17px] font-semibold text-gray-900">
+                    {account.accountName}
+                  </p>
                   <p className="text-[13px] text-gray-500">
                     우리은행 {formatAccountNumber(account.accountNumber)}
                   </p>
-                  <p className="text-[13px] text-gray-500">잔액 {account.balance.toLocaleString()}원</p>
+                  <p className="text-[13px] text-gray-500">
+                    잔액 {account.balance.toLocaleString()}원
+                  </p>
                 </div>
               </div>
             </button>
@@ -101,8 +122,9 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
     accountNumber,
     recipientName,
     amount,
-    currentUserName,
   } = useTransferFlow();
+
+  const { userName: currentUserName } = useUserData();
 
   // 커스텀 훅으로 로직 분리
   const { accounts, selectedAccount, isLoadingAccounts, errorMessage: accountError, selectAccount } = useAccountSelection();
@@ -149,19 +171,19 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
 
   // 컴포넌트가 사라질 때 자동이체 흐름과 선택 상태를 초기화한다.
   useEffect(() => {
-    return () => {
-      resetFlow();
-      setPasswordSheetOpen(false);
-    };
-  }, [resetFlow, setPasswordSheetOpen]);
+  return () => {
+    resetFlow();
+    setPasswordSheetOpen(false);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   // 계좌 선택 단계에서 사용자가 특정 계좌를 고를 때 상태를 갱신한다.
   const handleSelectAccount = (accountId: number) => {
     const account = selectAccount(accountId);
-    if (!account) {
-      console.warn(`[Scenario12] Account not found for id: ${accountId}`);
-      return;
-    }
+
+    if (!account?.accountNumber) return;
+
     setSourceAccountNumber(account.accountNumber);
     setBankSheetOpen(true);
   };
@@ -179,12 +201,12 @@ export default function Scenario12({ onComplete, onCancel }: Scenario12Props) {
   const inboundBank = selectedBank ?? "국민은행";
   const inboundAccount = accountNumber || "-";
   const inboundName = recipientName || "받는 분";
-  const ownerName = currentUserName ?? "김우리";
+  const ownerName = currentUserName ?? "김집주";
 
   // 비밀번호 인증에 성공하면 확인 단계로 이동한다.
   const handlePasswordSuccess = (password: string) => {
     onPasswordSuccess(password);
-    setStep("confirm");
+    setStep(() => "confirm");
   };
 
   // 비밀번호 입력을 취소하면 다시 일정 설정 단계로 돌아간다.

@@ -32,8 +32,8 @@ import CategoryBlock from "./components/CategoryBlock";
 
 // 상단 퀵 필터 버튼용 상수
 const QUICK_FILTERS = [
-  { label: "입출금", value: "deposit" },
   { label: "우리금융그룹", value: "woori-group" },
+  { label: "입출금", value: "deposit" },
 ];
 
 export default function Scenario8() {
