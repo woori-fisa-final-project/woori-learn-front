@@ -2,8 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
 import ScenarioContainer from "./components/ScenarioContainer";
@@ -147,12 +145,9 @@ function SearchAccountScenarioContent() {
   const isPractice = currentStep?.type === "PRACTICE";
   const engineStepId = isPractice ? currentStep?.id ?? null : null;
 
-  const handleExitToMain = useCallback(
-    () => {
-      router.replace("/woorimain");
-    },
-    [router]
-  );
+  const handleExitToMain = useCallback(() => {
+    router.replace("/woorimain");
+  }, [router]);
 
   /**
    * 배경 클릭으로 nextStep 진행하는 규칙
@@ -172,37 +167,34 @@ function SearchAccountScenarioContent() {
 
   const handleBackgroundClick = useScenarioBackgroundClick(nextStepByBackground, currentStep);
 
-
   return (
-    <TransferFlowProvider>
-      <div className="relative mx-auto h-[100dvh] w-full max-w-[430px] bg-white">
-        {/* UI (PRACTICE는 여기서 진행) */}
-        <ScenarioContainer
-          engineStepId={engineStepId}
-          onPracticeNext={advance}
-          onExitToMain={handleExitToMain}
-        />
+    <div className="relative mx-auto h-[100dvh] w-full max-w-[430px] bg-white">
+      {/* UI (PRACTICE는 여기서 진행) */}
+      <ScenarioContainer
+        engineStepId={engineStepId}
+        onPracticeNext={advance}
+        onExitToMain={handleExitToMain}
+      />
 
-        <SearchAccountOverlayHost
-          step={currentStep}
-          previousStep={previousStep}
-          onNext={advance}
-          onBackgroundClick={handleBackgroundClick}
-        />
+      <SearchAccountOverlayHost
+        step={currentStep}
+        previousStep={previousStep}
+        onNext={advance}
+        onBackgroundClick={handleBackgroundClick}
+      />
 
-        {/* 로딩/에러 (선택) */}
-        {isLoading && (
-          <div className="absolute inset-0 z-[60] flex items-center justify-center bg-white/60">
-            로딩 중...
-          </div>
-        )}
-        {error && (
-          <div className="absolute inset-0 z-[60] flex items-center justify-center bg-white/80">
-            <p className="text-red-500">{error}</p>
-          </div>
-        )}
-      </div>
-    </TransferFlowProvider>
+      {/* 로딩/에러 (선택) */}
+      {isLoading && (
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-white/60">
+          로딩 중...
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-white/80">
+          <p className="text-red-500">{error}</p>
+        </div>
+      )}
+    </div>
   );
 }
 

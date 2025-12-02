@@ -43,6 +43,8 @@ export default function Scenario18({
 }: Scenario18Props) {
   const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [isReviewSheetOpen, setReviewSheetOpen] = useState(false);
+  // 해지 버튼 클릭 여부를 추적하는 상태
+  const [isCancelClicked, setIsCancelClicked] = useState(false);
 
   const [bankName, accountNumber] = useMemo(() => {
     const parts = detail.inboundAccount.split("·").map((p) => p.trim());
@@ -77,6 +79,8 @@ export default function Scenario18({
 
   const handleRequestCancel = async () => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1110) {
+      // 버튼을 누르면 손가락을 숨김
+      setIsCancelClicked(true);
       await onPracticeNext?.(engineStep.id);
       setConfirmOpen(true);
       return;
@@ -84,7 +88,11 @@ export default function Scenario18({
     setConfirmOpen(true);
   };
 
-  const handleCloseConfirm = () => setConfirmOpen(false);
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+    // 모달을 취소하고 돌아오면 손가락을 다시 보여줌 (원치 않으면 이 줄 삭제)
+    setIsCancelClicked(false);
+  };
 
   const handleConfirmCancel = async () => {
     if (engineStep?.type === "PRACTICE" && engineStep.id === 1113) {
@@ -95,6 +103,7 @@ export default function Scenario18({
 
     setConfirmOpen(false);
     setReviewSheetOpen(true);
+    // 진행 시에는 손가락 숨김 상태 유지
   };
 
   const handleFinalConfirm = async () => {
@@ -130,12 +139,24 @@ export default function Scenario18({
           </div>
         </section>
 
-        <Button onClick={() => void handleRequestCancel()} className="mt-[20px]">
-          자동이체 해지
-        </Button>
+        <div className="relative">
+          {!isCancelClicked && (
+            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[30px]" aria-hidden="true">👇</span>
+            </div>
+          )}
+
+          <Button onClick={() => void handleRequestCancel()} className="mt-[20px]">
+            자동이체 해지
+          </Button>
+        </div>
       </main>
 
-      <Modal isOpen={isConfirmOpen} onClose={handleCloseConfirm} zIndex="z-[100]">
+      <Modal
+        isOpen={isConfirmOpen}
+        onClose={handleCloseConfirm}
+        zIndex="z-[100]"
+      >
         <div className="flex flex-col gap-[18px] text-left">
           <div className="space-y-4 text-[16px] text-gray-700">
             <p className="font-semibold text-gray-900">
@@ -154,12 +175,21 @@ export default function Scenario18({
             <Button variant="secondary" size="sm" onClick={handleCloseConfirm}>
               취소
             </Button>
-            <Button size="sm" onClick={() => void handleConfirmCancel()}>
-              네
-            </Button>
-          </div>
-        </div>
-      </Modal>
+            <div className="relative">
+              <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+                <span className="text-[30px]" aria-hidden="true">👇</span>
+              </div>
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={() => void handleConfirmCancel()}
+              >
+                네
+              </Button>
+            </div>
+          </div >
+        </div >
+      </Modal >
 
       <BottomSheet
         isOpen={isReviewSheetOpen}
@@ -179,11 +209,20 @@ export default function Scenario18({
           <Button variant="secondary" size="sm" className="font-semibold" onClick={() => setReviewSheetOpen(false)}>
             취소
           </Button>
-          <Button size="sm" className="font-semibold" onClick={() => void handleFinalConfirm()}>
-            확인했습니다
-          </Button>
-        </div>
-      </BottomSheet>
-    </div>
+          <div className="relative">
+            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[30px]" aria-hidden="true">👇</span>
+            </div>
+            <Button
+              size="sm"
+              className="font-semibold w-full"
+              onClick={() => void handleFinalConfirm()}
+            >
+              확인했습니다
+            </Button>
+          </div>
+        </div >
+      </BottomSheet >
+    </div >
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useScenarioHeader } from "@/lib/context/ScenarioHeaderContext";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import Scenario1 from "./Scenario1";
@@ -42,7 +42,7 @@ const PRACTICE_TO_UI: Record<number, { step: number; bankSheet?: boolean; passwo
 
 export default function ScenarioContainer({ onPracticeNext, onTransferResult, engineStepId, engineNextId, onExitToMain }: ScenarioContainerProps) {
   const router = useRouter(); // 플로우 종료 시 다른 페이지로 이동하기 위해 사용합니다.
-  const { selectedBank, setSelectedBank, resetFlow, accountNumber, amount, setLastErrorType, } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
+  const { setSelectedBank, resetFlow, accountNumber, amount, setLastErrorType, setEnteredPassword } = useTransferFlow(); // 공통 이체 상태를 가져오고 초기화합니다.
   const [step, setStep] = useState<number>(1); // 현재 진행 중인 단계(1~7)를 관리합니다.
   const [isBankSheetOpen, setBankSheetOpen] = useState<boolean>(false); // 은행 선택 바텀 시트 열림 여부를 저장합니다.
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState<boolean>(false); // 비밀번호 입력 바텀 시트 열림 여부를 저장합니다.
@@ -108,61 +108,65 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
    * - 컨텍스트(TransferFlow)의 입력값도 초기화
    */
   const handleReset = useCallback(() => {
-    setStep(1); // 단계 상태를 초기화합니다.
-    setBankSheetOpen(false); // 은행 선택 시트를 닫습니다.
-    setPasswordSheetOpen(false); // 비밀번호 시트를 닫습니다.
-    resetFlow(); // 컨텍스트의 플로우 데이터를 초기화합니다.
-    setSelectedBank("국민은행"); // 기본 은행으로 되돌립니다.
+    setStep(1);
+    setBankSheetOpen(false);
+    setPasswordSheetOpen(false);
+    resetFlow();
+    setSelectedBank("국민은행");
   }, [resetFlow, setSelectedBank]);
 
   const handleBackToMain = useCallback(() => {
-    handleReset(); // 플로우 상태를 초기화하고
-    router.push("/woorimain"); // 메인 화면으로 이동합니다.
-  }, [handleReset, router]);
+    handleReset();
+    if (onExitToMain) {
+      onExitToMain(engineNextId ?? null);
+    } else {
+      router.push("/woorimain");
+    }
+  }, [engineNextId, handleReset, onExitToMain, router]);
 
   const { setOnBack } = useScenarioHeader();
 
   useEffect(() => {
     const handleHeaderBack = () => {
       if (isPasswordSheetOpen) {
-        setPasswordSheetOpen(false); // 비밀번호 시트가 열려 있으면 닫고
-        goToStep(4); // 금액 입력 단계로 돌아갑니다.
+        setPasswordSheetOpen(false);
+        goToStep(4);
         return;
       }
 
       if (isBankSheetOpen) {
-        setBankSheetOpen(false); // 은행 선택 시트를 닫고
-        goToStep(1); // 최초 단계로 이동합니다.
+        setBankSheetOpen(false);
+        goToStep(1);
         return;
       }
 
       if (clampedStep <= 2) {
-        handleBackToMain(); // 초기 단계에서는 전체 플로우를 종료합니다.
+        handleBackToMain();
         return;
       }
 
       if (clampedStep === 3) {
-        goToStep(1); // 계좌 입력 이전 단계로 돌아갑니다.
+        goToStep(1);
         return;
       }
 
       if (clampedStep === 4 || clampedStep === 5) {
-        goToStep(3); // 금액 입력 단계에서 계좌 입력 단계로 돌아갑니다.
+        goToStep(3);
         return;
       }
 
       if (clampedStep === 6) {
-        goToStep(4); // 확인 단계에서 금액 입력 단계로 돌아갑니다.
+        goToStep(4);
         return;
       }
 
       if (clampedStep === 7) {
-        handleReset(); // 완료 단계에서는 플로우를 초기화하고
-        router.push("/woorimain"); // 메인 화면으로 이동합니다.
+        handleReset();
+        handleBackToMain();
         return;
       }
 
-      goToStep(clampedStep - 1); // 그 외 단계에서는 한 단계 뒤로 이동합니다.
+      goToStep(clampedStep - 1);
     };
 
     setOnBack(() => handleHeaderBack); // 헤더 뒤로가기 콜백을 등록합니다.
@@ -181,7 +185,6 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
   return (
     <div className="relative mx-auto flex h-full w-full max-w-[430px] flex-col bg-white">
       <div className="flex flex-1 flex-col px-[20px] pb-[24px]">
-        {/* 1~2단계: 계좌 선택 및 추천 탭 */}
         {clampedStep <= 2 && (
           <Scenario1
             onOpenBankSheet={async () => {
@@ -231,28 +234,22 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
               const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
 
               // 어디가 틀렸는지 저장
-              if (isAccountCorrect && isAmountCorrect) {
-                setLastErrorType("none");
-              } else if (!isAccountCorrect && isAmountCorrect) {
-                setLastErrorType("account");
-              } else if (isAccountCorrect && !isAmountCorrect) {
-                setLastErrorType("amount");
-              } else {
-                setLastErrorType("both");
-              }
+              if (isAccountCorrect && isAmountCorrect) { setLastErrorType("none"); }
+              else if (!isAccountCorrect && isAmountCorrect) { setLastErrorType("account"); }
+              else if (isAccountCorrect && !isAmountCorrect) { setLastErrorType("amount"); }
+              else { setLastErrorType("both"); }
 
               if (onTransferResult) {
-                if (isAccountCorrect && isAmountCorrect) {
-                  onTransferResult("success");
-                } else {
-                  onTransferResult("fail");
-                }
+                onTransferResult(isAccountCorrect && isAmountCorrect ? "success" : "fail");
               }
             }}
             onReenterAccount={() => goToStep(1)}
             onReenterAmount={() => goToStep(4)}
             onCancel={() => goToStep(1)}
-            onBack={() => goToStep(4)}
+            onBackToPassword={() => {
+              // 비밀번호 오류 시 다시 입력창 열기
+              goToStep(5);
+            }}
           />
         )}
         {clampedStep === 7 && (
@@ -266,7 +263,6 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
         )}
       </div>
 
-      {/* 은행 선택 시트 */}
       {isBankSheetOpen && (
         <Scenario2
           onClose={() => {
@@ -280,13 +276,14 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
             // 시나리오 오버레이 코드추가
             await completePractice(1016);
           }}
+          allowedBanks={["국민은행"]}
         />
       )}
 
-      {/* 비밀번호 입력 시트 */}
       {isPasswordSheetOpen && clampedStep === 5 && (
         <Scenario5
-          onSuccess={async () => {
+          onSuccess={async (password) => {
+            setEnteredPassword(password);
             // 성공 -> 시트 닫고 다음 단계로 이동
             setPasswordSheetOpen(false);
             goToStep(6);
@@ -310,4 +307,3 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     </div>
   );
 }
-

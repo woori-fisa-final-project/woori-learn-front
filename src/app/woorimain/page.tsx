@@ -1,4 +1,3 @@
-// app/woorimain/page.tsx
 import { Suspense } from "react";
 import WooriMainClient from "./WooriMainClient";
 

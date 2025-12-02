@@ -70,11 +70,12 @@ export default function Scenario17({
         <InfoRow label="받는 분 통장표기" value={inboundName} />
         <InfoRow label="이체등록일" value={registerDate} />
       </section>
-
-      <div className="mt-[26px] w-full pb-[32px]">
+      <div className="relative mt-[26px] w-full pb-[32px]">
+        <div className="absolute -top-[25px] left-1/2 z-10 -translate-x-1/2 animate-bounce pointer-events-none">
+          <span className="text-[30px]" aria-hidden="true">👇</span>
+        </div>
         <Button onClick={() => void handleConfirmClick()}>확인</Button>
       </div>
-
     </div>
   );
 }

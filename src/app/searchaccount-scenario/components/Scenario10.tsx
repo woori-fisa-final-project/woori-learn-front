@@ -71,16 +71,22 @@ export default function Scenario10({ transaction, onConfirm }: Scenario10Props) 
         >
           공유
         </button>
+        {/* 확인 버튼을 감싸는 손가락 애니메이션 */}
+        <div className="relative flex-1">
+          <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+            <span className="text-[30px]" aria-hidden="true">👇</span>
+          </div>
 
-        <button
-          type="button"
-          onClick={() => void onConfirm()}
-          className="flex-1 rounded-[12px] bg-[#2F6FD9] py-[12px] text-[15px] font-semibold text-white"
-        >
-          확인
-        </button>
-      </div>
-    </div>
+          <button
+            type="button"
+            onClick={() => void onConfirm()}
+            className="w-full rounded-[12px] bg-[#2F6FD9] py-[12px] text-[15px] font-semibold text-white"
+          >
+            확인
+          </button>
+        </div>
+      </div >
+    </div >
   );
 }
 

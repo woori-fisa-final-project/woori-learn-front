@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useAccountInfo } from "./hooks/useAccountInfo";
 import { useTransactionFetch } from "./hooks/useTransactionFetch";
@@ -47,6 +47,9 @@ export default function Scenario9({
   } = useTransactionFilters();
 
   const transformed = useTransactionTransform(transactions, appliedFilters);
+  const [openFilter, setOpenFilter] = useState(false);
+  // 리스트에 손가락을 보여줄지 결정하는 상태 => 초기값: false
+  const [showListFinger, setShowListFinger] = useState(false);
 
   useEffect(() => {
     if (!accountNumber) return;
@@ -54,7 +57,6 @@ export default function Scenario9({
     (async () => {
       const info = await loadAccountInfo();
       if (!info) return;
-
       const params = new URLSearchParams();
       params.append("accountId", String(info.id));
       params.append("period", "3M");
@@ -91,7 +93,12 @@ export default function Scenario9({
         appliedRange={transformed.rangeText}
       />
 
-      <TransactionList grouped={transformed.grouped} onSelect={(t) => void onPickTransaction(t)} />
+      {/* showFinger 상태를 리스트에 전달 */}
+      <TransactionList
+        grouped={transformed.grouped}
+        showFinger={showListFinger}
+        onSelect={(t) => void onPickTransaction(t)}
+      />
 
       <FilterBottomSheet
         open={filterOpen}
@@ -104,8 +111,11 @@ export default function Scenario9({
           if (!accountInfo) return;
           await applyFilters(accountInfo, fetchTransactions);
           await onRequestApplyFilter();
+          setOpenFilter(false);
+          // "적용하기"를 누르면 리스트에 손가락 애니메이션 나타나기
+          setShowListFinger(true);
         }}
       />
-    </div>
+    </div >
   );
 }

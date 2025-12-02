@@ -3,6 +3,7 @@
 import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import { useUserData } from "@/lib/hooks/useUserData";
 import { formatDate } from "@/utils/formatDate";
 import { formatDateRange } from "@/utils/formatDateRange";
 import { useMemo } from "react";
@@ -28,10 +29,13 @@ export default function Scenario15({
   onEditSchedule,
   onSubmit,
 }: Scenario15Props) {
-  const { selectedBank, accountNumber, recipientName, amount, currentUserName } = useTransferFlow();
+
+  const { selectedBank, accountNumber, recipientName, amount, } = useTransferFlow();
+
+  const { userName: currentUserName } = useUserData();
 
   const formattedAmount = useMemo(() => {
-    if (!amount) return "0원";
+    if (typeof amount !== "number") return "0원";
     return `${amount.toLocaleString()}원`;
   }, [amount]);
 
@@ -75,9 +79,20 @@ export default function Scenario15({
         <Button variant="secondary" size="sm" onClick={onEditSchedule}>
           날짜 재입력
         </Button>
-        <Button size="sm" onClick={onSubmit}>
-          등록하기
-        </Button>
+
+        <div className="relative w-full">
+
+          <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+            <span className="text-[30px]" aria-hidden="true">👇</span>
+          </div>
+
+          <div className="w-full">
+            <Button size="sm" onClick={onSubmit}>
+              등록하기
+            </Button>
+          </div>
+        </div>
+
       </section>
     </div>
   );

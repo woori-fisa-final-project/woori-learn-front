@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import type { ScenarioStep } from "@/types/scenario";
-import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 
 import { getAutoPaymentList, getAutoPaymentDetail, cancelAutoPayment } from "@/lib/api/autoPayment";
@@ -27,6 +26,7 @@ import { isApiError, isAbortError } from "@/types/errors";
 import { runPromisesInChunks } from "@/utils/promiseUtils";
 import { devLog, devError } from "@/utils/logger";
 
+// 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
 
 type Props = {
@@ -87,17 +87,19 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
 
     const [currentScreen, setCurrentScreen] = useState<Screen>("list");
     const [selectedAutoPaymentId, setSelectedAutoPaymentId] = useState<number | null>(null);
-
+    // 등록 직후인지 여부를 체크하는 상태
+    const [isAfterRegistration, setIsAfterRegistration] = useState(false);
+    // 목록 화면 데이터
     const [accountSuffix, setAccountSuffix] = useState("0000");
     const [autoTransferList, setAutoTransferList] = useState<AutoTransferInfo[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
+    // 상세/해지 화면 데이터
     const [detailData, setDetailData] = useState<Scenario18Detail | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<AutoPayment | null>(null);
     const [isDetailLoading, setIsDetailLoading] = useState(false);
-
+    // 에러 모달
     const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
-
+    // 중복 로딩 방지 & 취소 제어
     const isFetchingRef = useRef(false);
     const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -116,13 +118,19 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         }
     }, [urlStepId]);
 
-    /** 대표 계좌 조회 */
-    const fetchRepresentativeAccount = useCallback(async (signal?: AbortSignal) => {
+    /** 대표 계좌 조회 및 가져오기 (JWT 토큰 기반) */
+    const fetchRepresentativeAccount = async (
+        signal?: AbortSignal
+    ): Promise<EducationalAccount | undefined> => {
         const accounts = await getAccountList(signal);
-        const representative = getRepresentativeAccount(accounts);
-        if (!representative) devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
-        return representative;
-    }, []);
+        const representativeAccount = getRepresentativeAccount(accounts);
+
+        if (!representativeAccount) {
+            devError("[fetchRepresentativeAccount] 계좌가 없습니다.");
+        }
+
+        return representativeAccount;
+    };
 
     /** 자동이체 목록 데이터 조회 */
     const fetchData = useCallback(async () => {
@@ -132,6 +140,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         }
 
         if (abortControllerRef.current) abortControllerRef.current.abort();
+
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
@@ -141,66 +150,96 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
             isFetchingRef.current = true;
             setIsLoading(true);
 
-            const account = await fetchRepresentativeAccount(controller.signal);
-            if (!account) {
+            // 1. 대표 계좌 조회
+            const representativeAccount = await fetchRepresentativeAccount(controller.signal);
+
+            if (!representativeAccount) {
                 setIsLoading(false);
                 return;
             }
 
-            setAccountSuffix(getAccountSuffix(account.accountNumber));
+            // 2) 계좌번호 뒷자리
+            const suffix = getAccountSuffix(representativeAccount.accountNumber);
+            setAccountSuffix(suffix);
 
+            // 3) 첫 페이지만 먼저 조회 → 즉시 UI 표시
             const firstPage = await getAutoPaymentList(
-                { educationalAccountId: account.id, page: 0, size: AUTO_PAYMENT.PAGE_SIZE },
+                { educationalAccountId: representativeAccount.id, page: 0, size: AUTO_PAYMENT.PAGE_SIZE },
                 controller.signal
             );
 
-            const convertedFirst = firstPage.content.map((p) => convertToAutoTransferInfo(p, account));
+            const convertedFirst = firstPage.content.map((payment) => convertToAutoTransferInfo(payment, representativeAccount));
             setAutoTransferList(convertedFirst);
             firstPageLoaded = true;
 
             setIsLoading(false);
 
+            // 4) 나머지 페이지 백그라운드 로딩
             const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
             if (totalRemainingPages > 0) {
-                const remainingPromises = Array.from({ length: totalRemainingPages }, (_, i) => () =>
-                    getAutoPaymentList(
-                        { educationalAccountId: account.id, page: i + 1, size: AUTO_PAYMENT.PAGE_SIZE },
-                        controller.signal
-                    )
+                devLog(
+                    `[fetchData] 백그라운드 로드 시작 (남은 페이지: ${totalRemainingPages})`
                 );
 
                 try {
-                    const remainingResults = await runPromisesInChunks(remainingPromises, AUTO_PAYMENT.API_FETCH_CHUNK_SIZE);
-                    const remainingPayments = remainingResults.flatMap((r) => r.content);
-                    const convertedRemaining = remainingPayments.map((p) => convertToAutoTransferInfo(p, account));
-                    setAutoTransferList((prev) => [...prev, ...convertedRemaining]);
-                } catch (bgErr) {
-                    if (!isAbortError(bgErr)) {
-                        devError("[fetchData] background load failed:", bgErr);
-                        setErrorModal({
-                            isOpen: true,
-                            message: isApiError(bgErr)
-                                ? `일부 데이터 로드 실패: ${bgErr.message}`
-                                : "일부 자동이체 데이터를 불러오지 못했습니다.",
-                        });
+                    const remainingPromises = Array.from(
+                        { length: totalRemainingPages },
+                        (_, i) => () =>
+                            getAutoPaymentList(
+                                {
+                                    educationalAccountId: representativeAccount.id,
+                                    page: i + 1,
+                                    size: AUTO_PAYMENT.PAGE_SIZE,
+                                },
+                                controller.signal
+                            )
+                    );
+
+                    const remainingResults = await runPromisesInChunks(
+                        remainingPromises,
+                        AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
+                    );
+
+                    const morePayments = remainingResults.flatMap((r) => r.content);
+                    const convertedRemaining = morePayments.map((p) =>
+                        convertToAutoTransferInfo(p, representativeAccount)
+                    );
+
+                    devLog(`[fetchData] 백그라운드 로드 완료, ${convertedRemaining.length}건 추가`);
+
+                    setAutoTransferList(prev => [...prev, ...convertedRemaining]);
+                } catch (backgroundError: unknown) {
+                    if (!isAbortError(backgroundError)) {
+                        devError("[fetchData] 백그라운드 페이지 로드 실패 (첫 페이지 데이터는 유지):", backgroundError);
+
+                        const message = isApiError(backgroundError)
+                            ? backgroundError.message
+                            : "일부 자동이체 데이터를 불러오지 못했습니다.";
+
+                        setErrorModal({ isOpen: true, message });
                     }
                 }
             }
-        } catch (err) {
-            if (isAbortError(err)) return;
+        } catch (error: unknown) {
+            if (isAbortError(error)) {
+                devLog("[fetchData] 요청이 취소되었습니다.");
+                return;
+            }
 
-            devError("[fetchData] failed:", err);
+            devError("[fetchData] 전체 로딩 실패:", error);
+
             if (!firstPageLoaded) setAutoTransferList([]);
 
-            setErrorModal({
-                isOpen: true,
-                message: isApiError(err) ? err.message : "자동이체 목록을 불러오는 데 실패했습니다.",
-            });
+            const errorMessage = isApiError(error)
+                ? error.message
+                : "자동이체 목록을 불러오는 데 실패했습니다.";
+
+            setErrorModal({ isOpen: true, message: errorMessage });
             setIsLoading(false);
         } finally {
             isFetchingRef.current = false;
         }
-    }, [fetchRepresentativeAccount]);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -228,49 +267,53 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
         fetchData();
     };
 
-    const handleNavigateToDetail = useCallback(async (autoPaymentId: number) => {
-        try {
-            setIsDetailLoading(true);
-            setSelectedAutoPaymentId(autoPaymentId);
+    const handleNavigateToDetail = useCallback(
+        async (autoPaymentId: number) => {
+            // 상세로 진입하면 등록 직후 상태 해제
+            setIsAfterRegistration(false);
 
-            const [payment, accountsResult] = await Promise.allSettled([
-                getAutoPaymentDetail(autoPaymentId),
-                getAccountList(),
-            ]);
+            try {
+                setIsDetailLoading(true);
+                setSelectedAutoPaymentId(autoPaymentId);
 
-            if (payment.status === "rejected") {
-                devError("[handleNavigateToDetail] payment failed:", payment.reason);
-                setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
-                return;
-            }
+                const [payment, accountsResult] = await Promise.allSettled([
+                    getAutoPaymentDetail(autoPaymentId),
+                    getAccountList(),
+                ]);
 
-            setSelectedPayment(payment.value);
+                if (payment.status === "rejected") {
+                    devError("[handleNavigateToDetail] payment failed:", payment.reason);
+                    setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
+                    return;
+                }
 
-            let sourceAccount: EducationalAccount | undefined;
-            if (accountsResult.status === "fulfilled") {
-                sourceAccount = accountsResult.value.find((acc) => acc.id === payment.value.educationalAccountId);
-                if (!sourceAccount) {
+                setSelectedPayment(payment.value);
+
+                let sourceAccount: EducationalAccount | undefined;
+                if (accountsResult.status === "fulfilled") {
+                    sourceAccount = accountsResult.value.find((acc) => acc.id === payment.value.educationalAccountId);
+                    if (!sourceAccount) {
+                        setErrorModal({
+                            isOpen: true,
+                            message: "자동이체에 연결된 출금 계좌를 찾을 수 없습니다.\n계좌 정보가 일치하지 않습니다.",
+                        });
+                    }
+                } else {
                     setErrorModal({
                         isOpen: true,
-                        message: "자동이체에 연결된 출금 계좌를 찾을 수 없습니다.\n계좌 정보가 일치하지 않습니다.",
+                        message: "계좌 정보를 불러오지 못했습니다.\n출금 계좌 정보가 표시되지 않을 수 있습니다.",
                     });
                 }
-            } else {
-                setErrorModal({
-                    isOpen: true,
-                    message: "계좌 정보를 불러오지 못했습니다.\n출금 계좌 정보가 표시되지 않을 수 있습니다.",
-                });
-            }
 
-            setDetailData(convertToScenario18Detail(payment.value, sourceAccount));
-            setCurrentScreen("detail");
-        } catch (e) {
-            devError("[handleNavigateToDetail] unexpected:", e);
-            setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
-        } finally {
-            setIsDetailLoading(false);
-        }
-    }, []);
+                setDetailData(convertToScenario18Detail(payment.value, sourceAccount));
+                setCurrentScreen("detail");
+            } catch (e) {
+                devError("[handleNavigateToDetail] unexpected:", e);
+                setErrorModal({ isOpen: true, message: "자동이체 정보를 불러오지 못했습니다." });
+            } finally {
+                setIsDetailLoading(false);
+            }
+        }, []);
 
     const handleCancelAutoPayment = useCallback(async () => {
         if (!selectedAutoPaymentId || !selectedPayment) {
@@ -287,6 +330,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
             ]);
 
             if (updatedPayment.status === "rejected") {
+                devError("[handleCancelAutoPayment] 해지 후 조회 실패:", updatedPayment.reason);
                 setErrorModal({ isOpen: true, message: "해지된 자동이체 정보를 불러오지 못했습니다." });
                 return;
             }
@@ -308,6 +352,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
 
     const handleBackToList = () => {
         setCurrentScreen("list");
+        setIsAfterRegistration(false);
         setSelectedAutoPaymentId(null);
         setSelectedPayment(null);
         setDetailData(null);
@@ -333,13 +378,12 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
                     onNavigateToDetail={handleNavigateToDetail}
                     engineStep={engineStep}
                     onPracticeNext={practiceNext}
+                    isAfterRegistration={isAfterRegistration}
                 />
             )}
 
             {currentScreen === "register" && (
-                <TransferFlowProvider>
-                    <Scenario12 onComplete={handleRegisterComplete} onCancel={handleBackToList} engineStep={engineStep} onPracticeNext={practiceNext} />
-                </TransferFlowProvider>
+                <Scenario12 onComplete={handleRegisterComplete} onCancel={handleBackToList} engineStep={engineStep} onPracticeNext={practiceNext} />
             )}
 
             {currentScreen === "detail" && detailData && (

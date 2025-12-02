@@ -14,8 +14,8 @@ type Scenario8Props = {
 };
 
 const QUICK_FILTERS = [
-  { label: "입출금", value: "deposit" },
   { label: "우리금융그룹", value: "woori-group" },
+  { label: "입출금", value: "deposit" },
 ] as const;
 
 export default function Scenario8({ onPickDepositAccount }: Scenario8Props) {

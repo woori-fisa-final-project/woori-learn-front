@@ -3,7 +3,7 @@
 import { useEffect, Suspense, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ScenarioContainer from "./components/ScenarioContainer";
-import { TransferFlowProvider, useTransferFlow } from "@/lib/hooks/useTransferFlow";
+import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 import { useScenarioEngine } from "@/lib/hooks/useScenarioEngine";
 import { useScenarioBackgroundClick } from "@/lib/hooks/useScenarioBackgroundClick";
 import ScenarioRenderer from "@/components/scenario/ScenarioRenderer";
@@ -18,10 +18,8 @@ import { getNextStepId } from "@/utils/stepUtil";
  */
 function pickAnswerIndexByGood(choices: any[] | undefined, wantGood: boolean) {
   if (!Array.isArray(choices) || choices.length === 0) return undefined;
-
   const idx = choices.findIndex((c) => c?.good === wantGood);
   if (idx >= 0) return idx;
-
   return wantGood ? 0 : (choices.length > 1 ? 1 : 0);
 }
 
@@ -196,7 +194,7 @@ function TransferScenarioContent() {
           const answer =
             lastErrorType === "amount"
               ? 0 : (lastErrorType === "account" || lastErrorType === "both")
-                ? 1 : 0;
+              ? 1 : 0;
 
           await nextStep(nowStepId, answer);
           return;
@@ -244,10 +242,8 @@ function TransferScenarioContent() {
 
 export default function TransferScenarioPage() {
   return (
-    <TransferFlowProvider> {/* 이체 관련 상태를 하위 컴포넌트 전역에 공급합니다. */}
-      <Suspense fallback={<div>로딩 중...</div>}>
-        <TransferScenarioContent />
-      </Suspense>
-    </TransferFlowProvider>
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <TransferScenarioContent />
+    </Suspense>
   );
 }

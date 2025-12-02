@@ -14,6 +14,7 @@ import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
 import { isAbortError } from "@/types/errors";
 import { getScenarioEntryPath } from "@/lib/scenario/scenarioRouting";
+import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 
 type NavItem = {
   label: string;
@@ -60,16 +61,9 @@ function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu
         {userName ? `${userName}님` : "김우리님"}
       </p>
       <div className="flex items-center gap-[14px] text-[20px] text-gray-500">
-        <span role="img" aria-label="vehicle">
-          🚗
-        </span>
-        <span role="img" aria-label="character">
-          😊
-        </span>
-        <span role="img" aria-label="notification">
-          🔔
-        </span>
-
+        <span role="img" aria-label="vehicle">🚗</span>
+        <span role="img" aria-label="character">😊</span>
+        <span role="img" aria-label="notification">🔔</span>
         {/* 전체 메뉴 열기 버튼 */}
         <button
           type="button"
@@ -266,6 +260,8 @@ export default function WooriMainPage() {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState("");
   const [isNoticeOpen, setNoticeOpen] = useState(false);
+  // Zustand 사용: setSourceAccountNumber(저장), resetFlow(초기화)
+  const { setSourceAccountNumber, resetFlow } = useTransferFlow();
 
   // 시나리오 오버레이 엔진 상태
   const { currentStep, previousStep, nextStep, resume } = useScenarioEngine();
@@ -286,6 +282,10 @@ export default function WooriMainPage() {
   // 대표 계좌 상태 관리
   const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
   const [isAccountLoading, setIsAccountLoading] = useState(true);
+
+  useEffect(() => {
+    resetFlow();
+  }, [resetFlow]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -371,6 +371,14 @@ export default function WooriMainPage() {
       e.preventDefault();
       e.stopPropagation();
     }
+
+    if (!representativeAccount) {
+      console.error("대표 계좌 데이터가 없습니다 (null)");
+      return;
+    }
+
+    // Zustand에 저장 (페이지 이동해도 유지됨)
+    setSourceAccountNumber(representativeAccount.accountNumber);
 
     if (currentStep?.type === "PRACTICE" && currentStep.content?.button === "nextbtn") {
       if (currentStep.id != null) {
