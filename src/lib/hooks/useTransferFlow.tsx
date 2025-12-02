@@ -5,7 +5,6 @@ import { create } from "zustand";
 export type LastErrorType = "none" | "account" | "amount" | "both";
 
 const DEV_FALLBACK_ACCOUNT = process.env.NEXT_PUBLIC_DEV_SOURCE_ACCOUNT ?? ""; // 개발 환경에서 사용할 출금 계좌 번호 기본값입니다.
-const DEV_FALLBACK_USER_NAME = process.env.NEXT_PUBLIC_DEV_USER_NAME ?? "사용자"; // 개발 환경에서 사용할 사용자 이름 기본값입니다.
 
 const RECIPIENT_NAME_MAP: Record<string, string> = {
   "110123456789": "김집주",
@@ -63,7 +62,6 @@ const DEFAULT_STATE = {
   accountNumber: "",
   recipientName: "",
   amount: 0,
-  sourceAccountNumber: DEV_FALLBACK_ACCOUNT,
   sourceAccountNumber: DEV_FALLBACK_ACCOUNT,
   enteredPassword: "",
   transferResult: null as TransferResult | null,
