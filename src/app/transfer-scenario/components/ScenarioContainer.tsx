@@ -97,6 +97,31 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
     return Math.min(Math.max(step, 1), 7);
   }, [step]);
 
+  const validateBeforeTransfer = useCallback(() => {
+    const normalizedAccount = (accountNumber || "").replace(/-/g, "").trim();
+    const normalizedCorrectAccount = CORRECT_ACCOUNT.replace(/-/g, "");
+    const numericAmount = Number(amount) || 0;
+
+    const isAccountCorrect = normalizedAccount === normalizedCorrectAccount;
+    const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
+
+    if (!isAccountCorrect && !isAmountCorrect) setLastErrorType("both");
+    else if (!isAccountCorrect) setLastErrorType("account");
+    else if (!isAmountCorrect) setLastErrorType("amount");
+    else setLastErrorType("none");
+
+    if (!isAccountCorrect || !isAmountCorrect) {
+      onTransferResult?.("fail");
+      return false;
+    }
+    return true;
+  }, [accountNumber, amount, onTransferResult, setLastErrorType]);
+
+  const handleTransferSuccess = useCallback(() => {
+    setLastErrorType("none");
+    onTransferResult?.("success");
+  }, [onTransferResult, setLastErrorType]);
+
   /** 특정 단계로 이동 */
   const goToStep = useCallback((target: number) => {
     const next = Math.min(Math.max(target, 1), 7);
@@ -221,28 +246,8 @@ export default function ScenarioContainer({ onPracticeNext, onTransferResult, en
         )}
         {clampedStep === 6 && (
           <Scenario6
-            onConfirm={async () => {
-
-              // 계좌번호 정규화 (하이픈 제거하여 비교)
-              const normalizedAccount = (accountNumber || "").replace(/-/g, "").trim();
-              const normalizedCorrectAccount = CORRECT_ACCOUNT.replace(/-/g, "");
-
-              // 금액 비교 (숫자 타입으로 변환하여 비교)
-              const numericAmount = Number(amount) || 0;
-
-              const isAccountCorrect = normalizedAccount === normalizedCorrectAccount;
-              const isAmountCorrect = numericAmount === CORRECT_AMOUNT;
-
-              // 어디가 틀렸는지 저장
-              if (isAccountCorrect && isAmountCorrect) { setLastErrorType("none"); }
-              else if (!isAccountCorrect && isAmountCorrect) { setLastErrorType("account"); }
-              else if (isAccountCorrect && !isAmountCorrect) { setLastErrorType("amount"); }
-              else { setLastErrorType("both"); }
-
-              if (onTransferResult) {
-                onTransferResult(isAccountCorrect && isAmountCorrect ? "success" : "fail");
-              }
-            }}
+            onValidate={validateBeforeTransfer}
+            onConfirm={handleTransferSuccess}
             onReenterAccount={() => goToStep(1)}
             onReenterAmount={() => goToStep(4)}
             onCancel={() => goToStep(1)}

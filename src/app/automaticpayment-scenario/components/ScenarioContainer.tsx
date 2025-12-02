@@ -6,7 +6,7 @@ import Scenario18, { type Scenario18Detail } from "./Scenario18";
 import Scenario19 from "./Scenario19";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import type { ScenarioStep } from "@/types/scenario";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
@@ -75,7 +75,6 @@ function inferInitialScreenFromStepId(stepId: number): Screen {
  * - API 호출(목록/상세/해지) + 엔진 PRACTICE step 연동을 함께 처리
  */
 export default function ScenarioContainer({ engineStep, onPracticeNext }: Props) {
-    const router = useRouter();
     const searchParams = useSearchParams();
 
     /** URL의 stepId를 읽어 최초 화면을 유추 */
@@ -255,7 +254,10 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
     ]);
 
     // 목록 -> 등록 화면 전환
-    const handleNavigateToRegister = () => setCurrentScreen("register");
+    const handleNavigateToRegister = () => {
+        setIsAfterRegistration(false); // 등록 시작하면 초기화
+        setCurrentScreen("register");
+    }
 
     /**
      * 등록 완료 시:
@@ -264,6 +266,7 @@ export default function ScenarioContainer({ engineStep, onPracticeNext }: Props)
      */
     const handleRegisterComplete = () => {
         setCurrentScreen("list");
+        setIsAfterRegistration(true); // 등록 완료 상태 활성화 (손가락 위치 변경용)
         fetchData();
     };
 

@@ -129,14 +129,6 @@ export default function Scenario11({
     onNavigateToDetail?.(id);
   };
 
-  const handleCloseFxInfoModal = () => {
-    setFxInfoModalOpen(false);
-  };
-
-  const handleConfirmFxInfoModal = () => {
-    setFxInfoModalOpen(false);
-  };
-
   return (
     <div className="mx-auto h-full flex-col flex min-h-[84dvh] w-full max-w-[390px] bg-white">
       <main className="flex h-full flex-col px-[20px] pb-[24px]">

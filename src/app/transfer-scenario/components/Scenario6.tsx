@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 
 type Scenario6Props = {
+  onValidate: () => boolean | Promise<boolean>;
   onConfirm: () => void;
   onReenterAccount: () => void;
   onReenterAmount: () => void;
@@ -16,6 +17,7 @@ type Scenario6Props = {
 };
 
 export default function Scenario6({
+  onValidate,
   onConfirm,
   onReenterAccount,
   onReenterAmount,
@@ -51,6 +53,11 @@ export default function Scenario6({
     setLoading(true);
     setErrorMsg("");
 
+    const isValid = await onValidate();
+    if (!isValid) { return; }
+
+    setLoading(true);
+
     try {
       const res = await axiosInstance.post("/education/accounts/transfer", {
         fromAccountNumber: sourceAccountNumber.replace(/\D/g, ""),
@@ -76,6 +83,8 @@ export default function Scenario6({
           onBackToPassword();
         }, 1200);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
