@@ -224,7 +224,12 @@ export default function Scenario11({
 function EmptyState() {
   return (
     <div className=" mt-[150px] flex flex-col items-center justify-center text-center">
-      <Image src="/images/file.png" alt="빈 상태" width={56} height={70} />
+      <Image
+        src="/images/file.png"
+        alt="빈 상태"
+        width={56}
+        height={70}
+      />
       <p className="mt-[18px] text-[15px] text-gray-500">
         등록된 자동이체가 없어요
       </p>
@@ -245,7 +250,7 @@ function AutoTransferCard({
       onClick={onSelect}
       className="w-full text-left transition hover:scale-[1.01]"
     >
-      <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px]">
+      <div className="rounded-[20px] border border-[#E1E6F0] bg-white px-[22px] py-[24px] shadow-[0_4px_16px_rgba(34,58,124,0.08)]">
         <div className="flex items-start justify-between">
           <span className="rounded-full border border-[#1BAA90] px-[12px] py-[4px] text-[12px] font-semibold text-[#1BAA90]">
             {info.status}
@@ -255,9 +260,7 @@ function AutoTransferCard({
         <div className="mt-[16px] space-y-[16px] text-[14px] text-gray-500">
           <div>
             <p className="text-[13px] text-gray-400">자동이체</p>
-            <p className="mt-[6px] text-[17px] font-semibold text-gray-900">
-              {info.title}
-            </p>
+            <p className="mt-[6px] text-[17px] font-semibold text-gray-900">{info.title}</p>
           </div>
           <InfoRow label="입금정보" value={`${info.bankName ?? ""} ${info.bankAccount ?? ""}`} />
           <InfoRow label="이체금액" value={info.amount} />
@@ -267,4 +270,3 @@ function AutoTransferCard({
     </button>
   );
 }
-
