@@ -55,11 +55,13 @@ export default function Scenario9() {
 
   const transformed = useTransactionTransform(
     transactions,
-    appliedFilters,
-    //accountInfo
+    appliedFilters
   );
 
   const [openFilter, setOpenFilter] = useState(false);
+
+  // 리스트에 손가락을 보여줄지 결정하는 상태 => 초기값: false
+  const [showListFinger, setShowListFinger] = useState(false);
 
   useEffect(() => {
     setTitle("거래내역조회");
@@ -70,7 +72,7 @@ export default function Scenario9() {
       if (info) {
         const params = new URLSearchParams();
         params.append("accountId", String(info.id));
-        params.append("period", "3M"); // default
+        params.append("period", "3M"); 
         params.append("type", "ALL");
 
         await fetchTransactions(info.id, params);
@@ -101,15 +103,16 @@ export default function Scenario9() {
         appliedRange={transformed.rangeText}
       />
 
+      {/* showFinger 상태를 리스트에 전달 */}
       <TransactionList
         grouped={transformed.grouped}
+        showFinger={showListFinger}
         onSelect={(t) => {
-        
           sessionStorage.setItem(
             TRANSACTION_STORAGE_KEY,
             JSON.stringify({
               id: t.id,
-              accountId: t.accountId,  
+              accountId: t.accountId,
               date: t.date,
               time: t.time,
               amount: t.amount,
@@ -117,10 +120,10 @@ export default function Scenario9() {
             })
           );
 
-    // 화면 이동
-    router.push(`/searchaccount-scenario?step=10&id=${t.id}`);
-  }}
-/>
+          // 화면 이동
+          router.push(`/searchaccount-scenario?step=10&id=${t.id}`);
+        }}
+      />
 
       <FilterBottomSheet
         open={openFilter}
@@ -130,9 +133,13 @@ export default function Scenario9() {
         updatePeriod={updatePeriod}
         onReset={resetFilters}
         onApply={async () => {
-        if (!accountInfo) return;
-        await applyFilters(accountInfo, fetchTransactions);
-        setOpenFilter(false);  
+          if (!accountInfo) return;
+          await applyFilters(accountInfo, fetchTransactions);
+          
+          setOpenFilter(false);
+
+          // "적용하기"를 누르면 리스트에 손가락 애니메이션 나타나기
+          setShowListFinger(true); 
         }}
       />
     </div>

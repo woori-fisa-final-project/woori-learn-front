@@ -1,8 +1,8 @@
-"use client"; // 클라이언트 컴포넌트로 선언하여 라우터와 상태 훅을 활용할 수 있습니다.
+"use client";
 
-import { useRouter } from "next/navigation"; // 페이지 이동을 처리하기 위해 Next.js 라우터를 사용합니다.
-import { useUserData } from "@/lib/hooks/useUserData"; // 사용자 이름 등 마이페이지 데이터를 가져옵니다. (실제 로그인한 사용자 이름 제공)
-import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useUserData } from "@/lib/hooks/useUserData";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Modal from "@/components/common/Modal";
 import { ServiceMenuSheet } from "@/components/layout/ServiceMenuSheet";
@@ -11,6 +11,9 @@ import { formatAccountNumber, getRepresentativeAccount } from "@/utils/accountUt
 import type { EducationalAccount } from "@/types/account";
 import { devError } from "@/utils/logger";
 import { isAbortError } from "@/types/errors";
+
+import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
+
 
 type NavItem = {
   label: string;
@@ -49,23 +52,17 @@ const QUICK_MENU = [
   { label: "분실 신고", icon: "🚨" },
 ];
 
+// --- 하위 컴포넌트들 (기존과 동일) ---
 function HeaderUserBar({ userName, onOpenMenu }: { userName?: string; onOpenMenu: () => void }) {
-  // 상단 사용자 인사 영역입니다.
   return (
     <header className="mb-[30px] flex items-center justify-between">
       <p className="text-[20px] font-semibold text-gray-800">
         {userName ? `${userName}님` : "김민영님"}
       </p>
       <div className="flex items-center gap-[14px] text-[20px] text-gray-500">
-        <span role="img" aria-label="vehicle">
-          🚗
-        </span>
-        <span role="img" aria-label="character">
-          😊
-        </span>
-        <span role="img" aria-label="notification">
-          🔔
-        </span>
+        <span role="img" aria-label="vehicle">🚗</span>
+        <span role="img" aria-label="character">😊</span>
+        <span role="img" aria-label="notification">🔔</span>
         <button
           type="button"
           onClick={onOpenMenu}
@@ -90,7 +87,6 @@ function AccountCard({
   onTransfer: () => void;
   onViewAll: () => void;
 }) {
-  // 대표 계좌 요약 카드입니다.
   if (isLoading) {
     return (
       <section className="rounded-[16px] bg-white p-5 shadow-sm">
@@ -99,7 +95,6 @@ function AccountCard({
     );
   }
 
-  // 계좌가 없을 경우 기본 메시지 표시
   if (!account) {
     return (
       <section className="rounded-[16px] bg-white p-5 shadow-sm">
@@ -115,13 +110,7 @@ function AccountCard({
   return (
     <section className="rounded-[16px] bg-white p-5 shadow-sm">
       <div className="flex items-center gap-[10px]">
-        <Image
-          src="/images/woorilogo.png"
-          alt="Woori Bank"
-          className="h-[20px] w-auto"
-          width={80}
-          height={20}
-        />
+        <Image src="/images/woorilogo.png" alt="Woori Bank" className="h-[20px] w-auto" width={80} height={20} />
         <p className="text-[18px] font-semibold text-gray-900">{account.accountName}</p>
       </div>
       <div className="mt-[14px] flex items-center justify-between">
@@ -152,18 +141,12 @@ function AccountCard({
 }
 
 function QuickMenuList() {
-  // 자주 사용하는 빠른 메뉴 목록입니다.
   return (
     <section className="rounded-[16px] bg-transparent">
       <div className="flex flex-col gap-[10px]">
         {QUICK_MENU.map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center gap-[12px] text-[15px] font-semibold text-gray-800"
-          >
-            <span className="text-[18px]" role="img" aria-hidden>
-              {item.icon}
-            </span>
+          <div key={item.label} className="flex items-center gap-[12px] text-[15px] font-semibold text-gray-800">
+            <span className="text-[18px]" role="img" aria-hidden>{item.icon}</span>
             <span>{item.label}</span>
           </div>
         ))}
@@ -173,40 +156,27 @@ function QuickMenuList() {
 }
 
 function AlertCard() {
-  // 보이스피싱 주의 안내 카드입니다.
   return (
     <section className="flex items-center justify-between rounded-[16px] bg-[#FEECEC] px-[20px] py-[16px]">
       <div>
         <p className="text-[15px] font-semibold text-[#D45454]">잠깐만요!</p>
         <p className="mt-[6px] text-[12px] text-[#7A4040]">
-          보이스피싱이 의심된다면 확인하고
-          <br />
-          예방하세요.
+          보이스피싱이 의심된다면 확인하고<br />예방하세요.
         </p>
       </div>
-      <span className="text-[34px]" role="img" aria-label="shield">
-        🛡️
-      </span>
+      <span className="text-[34px]" role="img" aria-label="shield">🛡️</span>
     </section>
   );
 }
 
 function ServiceGrid() {
-  // 우리금융그룹의 다양한 서비스를 그리드로 보여줍니다.
   return (
     <section className="space-y-[16px]">
-      <h2 className="text-[18px] font-semibold text-gray-800">
-        우리금융그룹 서비스
-      </h2>
+      <h2 className="text-[18px] font-semibold text-gray-800">우리금융그룹 서비스</h2>
       <div className="grid grid-cols-3 gap-[16px]">
         {SERVICES.map((service) => (
-          <div
-            key={service.label}
-            className="flex h-[118px] flex-col items-center justify-center rounded-[16px] bg-white p-4 text-[13px] font-semibold text-gray-700 shadow-sm"
-          >
-            <span className="mb-[10px] text-[26px]" role="img" aria-hidden>
-              {service.icon}
-            </span>
+          <div key={service.label} className="flex h-[118px] flex-col items-center justify-center rounded-[16px] bg-white p-4 text-[13px] font-semibold text-gray-700 shadow-sm">
+            <span className="mb-[10px] text-[26px]" role="img" aria-hidden>{service.icon}</span>
             {service.label}
           </div>
         ))}
@@ -216,12 +186,8 @@ function ServiceGrid() {
 }
 
 function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
-  // 하단 탭 네비게이션입니다.
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white"
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}
-    >
+    <nav className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}>
       <div className="mx-auto flex w-full max-w-[390px] items-center justify-between px-[28px] pt-[12px]">
         {NAV_ITEMS.map((item) => (
           <button
@@ -230,20 +196,8 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
             onClick={() => onNavigate(item.route)}
             className="flex flex-col items-center gap-[6px]"
           >
-            <span
-              className={`text-[18px] ${
-                item.active ? "text-[#2482C5]" : "text-gray-400"
-              }`}
-            >
-              {item.icon}
-            </span>
-            <span
-              className={`text-[11px] font-semibold ${
-                item.active ? "text-[#2482C5]" : "text-gray-400"
-              }`}
-            >
-              {item.label}
-            </span>
+            <span className={`text-[18px] ${item.active ? "text-[#2482C5]" : "text-gray-400"}`}>{item.icon}</span>
+            <span className={`text-[11px] font-semibold ${item.active ? "text-[#2482C5]" : "text-gray-400"}`}>{item.label}</span>
           </button>
         ))}
       </div>
@@ -252,81 +206,73 @@ function BottomNav({ onNavigate }: { onNavigate: (route: string) => void }) {
 }
 
 export default function WooriMainPage() {
-  const router = useRouter(); // 버튼 클릭 시 이동을 처리하기 위해 라우터를 사용합니다.
-  const { userName } = useUserData(); // 사용자 이름을 가져와 헤더에 표시합니다.
+  const router = useRouter();
+  const { userName } = useUserData();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState("");
   const [isNoticeOpen, setNoticeOpen] = useState(false);
 
-  // 대표 계좌 상태 관리
+  // Zustand 사용: setSourceAccountNumber(저장), resetFlow(초기화)
+  const { setSourceAccountNumber, resetFlow } = useTransferFlow();
+
   const [representativeAccount, setRepresentativeAccount] = useState<EducationalAccount | null>(null);
   const [isAccountLoading, setIsAccountLoading] = useState(true);
 
   useEffect(() => {
-    const controller = new AbortController();
+    console.log("🧹 메인 페이지 입장: 기존 이체 기록 초기화");
+    resetFlow(); 
+  }, [resetFlow]);
 
+  // 계좌 목록 불러오기 로직
+  useEffect(() => {
+    const controller = new AbortController();
     const fetchRepresentativeAccount = async () => {
       try {
-        // JWT 토큰 기반으로 현재 사용자의 계좌 목록 조회
         const allAccounts = await getAccountList(controller.signal);
-
         const representativeAccount = getRepresentativeAccount(allAccounts);
-
         if (!representativeAccount) {
           devError(`[fetchRepresentativeAccount] 계좌가 없습니다.`);
+          handleOpenNotice("등록된 계좌 정보를 불러올 수 없습니다.");
           setRepresentativeAccount(null);
           return;
         }
-
         setRepresentativeAccount(representativeAccount);
       } catch (error: unknown) {
-        // AbortError는 무시 (정상적인 취소)
-        if (isAbortError(error)) {
-          return;
-        }
-
+        if (isAbortError(error)) return;
         devError("[fetchRepresentativeAccount] 대표 계좌 조회 실패:", error);
         setRepresentativeAccount(null);
       } finally {
         setIsAccountLoading(false);
       }
     };
-
     fetchRepresentativeAccount();
-
-    // Cleanup: 컴포넌트 언마운트 시 진행 중인 요청 취소
     return () => {
       controller.abort();
     };
   }, []);
 
-  const handleNavigate = (route: string) => {
-    router.push(route); // 하단 네비게이션에서 선택한 경로로 이동합니다.
-  };
+  const handleNavigate = (route: string) => router.push(route);
+  const handleOpenMenu = () => setMenuOpen(true);
+  const handleCloseMenu = () => setMenuOpen(false);
+  const handleViewAllAccounts = () => router.push("/searchaccount-scenario");
+  const handleOpenNotice = (message: string) => { setNoticeMessage(message); setNoticeOpen(true); };
+  const handleCloseNotice = () => setNoticeOpen(false);
 
-  const handleOpenMenu = () => {
-    setMenuOpen(true);
-  };
-
-  const handleCloseMenu = () => {
-    setMenuOpen(false);
-  };
 
   const handleTransfer = () => {
-    router.push("/transfer-scenario"); // 이체 시나리오 진입 페이지로 이동합니다.
-  };
 
-  const handleViewAllAccounts = () => {
-    router.push("/searchaccount-scenario"); // 전체 계좌 조회 시나리오 페이지로 이동합니다.
-  };
+    if (!representativeAccount) {
+      console.error("대표 계좌 데이터가 없습니다 (null)");
+      return;
+    }
 
-  const handleOpenNotice = (message: string) => {
-    setNoticeMessage(message);
-    setNoticeOpen(true);
-  };
+    console.log("저장할 계좌번호:", representativeAccount.accountNumber);
+    
+    // 1. Zustand에 저장 (페이지 이동해도 유지됨)
+    setSourceAccountNumber(representativeAccount.accountNumber);
 
-  const handleCloseNotice = () => {
-    setNoticeOpen(false);
+    // 2. 깔끔하게 페이지 이동 (URL 파라미터 필요 없음!)
+    router.push("/transfer-scenario");
   };
 
   return (

@@ -29,6 +29,10 @@ type Scenario18Props = {
 export default function Scenario18({ detail, onBack, onNavigateToCancelComplete }: Scenario18Props) {
   const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [isReviewSheetOpen, setReviewSheetOpen] = useState(false);
+  
+  // ★ 추가: 해지 버튼 클릭 여부를 추적하는 상태
+  const [isCancelClicked, setIsCancelClicked] = useState(false);
+
   const [bankName, accountNumber] = useMemo(() => {
     const parts = detail.inboundAccount.split("·").map((part) => part.trim());
     if (parts.length === 2) return parts as [string, string];
@@ -36,16 +40,21 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
   }, [detail.inboundAccount]);
 
   const handleRequestCancel = () => {
+    // 버튼을 누르면 손가락을 숨김
+    setIsCancelClicked(true);
     setConfirmOpen(true);
   };
 
   const handleCloseConfirm = () => {
     setConfirmOpen(false);
+    // 모달을 취소하고 돌아오면 손가락을 다시 보여줌 (원치 않으면 이 줄 삭제)
+    setIsCancelClicked(false);
   };
 
   const handleConfirmCancel = () => {
     setConfirmOpen(false);
     setReviewSheetOpen(true);
+    // 진행 시에는 손가락 숨김 상태 유지
   };
 
   const rows = useMemo(() => [
@@ -76,12 +85,19 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
             ))}
           </div>
         </section>
-        <Button onClick={handleRequestCancel} className="mt-[20px]">
-          자동이체 해지
-        </Button>
-      </main>
 
-      
+        <div className="relative">
+          {!isCancelClicked && (
+            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[30px]" aria-hidden="true">👇</span>
+            </div>
+          )}
+
+          <Button onClick={handleRequestCancel} className="mt-[20px]">
+            자동이체 해지
+          </Button>
+        </div>
+      </main>
 
       <Modal
         isOpen={isConfirmOpen}
@@ -95,11 +111,9 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
               {accountNumber ? `/${accountNumber}` : ""}의 자동 이체를 해지하시겠습니까?
             </p>
             <p>
-            <br/>
               타행자동이체 시 이체지정일 당일에 인증되므로 전 영업일까지 해지해 주세요.
             </p>
             <p>
-             <br/>
               자동이체 해지 당일 등록 건 취소 가능 여부는 고객센터로 문의하시기 바랍니다.
             </p>
           </div>
@@ -108,14 +122,19 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
             <Button variant="secondary" size="sm" onClick={handleCloseConfirm}>
               취소
             </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                handleConfirmCancel();
-              }}
-            >
-              네
-            </Button>
+            
+            <div className="relative">
+              <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+                <span className="text-[30px]" aria-hidden="true">👇</span>
+              </div>
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={handleConfirmCancel}
+              >
+                네
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>
@@ -143,19 +162,24 @@ export default function Scenario18({ detail, onBack, onNavigateToCancelComplete 
           >
             취소
           </Button>
-          <Button
-            size="sm"
-            className="font-semibold"
-            onClick={() => {
-              setReviewSheetOpen(false);
-              onNavigateToCancelComplete();
-            }}
-          >
-            확인했습니다
-          </Button>
+
+          <div className="relative">
+            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
+              <span className="text-[30px]" aria-hidden="true">👇</span>
+            </div>
+            <Button
+              size="sm"
+              className="font-semibold w-full"
+              onClick={() => {
+                setReviewSheetOpen(false);
+                onNavigateToCancelComplete();
+              }}
+            >
+              확인했습니다
+            </Button>
+          </div>
         </div>
       </BottomSheet>
     </div>
   );
 }
-
