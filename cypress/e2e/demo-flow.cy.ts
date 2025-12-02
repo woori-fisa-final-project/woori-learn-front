@@ -119,7 +119,7 @@ describe('우리런 발표 시연 플로우', () => {
 
     // 24. Scenario4: 금액 입력 (50만원 = 500000원)
     // 키패드에서 5, 0, 0, 0, 0, 0 입력 (정확한 셀렉터 사용)
-    cy.get('button.text-\\[25px\\]').contains(/^5$/).click({ force: true })
+    cy.get('button.text-\\[25px\\]').contains(/^0$/).click({ force: true })
     cy.wait(200)
     cy.get('button.text-\\[25px\\]').contains(/^0$/).click({ force: true })
     cy.wait(200)
@@ -163,45 +163,44 @@ describe('우리런 발표 시연 플로우', () => {
     cy.wait(2000)
 
     // ========================================
-    // 계좌 조회 시나리오 (Scenario 8-10) - 아직 미구현으로 스킵
+    // 계좌 조회 시나리오 (Scenario 8-10)
     // ========================================
-    // TODO: Scenario10 구현 완료 후 주석 해제
 
-    // // 29. 전체계좌보기 버튼 클릭
-    // cy.contains('button', '전체계좌보기').click()
-    // cy.wait(2000)
+     // 29. 전체계좌보기 버튼 클릭
+     cy.contains('button', '전체계좌보기').click()
+     cy.wait(2000)
 
-    // // 30. Scenario8: 계좌 목록 화면
-    // cy.url().should('include', '/searchaccount-scenario')
-    // cy.wait(2000)
+     // 30. Scenario8: 계좌 목록 화면
+     cy.url().should('include', '/searchaccount-scenario')
+     cy.wait(2000)
 
-    // // 31. Scenario8 → Scenario9: 첫 번째 계좌의 "이체" 버튼 클릭
-    // cy.contains('button', '이체').first().click()
-    // cy.wait(2000)
+     // 31. Scenario8 → Scenario9: 첫 번째 계좌의 "이체" 버튼 클릭
+     cy.contains('button', '이체').first().click()
+     cy.wait(2000)
 
-    // // 32. Scenario9: 거래 내역 화면 - 첫 번째 거래 클릭
-    // cy.wait(1500)
-    // // 거래 내역 리스트에서 클릭 가능한 영역 찾기
-    // cy.get('div').contains(/\+|-/).parents('div').first().click()
-    // cy.wait(2000)
+     // 32. Scenario9: 거래 내역 화면 - 첫 번째 거래 클릭
+     cy.wait(1500)
+     // 거래 내역 리스트에서 클릭 가능한 영역 찾기
+     cy.get('div').contains(/\+|-/).parents('div').first().click()
+     cy.wait(2000)
 
-    // // 33. Scenario10: 거래 상세 화면
-    // cy.wait(3000)
-    // // "확인" 버튼이 나타날 때까지 대기하고 클릭
-    // cy.get('button').contains('확인').should('be.visible').click()
-    // cy.wait(1500)
+     // 33. Scenario10: 거래 상세 화면
+     cy.wait(3000)
+     // "확인" 버튼이 나타날 때까지 대기하고 클릭
+     cy.get('button').contains('확인').should('be.visible').click()
+     cy.wait(1500)
 
-    // // 34. Quiz 페이지로 이동됨
-    // cy.url().should('include', '/quiz')
-    // cy.wait(2000)
+     // 34. Quiz 페이지로 이동됨
+     cy.url().should('include', '/quiz')
+     cy.wait(2000)
 
-    // // 35. 홈으로 돌아가기
-    // cy.visit('/home')
-    // cy.wait(2000)
+     // 35. 홈으로 돌아가기
+     cy.visit('/home')
+     cy.wait(2000)
 
-    // // 36. 조회·이체 → 우리메인
-    // cy.contains('조회·이체').click()
-    // cy.wait(2000)
+     // 36. 조회·이체 → 우리메인
+     cy.contains('조회·이체').click()
+     cy.wait(2000)
 
     // ========================================
     // 자동이체 시나리오 (Scenario 11-19)

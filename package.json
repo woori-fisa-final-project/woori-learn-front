@@ -12,6 +12,7 @@
     "test:demo": "cypress run --spec cypress/e2e/demo-flow.cy.ts"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.11",
     "axios": "^1.13.2",
     "jwt-decode": "^4.0.0",
     "next": "16.0.1",

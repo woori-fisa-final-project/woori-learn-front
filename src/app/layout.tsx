@@ -1,5 +1,6 @@
 import "../styles/globals.css"; // 전역 스타일을 적용하기 위해 글로벌 CSS를 불러옵니다.
 import type { Metadata } from "next"; // Next.js 메타데이터 타입을 사용하여 페이지 정보를 정의합니다.
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "WooriLearn",
@@ -15,7 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="overflow-x-hidden">{children}</body>
+      <body className="overflow-x-hidden">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
