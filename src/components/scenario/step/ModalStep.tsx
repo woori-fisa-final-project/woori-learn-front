@@ -30,7 +30,7 @@ export default function ModalStep({ content, onBackgroundClick }: ModalStepProps
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <span className="text-[30px]">💡</span>
-            <h2 className="text-[30px] text-gray-700 font-semibold">{title}</h2>
+            <h2 className="text-[30px] text-gray-700 font-bold">{title}</h2>
           </div>
           <button
             type="button"
@@ -45,7 +45,7 @@ export default function ModalStep({ content, onBackgroundClick }: ModalStepProps
         {/* 본문: bullet point 리스트 */}
         <div className="space-y-3 mb-3">
           {items.map((item, index) => (
-            <div key={index} className="flex items-start gap-2 font-semibold">
+            <div key={index} className="flex items-start gap-2 font-bold">
               <span className="text-gray-400">•</span>
               <p className="text-[25px] text-gray-600 flex-1">{item}</p>
             </div>

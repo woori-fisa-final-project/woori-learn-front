@@ -16,7 +16,7 @@ export default function PracticeStep({ content, onBackgroundClick }: PracticeSte
     >
       <div className="bg-white rounded-[20px] w-[350px] max-w-[calc(100vw-40px)] mx-auto p-6">
         <div className="text-center">
-          <h2 className="text-[20px] text-gray-700 font-semibold mb-4">연습 단계</h2>
+          <h2 className="text-[20px] text-gray-700 font-bold mb-4">연습 단계</h2>
           <p className="text-[16px] text-gray-600">
             {typeof content === "object" && "text" in content
               ? content.text

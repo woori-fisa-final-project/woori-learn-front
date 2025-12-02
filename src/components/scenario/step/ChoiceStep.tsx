@@ -23,7 +23,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
   const isWeebee = previousContent?.character === "wibee";
 
   const balloonBase =
-    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-semibold leading-relaxed text-gray-800";
+    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-bold leading-relaxed text-gray-800";
 
   return (
     <div className="fixed inset-0 z-[9999] bg-gradient-to-b from-[#ffffff] to-[#549AE4]">
@@ -65,7 +65,7 @@ export default function ChoiceStep({ content, onChoose, previousStep }: ChoiceSt
           <button
             key={choice.text}
             type="button"
-            className="relative inline-block w-full max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-semibold leading-relaxed text-gray-800 cursor-pointer hover:bg-[#FFF9E6] transition-colors"
+            className="relative inline-block w-full max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-bold leading-relaxed text-gray-800 cursor-pointer hover:bg-[#FFF9E6] transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onChoose(choice.next);

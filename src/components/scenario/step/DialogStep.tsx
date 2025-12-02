@@ -34,15 +34,15 @@ export default function DialogStep({
     (previousStep.content as any)?.character === "wibee";
 
   const balloonBase =
-    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-semibold leading-relaxed text-gray-800";
+    "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-bold leading-relaxed text-gray-800";
 
   const BTN_SIZE = {
-    sm: "h-[58px] text-[16px] font-normal",
+    sm: "h-[58px] text-[16px] font-bold",
     md: "h-[55px] text-[16px]",
     lg: "h-[60px] text-[16px]",
   } as const;
 
-  const BTN_COMMON = "w-full rounded-[14px] font-semibold";
+  const BTN_COMMON = "w-full rounded-[14px] font-bold";
   const LEFT_BTN = "bg-white text-[#1F74FF] border border-white/70";
   const RIGHT_BTN = "bg-[#1F74FF] text-white border border-[#1F74FF]";
 
