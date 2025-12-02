@@ -142,12 +142,12 @@ export default function LoginPage() {
               </label>
             </div>
 
-            <Link
-              href="/find-credentials"
+            <button
+             // href="/find-credentials"
               className="text-sm text-gray-500 underline underline-offset-2 hover:text-primary-400"
             >
               아이디 / 비밀번호 찾기
-            </Link>
+            </button>
           </div>
         </div>
 

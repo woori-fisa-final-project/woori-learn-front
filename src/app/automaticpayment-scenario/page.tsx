@@ -16,7 +16,6 @@ import { formatAccountNumber, getAccountSuffix, getRepresentativeAccount } from 
 import { getBankName } from "@/utils/bankUtils";
 import { usePageFocusRefresh } from "@/lib/hooks/usePageFocusRefresh";
 import { devLog, devError } from "@/utils/logger";
-import { TransferFlowProvider } from "@/lib/hooks/useTransferFlow";
 import { convertToScenario18Detail } from "@/utils/autoPaymentConverter";
 import Modal from "@/components/common/Modal";
 import { AUTO_PAYMENT } from "@/lib/constants";
@@ -26,12 +25,11 @@ import { runPromisesInChunks } from "@/utils/promiseUtils";
 // 화면 타입 정의
 type Screen = "list" | "register" | "detail" | "cancelled";
 
-// AutoPayment → UI 표시용 데이터 변환 함수
 function convertToAutoTransferInfo(
   payment: AutoPayment,
   account: EducationalAccount
 ): AutoTransferInfo {
-  const statusMap = {
+  const statusMap: Record<string, string> = {
     ACTIVE: "정상",
     CANCELLED: "해지",
   };
@@ -66,6 +64,9 @@ function AutomaticPaymentScenarioContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("list");
   const [selectedAutoPaymentId, setSelectedAutoPaymentId] = useState<number | null>(null);
 
+  // 등록 직후인지 여부를 체크하는 상태
+  const [isAfterRegistration, setIsAfterRegistration] = useState(false);
+
   // 목록 화면 데이터
   const [accountSuffix, setAccountSuffix] = useState("0000");
   const [autoTransferList, setAutoTransferList] = useState<AutoTransferInfo[]>([]);
@@ -88,14 +89,11 @@ function AutomaticPaymentScenarioContent() {
 
   /**
    * 대표 계좌 조회 및 가져오기 (JWT 토큰 기반)
-   * @param signal - AbortSignal
-   * @returns ID가 가장 작은 계좌 (대표계좌) 또는 undefined
    */
   const fetchRepresentativeAccount = async (
     signal?: AbortSignal
   ): Promise<EducationalAccount | undefined> => {
     const accounts = await getAccountList(signal);
-
     const representativeAccount = getRepresentativeAccount(accounts);
 
     if (!representativeAccount) {
@@ -106,55 +104,7 @@ function AutomaticPaymentScenarioContent() {
   };
 
   /**
-   * 모든 자동이체 조회 (페이지네이션 전체 로딩)
-   */
-  const getAllAutoPayments = async (
-    accountId: number,
-    signal?: AbortSignal
-  ): Promise<AutoPayment[]> => {
-    const firstPage = await getAutoPaymentList(
-      {
-        educationalAccountId: accountId,
-        page: 0,
-        size: AUTO_PAYMENT.PAGE_SIZE,
-      },
-      signal
-    );
-
-    const totalRemainingPages = Math.max(0, firstPage.totalPages - 1);
-
-    if (totalRemainingPages === 0) {
-      return firstPage.content;
-    }
-
-    const remainingPromises = Array.from(
-      { length: totalRemainingPages },
-      (_, i) => () =>
-        getAutoPaymentList(
-          {
-            educationalAccountId: accountId,
-            page: i + 1,
-            size: AUTO_PAYMENT.PAGE_SIZE,
-          },
-          signal
-        )
-    );
-
-    const remainingResults = await runPromisesInChunks(
-      remainingPromises,
-      AUTO_PAYMENT.API_FETCH_CHUNK_SIZE
-    );
-
-    return [
-      ...firstPage.content,
-      ...remainingResults.flatMap((r) => r.content),
-    ];
-  };
-
-  /**
    * 자동이체 목록 Progressive Loading
-   * - 첫 페이지 즉시 표시
-   * - 나머지 페이지는 백그라운드 로딩
    */
   const fetchData = useCallback(async () => {
     if (isFetchingRef.current) {
@@ -175,7 +125,7 @@ function AutomaticPaymentScenarioContent() {
       isFetchingRef.current = true;
       setIsLoading(true);
 
-      // 1. 대표 계좌 조회 (JWT 토큰 기반)
+      // 1. 대표 계좌 조회
       const representativeAccount = await fetchRepresentativeAccount(controller.signal);
 
       if (!representativeAccount) {
@@ -242,7 +192,6 @@ function AutomaticPaymentScenarioContent() {
 
           setAutoTransferList(prev => [...prev, ...convertedRemaining]);
         } catch (backgroundError: unknown) {
-          // 백그라운드 로딩 실패: 첫 페이지는 유지하고 에러만 로깅
           if (!isAbortError(backgroundError)) {
             devError("[fetchData] 백그라운드 페이지 로드 실패 (첫 페이지 데이터는 유지):", backgroundError);
 
@@ -256,7 +205,6 @@ function AutomaticPaymentScenarioContent() {
       }
 
     } catch (error: unknown) {
-      // AbortError는 무시 (정상적인 취소)
       if (isAbortError(error)) {
         devLog("[fetchData] 요청이 취소되었습니다.");
         return;
@@ -296,17 +244,22 @@ function AutomaticPaymentScenarioContent() {
 
   /** 등록 페이지 이동 */
   const handleNavigateToRegister = () => {
+    setIsAfterRegistration(false); // 등록 시작하면 초기화
     setCurrentScreen("register");
   };
 
   /** 등록 완료 후 목록 새로고침 */
   const handleRegisterComplete = () => {
     setCurrentScreen("list");
+    setIsAfterRegistration(true); // ★ 등록 완료 상태 활성화 (손가락 위치 변경용)
     fetchData();
   };
 
   /** 상세 화면 이동 */
   const handleNavigateToDetail = async (autoPaymentId: number) => {
+    // 상세로 진입하면 등록 직후 상태 해제
+    setIsAfterRegistration(false); 
+
     try {
       setIsDetailLoading(true);
       setSelectedAutoPaymentId(autoPaymentId);
@@ -416,6 +369,7 @@ function AutomaticPaymentScenarioContent() {
   /** 해지 완료 → 목록으로 복귀 */
   const handleBackToList = () => {
     setCurrentScreen("list");
+    setIsAfterRegistration(false); // 목록으로 돌아올 때 손가락 초기화
     setSelectedAutoPaymentId(null);
     setSelectedPayment(null);
     setDetailData(null);
@@ -439,16 +393,15 @@ function AutomaticPaymentScenarioContent() {
           autoTransferList={autoTransferList}
           onNavigateToRegister={handleNavigateToRegister}
           onNavigateToDetail={handleNavigateToDetail}
+          isAfterRegistration={isAfterRegistration} // ★ 추가된 Prop 전달
         />
       )}
 
       {currentScreen === "register" && (
-        <TransferFlowProvider>
-          <Scenario12
-            onComplete={handleRegisterComplete}
-            onCancel={handleBackToList}
-          />
-        </TransferFlowProvider>
+        <Scenario12
+          onComplete={handleRegisterComplete}
+          onCancel={handleBackToList}
+        />
       )}
 
       {currentScreen === "detail" && detailData && (

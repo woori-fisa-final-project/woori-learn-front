@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { createAutoPayment } from "@/lib/api/autoPayment";
 import type { EducationalAccount } from "@/types/account";
 import type { ScheduleSummary } from "@/app/automaticpayment-scenario/components/types";
@@ -7,15 +7,21 @@ import { parseNumber, parseTransferDay } from "@/utils/numberUtils";
 import { devError } from "@/utils/logger";
 import { validateAutoPaymentAmount } from "@/utils/validationUtils";
 import { ERROR_MESSAGES } from "@/lib/constants";
+// ✅ [1] Zustand 훅 가져오기
+import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 
 /**
  * 자동이체 등록 관련 로직을 관리하는 커스텀 훅
  */
 export function useAutoPaymentRegistration() {
+  // ✅ [2] 전역 상태에서 비밀번호 관련 기능 꺼내기
+  const { enteredPassword, setEnteredPassword, sourceAccountNumber } = useTransferFlow();
+
   const [scheduleSummary, setScheduleSummary] = useState<ScheduleSummary | null>(null);
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const accountPasswordRef = useRef<string>("");
+  
+  // ❌ 삭제: const accountPasswordRef = useRef<string>(""); (더 이상 필요 없음)
 
   const handleScheduleComplete = (options: ScheduleSummary) => {
     setScheduleSummary(options);
@@ -23,7 +29,8 @@ export function useAutoPaymentRegistration() {
   };
 
   const handlePasswordSuccess = (password: string) => {
-    accountPasswordRef.current = password;
+    // ✅ [3] 입력받은 비밀번호를 Zustand(전역 상태)에 저장
+    setEnteredPassword(password);
     setPasswordSheetOpen(false);
   };
 
@@ -56,9 +63,10 @@ export function useAutoPaymentRegistration() {
     }
 
     try {
-      // frequency와 transferDay에서 숫자 추출
       const transferCycle = parseNumber(scheduleSummary.frequency);
       const designatedDate = parseTransferDay(scheduleSummary.transferDay);
+
+      console.log("🚀 자동이체 등록 요청 비밀번호:", enteredPassword); // 디버깅용 로그
 
       // API 호출
       await createAutoPayment({
@@ -72,11 +80,12 @@ export function useAutoPaymentRegistration() {
         designatedDate: designatedDate,
         startDate: scheduleSummary.startDate,
         expirationDate: scheduleSummary.endDate,
-        accountPassword: accountPasswordRef.current,
+        // ✅ [4] Zustand에 저장된 비밀번호를 서버로 전송
+        accountPassword: enteredPassword, 
       });
 
       // 성공 시 비밀번호 초기화 (보안)
-      accountPasswordRef.current = "";
+      setEnteredPassword("");
       return true;
     } catch (error) {
       devError("[registerAutoPayment] 자동이체 등록 실패:", error);
