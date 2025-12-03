@@ -138,18 +138,9 @@ export default function Scenario18({
             ))}
           </div>
         </section>
-
-        <div className="relative">
-          {!isCancelClicked && (
-            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]" aria-hidden="true">👇</span>
-            </div>
-          )}
-
-          <Button onClick={() => void handleRequestCancel()} className="mt-[20px]">
-            자동이체 해지
-          </Button>
-        </div>
+        <Button onClick={() => void handleRequestCancel()} className="mt-[20px]">
+          자동이체 해지
+        </Button>
       </main>
 
       <Modal
@@ -175,18 +166,13 @@ export default function Scenario18({
             <Button variant="secondary" size="sm" onClick={handleCloseConfirm}>
               취소
             </Button>
-            <div className="relative">
-              <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]" aria-hidden="true">👇</span>
-              </div>
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={() => void handleConfirmCancel()}
-              >
-                네
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => void handleConfirmCancel()}
+            >
+              네
+            </Button>
           </div >
         </div >
       </Modal >
@@ -209,18 +195,13 @@ export default function Scenario18({
           <Button variant="secondary" size="sm" className="font-semibold" onClick={() => setReviewSheetOpen(false)}>
             취소
           </Button>
-          <div className="relative">
-            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]" aria-hidden="true">👇</span>
-            </div>
-            <Button
-              size="sm"
-              className="font-semibold w-full"
-              onClick={() => void handleFinalConfirm()}
-            >
-              확인했습니다
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            className="font-semibold w-full"
+            onClick={() => void handleFinalConfirm()}
+          >
+            확인했습니다
+          </Button>
         </div >
       </BottomSheet >
     </div >

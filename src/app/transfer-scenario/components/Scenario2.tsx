@@ -51,40 +51,29 @@ export default function Scenario2({ onSelect, onClose, allowedBanks }: Scenario2
           </button>
         </header>
 
-        <div className="max-h-[540px] overflow-y-auto px-[20px] pb-[32px] pt-[50px]">
+        <div className="max-h-[540px] overflow-y-auto px-[20px] pb-[32px]">
           <div className="grid grid-cols-3 gap-x-[20px] gap-y-[20px]">
             {bankItems.map((bank) => (
-              <div key={bank.name} className="relative">
-                
-                {/* 국민은행 손가락 애니메이션 */}
-                {bank.name === "국민은행" && (
-                  <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                    <span className="text-[30px]" aria-hidden="true">👇</span>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  disabled={bank.disabled}
-                  onClick={() => !bank.disabled && onSelect(bank.name)}
-                  className={`flex h-[85px] w-[108px] flex-col items-center justify-center rounded-[20px] bg-gray-50 text-[13px] font-medium transition ${
-                    bank.disabled
-                      ? "cursor-not-allowed text-gray-300"
-                      : "text-gray-600 hover:border-[#2F6FD9] hover:text-[#2F6FD9]"
+              <button
+                key={bank.name}
+                type="button"
+                disabled={bank.disabled}
+                onClick={() => !bank.disabled && onSelect(bank.name)}
+                className={`flex h-[85px] w-[108px] flex-col items-center justify-center rounded-[20px] bg-gray-50 text-[13px] font-medium transition ${bank.disabled
+                    ? "cursor-not-allowed text-gray-300"
+                    : "text-gray-600 hover:border-[#2F6FD9] hover:text-[#2F6FD9]"
                   }`}
-                >
-                  <Image
-                    src={bank.image}
-                    alt={bank.name}
-                    className={`mb-[10px] h-[32px] w-[32px] ${
-                      bank.disabled ? "opacity-30" : ""
+              >
+                <Image
+                  src={bank.image}
+                  alt={bank.name}
+                  className={`mb-[10px] h-[32px] w-[32px] ${bank.disabled ? "opacity-30" : ""
                     }`}
-                    width={32}
-                    height={32}
-                  />
-                  {bank.name}
-                </button>
-              </div>
+                  width={32}
+                  height={32}
+                />
+                {bank.name}
+              </button>
             ))}
           </div>
         </div>

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
 
 type Scenario1Props = {
@@ -11,11 +10,8 @@ type Scenario1Props = {
 };
 
 export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenario1Props) {
-  const router = useRouter();
-  
-  const { sourceAccountNumber } = useTransferFlow(); 
 
-  const [isFingerVisible, setIsFingerVisible] = useState(true);
+  const { sourceAccountNumber } = useTransferFlow();
 
   useEffect(() => {
     // 값이 잘 들어왔나 확인만 해보기
@@ -27,7 +23,6 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
   }, [sourceAccountNumber]);
 
   const handleOpenSheet = () => {
-    setIsFingerVisible(false);
     onOpenBankSheet();
   };
 
@@ -38,35 +33,26 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
       </section>
 
       <section className="mt-[24px] space-y-[12px]">
-        <div className="relative">
-          {isFingerVisible && (
-            <div className="absolute top-[10px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]" aria-hidden="true">👇</span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleOpenSheet}
-            className="flex w-full flex-col bg-white pt-[40px]"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[18px] font-semibold text-gray-300">계좌번호입력</span>
-              <Image src="/images/camera.png" alt="카메라" className="h-[18px] w-[22px]" width={22} height={18} />
-            </div>
-            <div className="mt-[12px] h-[1px] w-full bg-gray-200" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleOpenSheet}
+          className="flex w-full flex-col bg-white pt-[40px]"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[18px] font-semibold text-gray-300">계좌번호입력</span>
+            <Image src="/images/camera.png" alt="카메라" className="h-[18px] w-[22px]" width={22} height={18} />
+          </div>
+          <div className="mt-[12px] h-[1px] w-full bg-gray-200" />
+        </button>
 
         <div className="flex rounded-[14px] bg-gray-100 p-[4px] text-[13px] text-gray-500">
           {["추천", "자주", "내계좌"].map((label) => (
             <button
               key={label}
               type="button"
-              className={`flex-1 rounded-[10px] py-[8px] ${
-                label === "추천" ? "bg-white font-semibold text-gray-800 shadow-sm" : ""
-              }`}
-              onClick={() => {}}
+              className={`flex-1 rounded-[10px] py-[8px] ${label === "추천" ? "bg-white font-semibold text-gray-800 shadow-sm" : ""
+                }`}
+              onClick={() => { }}
             >
               {label}
             </button>
@@ -76,7 +62,7 @@ export default function Scenario1({ onOpenBankSheet, onContactTransfer }: Scenar
 
       <section className="mt-[28px] flex items-center justify-between">
         <span className="text-[22px] font-semibold text-gray-500">최근입금계좌</span>
-        <button type="button" className="text-[18px] text-gray-400" onClick={() => {}}>
+        <button type="button" className="text-[18px] text-gray-400" onClick={() => { }}>
           편집
         </button>
       </section>

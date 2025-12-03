@@ -81,9 +81,6 @@ function AccountSelectStep({
   isLoading: boolean;
   onSelectAccount: (accountId: number) => void;
 }) {
-  // 클릭 여부를 추적하는 상태 추가
-  const [hasClicked, setHasClicked] = useState(false);
-
   return (
     <div className="flex flex-1 flex-col">
       <section className="mt-[32px] space-y-[16px]">
@@ -102,25 +99,13 @@ function AccountSelectStep({
         </div>
       ) : (
         <section className="mt-[28px] space-y-[16px]">
-          {accounts.map((account, index) => (
+          {accounts.map((account) => (
             <button
               key={account.id}
               type="button"
-              onClick={() => {
-                // 1. 클릭 시 상태를 true로 변경하여 애니메이션을 즉시 숨깁니다.
-                setHasClicked(true);
-                // 2. 기존 선택 로직을 실행합니다.
-                onSelectAccount(account.id);
-              }}
-              className="relative w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
+              onClick={() => { onSelectAccount(account.id); }}
+              className="w-full rounded-[16px] border border-gray-100 bg-white px-[20px] py-[18px] text-left shadow-sm transition hover:border-primary-400 hover:shadow-md"
             >
-              {/* index가 0이고, 아직 클릭하지 않았을 때만(!hasClicked) 표시 */}
-              {index === 0 && !hasClicked && (
-                <div className="absolute left-1/2 -top-12 z-20 -translate-x-1/2 animate-bounce">
-                  <span className="text-[30px]" aria-hidden="true">👇</span>
-                </div>
-              )}
-
               <div className="flex items-start gap-[12px]">
                 <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-[#E8F1FF]">
                   <Image
@@ -174,7 +159,7 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
 
   // 커스텀 훅으로 로직 분리
   const { accounts, selectedAccount, isLoadingAccounts, errorMessage: accountError, selectAccount } = useAccountSelection();
-  
+
   const { step, setStep } = useAutoPaymentSteps(setOnBack, onCancel);
 
   const {
@@ -214,12 +199,12 @@ export default function Scenario12({ onComplete, onCancel, engineStep = null, on
   }, [setTitle]);
 
   useEffect(() => {
-  return () => {
-    resetFlow();
-    setPasswordSheetOpen(false);
-  };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    return () => {
+      resetFlow();
+      setPasswordSheetOpen(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** 출금 계좌 선택 처리 */
   const handleSelectAccount = async (accountId: number) => {

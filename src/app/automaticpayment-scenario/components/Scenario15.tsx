@@ -80,12 +80,7 @@ export default function Scenario15({
           날짜 재입력
         </Button>
 
-        <div className="relative w-full">
-
-          <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-            <span className="text-[30px]" aria-hidden="true">👇</span>
-          </div>
-
+        <div className="w-full">
           <div className="w-full">
             <Button size="sm" onClick={onSubmit}>
               등록하기

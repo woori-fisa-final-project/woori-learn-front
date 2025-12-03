@@ -165,65 +165,34 @@ export default function Scenario11({
             {!hasAutoTransfer ? (
               <EmptyState />
             ) : (
-              // 손가락이 가려지지 않도록 상단 여백 확보
-              <div className="w-full space-y-[16px] pt-[30px]">
-                {autoTransferList.map((info, index) => (
-                  // relative를 주어 절대 위치 손가락의 기준점으로 삼음
-                  <div key={info.id} className="relative">
-
-                    {/* 등록 직후(isAfterRegistration)이고 첫 번째 항목(index===0)일 때만 손가락 표시 */}
-                    {isAfterRegistration && index === 0 && (
-                      <div className="absolute left-1/2 -top-5 z-20 -translate-x-1/2 animate-bounce pointer-events-none">
-                        <span className="text-[30px]" aria-hidden="true">👇</span>
-                      </div>
-                    )}
-
-                    <AutoTransferCard
-                      info={info}
-                      onSelect={() => handleOpenDetail(info.id)}
-                    />
-                  </div>
+              <div className="w-full space-y-[16px]">
+                {autoTransferList.map((info) => (
+                  <AutoTransferCard key={info.id} info={info} onSelect={() => handleOpenDetail(info.id)} />
                 ))}
               </div>
             )}
           </div>
-          {/* 하단 고정 버튼 영역 */}
-          <div className="mt-[24px] flex-shrink-0 relative">
-
-            {/* 평소(!isAfterRegistration)에는 등록 버튼을 가리킴 */}
-            {!isAfterRegistration && (
-              <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]" aria-hidden="true">👇</span>
-              </div>
-            )}
+          <div className="mt-[24px] flex-shrink-0">
             <Button size="md" onClick={handleRegister} fullWidth>
               자동이체 등록하기
             </Button>
           </div>
-
         </div>
       </main >
       {/* 바텀시트 */}
-      <BottomSheet
+      < BottomSheet
         isOpen={isSheetOpen}
         onClose={handleCloseSheet}
         title="자동이체 유형선택"
       >
-        <nav className="flex flex-col mt-[20px]">
-          <div className="relative">
-            {/* 바텀시트 내부 손가락 */}
-            <div className="absolute -top-[25px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[24px]">👇</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handleSelectOption("krw")}
-              className="w-full py-[16px] text-left text-[16px] text-gray-700 transition"
-            >
-              원화 자동이체 등록
-            </button>
-          </div>
+        <nav className="flex flex-col">
+          <button
+            type="button"
+            onClick={() => handleSelectOption("krw")}
+            className="py-[16px] text-left text-[16px] text-gray-700 transition"
+          >
+            원화 자동이체 등록
+          </button>
           <button
             type="button"
             onClick={() => void handleSelectOption("fx")}
@@ -232,7 +201,7 @@ export default function Scenario11({
             외화 자동이체 등록
           </button>
         </nav>
-      </BottomSheet>
+      </BottomSheet >
 
       <Modal
         isOpen={isFxInfoModalOpen}
@@ -244,11 +213,11 @@ export default function Scenario11({
         onConfirm={() => setFxInfoModalOpen(false)}
         zIndex="z-[100]"
       />
-    </div>
-    );
+    </div >
+  );
 }
 
-    function EmptyState() {
+function EmptyState() {
   return (
     <div className=" mt-[150px] flex flex-col items-center justify-center text-center">
       <Image
@@ -261,10 +230,10 @@ export default function Scenario11({
         등록된 자동이체가 없어요
       </p>
     </div>
-    );
+  );
 }
 
-    function AutoTransferCard({info, onSelect}: {info: AutoTransferInfo; onSelect: () => void }) {
+function AutoTransferCard({ info, onSelect }: { info: AutoTransferInfo; onSelect: () => void }) {
   return (
     <button
       type="button"

@@ -74,14 +74,7 @@ export default function Scenario16({ onConfirm, advancePractice }: Scenario16Pro
         </div>
 
         <div>
-          <div className="relative flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
-
-            {tutorialStep === 0 && (
-              <div className="absolute -top-[30px] left-[40%] -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]" aria-hidden="true">👇</span>
-              </div>
-            )}
-
+          <div className="flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
             <button
               type="button"
               onClick={handleAgreementClick}
@@ -113,18 +106,9 @@ export default function Scenario16({ onConfirm, advancePractice }: Scenario16Pro
       </section>
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[32px]">
-        <div className="relative">
-
-          {tutorialStep === 2 && isChecked && (
-            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]">👇</span>
-            </div>
-          )}
-
-          <Button onClick={() => void handleConfirm()} disabled={!isChecked}>
-            확인
-          </Button>
-        </div>
+        <Button onClick={() => void handleConfirm()} disabled={!isChecked}>
+          확인
+        </Button>
       </div>
 
       {isDetailOpen && (
@@ -197,16 +181,7 @@ function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalPr
         </div>
 
         <div className="border-t border-gray-100 px-[20px] pb-[24px] pt-[16px]">
-          <div className="relative">
-
-            {showFinger && (
-              <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]" aria-hidden="true">👇</span>
-              </div>
-            )}
-
-            <Button onClick={onConfirm}>확인</Button>
-          </div>
+          <Button onClick={onConfirm}>확인</Button>
         </div>
       </div>
     </div>
