@@ -32,7 +32,7 @@ export default function Scenario19({ detail, onNavigateToQuiz }: Scenario19Props
     <div className="mx-auto flex h-[100dvh] w-full max-w-[390px] flex-col overflow-hidden bg-white px-[20px] py-[24px]">
       <main className="flex flex-1 flex-col gap-[24px]">
         <div className="flex flex-col items-center gap-[12px] text-center">
-          <Image src="/images/maincheck.png" alt="해지 완료" width={66} height={66} />
+          <Image src="/images/maincheck2.png" alt="해지 완료" width={66} height={66} />
           <h2 className="text-[20px] font-semibold text-gray-900">자동이체를 해지했어요</h2>
         </div>
 

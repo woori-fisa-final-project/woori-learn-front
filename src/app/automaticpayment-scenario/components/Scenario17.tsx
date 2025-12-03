@@ -47,7 +47,7 @@ export default function Scenario17({
   return (
     <div className="flex h-full flex-col items-center text-center">
       <div className="mt-[10px] flex flex-col items-center gap-[20px]">
-        <Image src="/images/maincheck.png" alt="등록 완료" width={82} height={82} />
+        <Image src="/images/maincheck2.png" alt="등록 완료" width={82} height={82} />
         <div>
           <h1 className="text-[24px] font-semibold text-gray-900 tracking-[-0.5px]">
             자동이체를 등록했어요
