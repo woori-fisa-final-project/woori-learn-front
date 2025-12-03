@@ -1,10 +1,9 @@
 "use client";
 
-// 자동이체 확인 단계에서 필요한 공통 컴포넌트와 상태 훅을 불러온다.
 import Button from "@/components/common/Button";
 import InfoRow from "@/components/common/InfoRow";
 import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
-import { useUserData } from "@/lib/hooks/useUserData"; 
+import { useUserData } from "@/lib/hooks/useUserData";
 import { formatDate } from "@/utils/formatDate";
 import { formatDateRange } from "@/utils/formatDateRange";
 import { useMemo } from "react";
@@ -22,7 +21,6 @@ type Scenario15Props = {
 };
 
 export default function Scenario15({
-  sourceAccountName,
   sourceAccountNumber,
   sourceAccountBank,
   scheduleSummary,
@@ -31,13 +29,8 @@ export default function Scenario15({
   onEditSchedule,
   onSubmit,
 }: Scenario15Props) {
-  const {
-    selectedBank,
-    accountNumber,
-    recipientName,
-    amount,
 
-  } = useTransferFlow();
+  const { selectedBank, accountNumber, recipientName, amount, } = useTransferFlow();
 
   const { userName: currentUserName } = useUserData();
 
@@ -47,23 +40,20 @@ export default function Scenario15({
   }, [amount]);
 
   const formattedRegisterDate = useMemo(() => formatDate(new Date()), []);
-
   const inboundBank = selectedBank ?? "국민은행";
-  const inboundAccount = accountNumber || "-";
+  const inboundAccount = accountNumber ? String(accountNumber) : "-";
   const inboundName = recipientName || "받는 분";
   const ownerName = currentUserName ?? "김우리";
 
   const formattedPeriod = useMemo(
     () => formatDateRange(scheduleSummary.startDate, scheduleSummary.endDate),
-    [scheduleSummary.endDate, scheduleSummary.startDate],
+    [scheduleSummary.endDate, scheduleSummary.startDate]
   );
 
   return (
     <div className="flex h-full flex-col">
       <header className="mt-[5px]">
-        <h1 className="text-[22px] text-center font-semibold text-gray-900">
-          자동이체 등록정보를 확인해주세요
-        </h1>
+        <h1 className="text-[22px] text-center font-semibold text-gray-900">자동이체 등록정보를 확인해주세요</h1>
       </header>
 
       <section className="mt-[28px] divide-y divide-gray-200 rounded-[20px] border border-gray-100 bg-[#F5F7FA] px-[20px] py-[24px]">
@@ -74,8 +64,8 @@ export default function Scenario15({
         <InfoRow label="이체지정일" value={scheduleSummary.transferDay} highlight />
         <InfoRow label="이체주기" value={scheduleSummary.frequency} highlight />
         <InfoRow label="이체기간" value={formattedPeriod} />
-        <InfoRow label="내 통장표기" value={ownerName} />
-        <InfoRow label="받는 분 통장표기" value={inboundName} />
+        <InfoRow label="내 통장표기" value={inboundName} />
+        <InfoRow label="받는 분 통장표기" value={ownerName} />
         <InfoRow label="이체등록일" value={formattedRegisterDate} />
       </section>
 
@@ -89,14 +79,9 @@ export default function Scenario15({
         <Button variant="secondary" size="sm" onClick={onEditSchedule}>
           날짜 재입력
         </Button>
-        
-        <div className="relative w-full">
-          
-          <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-            <span className="text-[30px]" aria-hidden="true">👇</span>
-          </div>
 
-          <div className="w-full"> 
+        <div className="w-full">
+          <div className="w-full">
             <Button size="sm" onClick={onSubmit}>
               등록하기
             </Button>

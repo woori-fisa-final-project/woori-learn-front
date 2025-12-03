@@ -5,54 +5,55 @@ import { useState } from "react";
 import Button from "@/components/common/Button";
 import Image from "next/image";
 
-
 // 약관 동의 체크박스에 사용할 아이콘 경로를 정의한다.
 const TERMS_CHECK_ICON = "/images/Termcheck.png";
 const TERMS_CHECKED_ICON = "/images/Termcheck2.png";
 
 // 상위 단계에서 확인 콜백을 전달받기 위한 props 타입이다.
 type Scenario16Props = {
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
+  advancePractice: (opts?: { onlyIds?: number[]; answer?: number }) => Promise<boolean>;
 };
 
 // 약관 동의 화면을 렌더링해 사용자가 필수 약관을 확인하고 진행하도록 한다.
-export default function Scenario16({ onConfirm }: Scenario16Props) {
+export default function Scenario16({ onConfirm, advancePractice }: Scenario16Props) {
   // 체크박스 상태와 상세 모달 열림 여부를 각각 관리한다.
   const [isChecked, setIsChecked] = useState(false);
   const [isDetailOpen, setDetailOpen] = useState(false);
-
   const [tutorialStep, setTutorialStep] = useState(0);
 
-  const handleAgreementClick = () => {
+  const handleAgreementClick = async () => {
     if (isChecked) {
       setIsChecked(false);
       return;
     }
     setDetailOpen(true);
-        
-    if (tutorialStep === 0) {
-      setTutorialStep(1);
-    }
+    if (tutorialStep === 0) setTutorialStep(1);
+    await advancePractice({ onlyIds: [1095] });
   };
 
-   const openDetail = () => {
+  const openDetail = async () => {
     setDetailOpen(true);
-        if (tutorialStep === 0) setTutorialStep(1);
+    if (tutorialStep === 0) setTutorialStep(1);
+    await advancePractice({ onlyIds: [1095] });
   };
 
-    const closeDetail = () => {
+  const closeDetail = async () => {
     setDetailOpen(false);
+
+    await advancePractice({ onlyIds: [1096] });
   };
 
-  const handleConfirm = () => {
-    if (!isChecked) {
-      console.warn("약관 미동의 상태에서 확인 시도 방지");
-      return;
-    }
-    onConfirm();
+  const handleConfirm = async () => {
+    if (!isChecked) return;
+
+    await advancePractice({ onlyIds: [1098] });
+
+    await onConfirm?.();
   };
-  
-  const handleModalConfirm = () => {
+
+  const handleModalConfirm = async () => {
+    await advancePractice({ onlyIds: [1097] });
     setDetailOpen(false);
     setIsChecked(true);
 
@@ -73,14 +74,7 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
         </div>
 
         <div>
-          <div className="relative flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
-
-            {tutorialStep === 0 && (
-              <div className="absolute -top-[30px] left-[40%] -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]" aria-hidden="true">👇</span>
-              </div>
-            )}
-
+          <div className="flex w-full items-center justify-between rounded-[16px] border border-gray-200 bg-white px-[20px] py-[16px]">
             <button
               type="button"
               onClick={handleAgreementClick}
@@ -112,25 +106,16 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
       </section>
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[32px]">
-        <div className="relative">
-          
-          {tutorialStep === 2 && isChecked && (
-            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]">👇</span>
-            </div>
-          )}
-
-          <Button onClick={handleConfirm} disabled={!isChecked}>
-            확인
-          </Button>
-        </div>
+        <Button onClick={() => void handleConfirm()} disabled={!isChecked}>
+          확인
+        </Button>
       </div>
 
       {isDetailOpen && (
-        <TermsDetailModal 
-          onClose={closeDetail} 
+        <TermsDetailModal
+          onClose={closeDetail}
           onConfirm={handleModalConfirm}
-          showFinger={tutorialStep === 1} 
+          showFinger={tutorialStep === 1}
         />
       )}
     </div>
@@ -140,7 +125,7 @@ export default function Scenario16({ onConfirm }: Scenario16Props) {
 type TermsDetailModalProps = {
   onClose: () => void;
   onConfirm: () => void;
-  showFinger: boolean; 
+  showFinger: boolean;
 };
 
 function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalProps) {
@@ -172,31 +157,31 @@ function TermsDetailModal({ onClose, onConfirm, showFinger }: TermsDetailModalPr
             <article>
               <h4 className="text-[15px] font-semibold text-gray-800">제2조 (신청, 변경 및 해지)</h4>
               <ul className="mt-[8px] list-disc space-y-[8px] pl-[18px]">
-                <li>납부자가 타행 자동이체를 이용, 변경 또는 해지하고자 할 경우에는 타행 자동이체신청서, 변경, 해지신청서를 제출하여야 합니다.</li>
-                <li>타행 자동이체를 신청할 때, 신청정보와 제공정보가 일치하지 않는 경우 이체가 제한될 수 있습니다.</li>
-                <li>이체일이 휴일인 경우 다음 영업일에 이체되며, 이체일 당일 계좌 잔액이 부족하면 이체되지 않을 수 있습니다.</li>
+                <li>
+                  납부자가 타행 자동이체를 이용, 변경 또는 해지하고자 할 경우에는 타행 자동이체신청서, 변경,
+                  해지신청서를 제출하여야 합니다.
+                </li>
+                <li>
+                  타행 자동이체를 신청할 때, 신청정보와 제공정보가 일치하지 않는 경우 이체가 제한될 수 있습니다.
+                </li>
+                <li>
+                  이체일이 휴일인 경우 다음 영업일에 이체되며, 이체일 당일 계좌 잔액이 부족하면 이체되지 않을 수
+                  있습니다.
+                </li>
               </ul>
             </article>
             <article>
               <h4 className="text-[15px] font-semibold text-gray-800">제3조 (계좌이체 서비스)</h4>
               <p className="mt-[8px] whitespace-pre-line">
-                타행 자동이체는 계좌이체서비스를 대상으로 하며, 계좌이체서비스 이용 약관을 준용합니다. 자세한 사항은 은행 고객센터 또는 홈페이지를 참고하세요.
+                타행 자동이체는 계좌이체서비스를 대상으로 하며, 계좌이체서비스 이용 약관을 준용합니다. 자세한
+                사항은 은행 고객센터 또는 홈페이지를 참고하세요.
               </p>
             </article>
           </section>
         </div>
 
         <div className="border-t border-gray-100 px-[20px] pb-[24px] pt-[16px]">
-          <div className="relative">
-            
-            {showFinger && (
-              <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                <span className="text-[30px]" aria-hidden="true">👇</span>
-              </div>
-            )}
-
-            <Button onClick={onConfirm}>확인</Button>
-          </div>
+          <Button onClick={onConfirm}>확인</Button>
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ export default function Scenario7({ onRestart }: Scenario7Props) {
     sourceAccountNumber
   } = useTransferFlow();
 
-  const { userName: currentUserName } = useUserData(); 
+  const { userName: currentUserName } = useUserData();
 
   // transferResult가 없으면 에러 방지
   if (!transferResult) {
@@ -66,23 +66,11 @@ export default function Scenario7({ onRestart }: Scenario7Props) {
         <Row label="이체금액" value={formattedAmount} highlight />
         <Row label="출금 계좌" value={`우리은행 ${formattedFromAccount}`} />
         <Row label="입금 계좌" value={`${depositBank} ${depositAccount}`} />
-
-        <Row
-          label="출금 후 잔액"
-          value={`${balanceAfter.toLocaleString()}원`}
-        />
+        <Row label="출금 후 잔액" value={`${balanceAfter.toLocaleString()}원`} />
       </section>
-      
+
       <div className="mt-auto w-full pb-[32px]">
-        <div className="relative">
-
-            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]" aria-hidden="true">👇</span>
-            </div>
-
-          <Button onClick={onRestart}>확인</Button>
-        </div>
-        
+        <Button onClick={onRestart}>확인</Button>
       </div>
     </div>
   );
@@ -99,9 +87,8 @@ function Row({ label, value, highlight }: RowProps) {
     <div className="flex items-center justify-between text-gray-600">
       <span>{label}</span>
       <span
-        className={`font-semibold ${
-          highlight ? "text-[#2F6FD9]" : "text-gray-900"
-        }`}
+        className={`font-semibold ${highlight ? "text-[#2F6FD9]" : "text-gray-900"
+          }`}
       >
         {value}
       </span>

@@ -99,15 +99,7 @@ export default function Scenario3({
         </button>
 
         {/* 계좌번호 입력 필드 영역 */}
-        <div className="space-y-[12px] relative">
-          
-          {/* 입력이 아직 덜 됐을 때(!isValid) -> 입력창 가리키기 */}
-          {!isValid && (
-            <div className="absolute -top-[25px] left-0 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]" aria-hidden="true">👇</span>
-            </div>
-          )}
-
+        <div className="space-y-[12px]">
           <div className="border-b border-gray-300 pb-[4px]">
             <input
               value={formattedAccount}
@@ -122,20 +114,9 @@ export default function Scenario3({
 
       {/* 하단 버튼 영역 */}
       <div className="mt-auto space-y-[12px] pb-[24px]">
-        {/* 버튼을 감싸는 relative div 추가 */}
-        <div className="relative">
-          
-          {/* 입력이 완료되었을 때(isValid) -> 다음 버튼 가리키기 */}
-          {isValid && (
-            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]" aria-hidden="true">👇</span>
-            </div>
-          )}
-
           <Button onClick={handleNext} disabled={!isValid}>
             다음
           </Button>
-        </div>
       </div>
 
       <Modal

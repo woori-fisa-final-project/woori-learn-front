@@ -15,13 +15,10 @@ import { useTransferFlow } from "@/lib/hooks/useTransferFlow";
  */
 export function useAutoPaymentRegistration() {
   // ✅ [2] 전역 상태에서 비밀번호 관련 기능 꺼내기
-  const { enteredPassword, setEnteredPassword, sourceAccountNumber } = useTransferFlow();
-
+  const { enteredPassword, setEnteredPassword } = useTransferFlow();
   const [scheduleSummary, setScheduleSummary] = useState<ScheduleSummary | null>(null);
   const [isPasswordSheetOpen, setPasswordSheetOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  
-  // ❌ 삭제: const accountPasswordRef = useRef<string>(""); (더 이상 필요 없음)
 
   const handleScheduleComplete = (options: ScheduleSummary) => {
     setScheduleSummary(options);
@@ -63,10 +60,9 @@ export function useAutoPaymentRegistration() {
     }
 
     try {
+      // frequency와 transferDay에서 숫자 추출
       const transferCycle = parseNumber(scheduleSummary.frequency);
       const designatedDate = parseTransferDay(scheduleSummary.transferDay);
-
-      console.log("🚀 자동이체 등록 요청 비밀번호:", enteredPassword); // 디버깅용 로그
 
       // API 호출
       await createAutoPayment({
@@ -81,7 +77,7 @@ export function useAutoPaymentRegistration() {
         startDate: scheduleSummary.startDate,
         expirationDate: scheduleSummary.endDate,
         // ✅ [4] Zustand에 저장된 비밀번호를 서버로 전송
-        accountPassword: enteredPassword, 
+        accountPassword: enteredPassword,
       });
 
       // 성공 시 비밀번호 초기화 (보안)
