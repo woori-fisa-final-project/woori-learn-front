@@ -9,7 +9,9 @@
     "lint": "eslint",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test:demo": "cypress run --spec cypress/e2e/demo-flow.cy.ts"
+    "cypress:open:prod": "cross-env CYPRESS_BASE_URL=http://localhost:3000 cypress open",
+    "test:demo": "cypress run --spec cypress/e2e/demo-flow.cy.ts",
+    "test:demo:prod": "cross-env CYPRESS_BASE_URL=http://localhost:3000 cypress run --spec cypress/e2e/demo-flow.cy.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.11",
@@ -29,6 +31,7 @@
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "baseline-browser-mapping": "^2.8.32",
+    "cross-env": "^10.1.0",
     "cypress": "^15.7.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
