@@ -1,11 +1,7 @@
 // useScenarioEngine.ts
 import { useCallback, useMemo, useState, useRef } from "react";
 import { fetchScenarioFromApi, fetchScenarioResumeFromApi, postScenarioNextStepFromApi } from "@/lib/api/scenario";
-import { scenarioMockMap } from "@/lib/mocks/scenarioMock";
-import { mockNextStep } from "@/lib/mocks/mockNextStep";
 import type { ApiQuiz, ScenarioData, ScenarioStep, NextStepApiData } from "@/types/scenario";
-
-const USE_MOCK = false;
 
 const QUIZ_ANSWER_BASE = 1;
 
@@ -23,25 +19,17 @@ export function useScenarioEngine() {
   const loadScenarioDoc = useCallback(async (scenarioId: number) => {
     setScenarioIdInPlay(scenarioId);
 
-    let data: ScenarioData;
+    const res = await fetchScenarioFromApi(scenarioId);
 
-    if (USE_MOCK) {
-      const mock = scenarioMockMap[scenarioId as keyof typeof scenarioMockMap];
-      if (!mock) throw new Error("해당 ID의 mock 시나리오가 존재하지 않습니다.");
-      data = mock as ScenarioData;
-    } else {
-      const res = await fetchScenarioFromApi(scenarioId);
+    const stepsMap: Record<number, ScenarioStep> = {};
+    res.steps.forEach((step: ScenarioStep) => {
+      stepsMap[step.id] = step;
+    });
 
-      const stepsMap: Record<number, ScenarioStep> = {};
-      res.steps.forEach((step: ScenarioStep) => {
-        stepsMap[step.id] = step;
-      });
-
-      data = {
-        meta: res.scenario ?? ({ id: scenarioId } as any),
-        steps: stepsMap,
-      };
-    }
+    const data: ScenarioData = {
+      meta: res.scenario ?? ({ id: scenarioId } as any),
+      steps: stepsMap,
+    };
 
     setScenario(data);
     return data;
@@ -59,17 +47,15 @@ export function useScenarioEngine() {
       setQuizState(null);
       await loadScenarioDoc(scenarioId);
 
-      if (!USE_MOCK && stepId == null) {
+      if (stepId == null) {
         const { nowStepId } = await fetchScenarioResumeFromApi(scenarioId);
         setPreviousStepId(null);
         setCurrentStepId(nowStepId);
         return;
       }
 
-      if (stepId != null) {
-        setPreviousStepId(null);
-        setCurrentStepId(stepId);
-      }
+      setPreviousStepId(null);
+      setCurrentStepId(stepId);
     } catch (e) {
       setError(e instanceof Error ? e.message : "resume 중 오류");
     } finally {
@@ -85,12 +71,6 @@ export function useScenarioEngine() {
     }
 
     try {
-      if (USE_MOCK) {
-        const r = mockNextStep(nowStepId);
-        applyNowStepId(r.data.step ? r.data.step.nowStepId : null);
-        return;
-      }
-
       const res: NextStepApiData = await postScenarioNextStepFromApi(scenarioIdInPlay, {
         nowStepId,
         ...(answer == null ? {} : { answer }),
@@ -98,7 +78,7 @@ export function useScenarioEngine() {
 
       if ((res.status === "QUIZ_REQUIRED" || res.status === "QUIZ_WRONG") && res.quiz) {
         setQuizState({ stepId: nowStepId, quiz: res.quiz as ApiQuiz, status: res.status });
-        applyNowStepId(nowStepId); // 1050 유지
+        applyNowStepId(nowStepId);
         return res;
       }
 
