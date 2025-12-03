@@ -122,7 +122,7 @@ export default function Scenario18({
       { label: "이체지정일", value: detail.transferDay },
       { label: "이체주기", value: detail.frequency },
       { label: "이체기간", value: detail.period },
-      { label: "내 통장표기", value: detail.ownerName },
+      { label: "내 통장표기", value: detail.recipientName },
       { label: "이체등록일", value: detail.registerDate },
     ],
     [detail]

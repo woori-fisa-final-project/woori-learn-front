@@ -66,8 +66,8 @@ export default function Scenario17({
         <InfoRow label="이체지정일" value={scheduleSummary.transferDay} highlight />
         <InfoRow label="이체주기" value={scheduleSummary.frequency} highlight />
         <InfoRow label="이체기간" value={formattedPeriod} />
-        <InfoRow label="내 통장표기" value={ownerName} />
-        <InfoRow label="받는 분 통장표기" value={inboundName} />
+        <InfoRow label="내 통장표기" value={inboundName} />
+        <InfoRow label="받는 분 통장표기" value={ownerName} />
         <InfoRow label="이체등록일" value={registerDate} />
       </section>
       <div className="relative mt-[26px] w-full pb-[32px]">

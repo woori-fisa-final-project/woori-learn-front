@@ -14,7 +14,7 @@ export default function Continue({
     onRestartFromStopPart,
 }: ContinueProps) {
     const balloonBase =
-        "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-bold leading-relaxed text-gray-800";
+        "relative inline-block max-w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";
 
     const BTN_SIZE = {
         md: "h-[55px] text-[16px]",
@@ -32,7 +32,7 @@ export default function Continue({
             <div className="flex flex-1 flex-col items-center justify-center gap-6 min-h-screen">
                 {/* 말풍선 */}
                 <div className="flex justify-center">
-                    <div className={`${balloonBase} pointer-events-none bottom-[90px]`}>
+                    <div className={`${balloonBase} pointer-events-none`}>
                         <p>지난번에 멈춘 곳부터 이어서 할까요?</p>
                     </div>
                 </div>
@@ -40,7 +40,7 @@ export default function Continue({
                 {/* 위비 */}
                 <Weebee
                     emotion="hi"
-                    className="z-1 flex h-[348px] w-[348px] items-center justify-center pointer-events-none -translate-y-20"
+                    className="z-1 flex h-[348px] w-[348px] items-center justify-center pointer-events-none"
                 />
             </div>
 

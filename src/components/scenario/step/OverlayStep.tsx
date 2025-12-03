@@ -15,7 +15,7 @@ type OverlayStepProps = {
 export default function OverlayStep({ content, onBackgroundClick, previousStep }: OverlayStepProps) {
   const isWeebee = content.character === "wibee";
   const balloonBase =
-    "relative inline-block w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[25px] font-bold leading-relaxed text-gray-800";
+    "relative inline-block w-[350px] bg-[#FFFCF6] border-3 border-[#E7C873] rounded-[14px] px-4 py-3 text-[16px] font-semibold leading-relaxed text-gray-800";
 
   // 이전 step이 위비(wibee) DIALOG 또는 OVERLAY인지 확인
   const showPreviousWeebeeDialog =
