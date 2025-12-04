@@ -22,8 +22,7 @@ export function useUserData() {
         const data = await getCurrentUser();
 
         const safeId = data.id ?? null;
-        const safeName =
-          data.name ?? (data as { nickname?: string }).nickname ?? "고객님";
+        const safeName = data.name ?? (data as { nickname?: string }).nickname ?? "고객님";
 
         const pointsRaw = data.points ?? (data as { point?: number }).point;
         const safePoints = typeof pointsRaw === "number" ? pointsRaw : 0;

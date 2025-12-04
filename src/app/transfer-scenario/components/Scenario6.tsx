@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 
 type Scenario6Props = {
+  onValidate: () => boolean | Promise<boolean>;
   onConfirm: () => void;
   onReenterAccount: () => void;
   onReenterAmount: () => void;
@@ -16,12 +17,13 @@ type Scenario6Props = {
 };
 
 export default function Scenario6({
+  onValidate,
   onConfirm,
   onReenterAccount,
   onReenterAmount,
   onBackToPassword,
 }: Scenario6Props) {
-
+  // 플로우 컨텍스트에서 계좌 정보와 금액을 가져옵니다.
   const {
     selectedBank,
     accountNumber,
@@ -29,16 +31,13 @@ export default function Scenario6({
     amount,
     sourceAccountNumber,
     enteredPassword,
-    setTransferResult, 
+    setTransferResult,
   } = useTransferFlow();
-
   const { userName: currentUserName } = useUserData();
-
-  const bankName = selectedBank ?? "국민은행";
-  const name = recipientName || "나누구";
-  const displayAccount = accountNumber || "-";
-  const senderName = currentUserName ?? "548호";
-
+  const bankName = selectedBank ?? "국민은행"; // 선택된 은행이 없으면 기본값을 사용합니다.
+  const name = recipientName || "나누구"; // 수취인 이름이 없으면 기본 이름을 표시합니다.
+  const displayAccount = accountNumber || "-"; // 계좌번호가 비어 있으면 대시(-)로 보여줍니다.
+  const senderName = currentUserName ?? "김우리"; // 보낸 사람 이름이 없으면 기본 이름을 사용합니다.
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -54,13 +53,18 @@ export default function Scenario6({
     setLoading(true);
     setErrorMsg("");
 
+    const isValid = await onValidate();
+    if (!isValid) { return; }
+
+    setLoading(true);
+
     try {
       const res = await axiosInstance.post("/education/accounts/transfer", {
-          fromAccountNumber: sourceAccountNumber.replace(/\D/g, ""),
-          toAccountNumber: accountNumber.replace(/\D/g, ""),
-          amount: amount,
-          accountPassword: enteredPassword, 
-          displayName: recipientName || "수취인",
+        fromAccountNumber: sourceAccountNumber.replace(/\D/g, ""),
+        toAccountNumber: accountNumber.replace(/\D/g, ""),
+        amount: amount,
+        accountPassword: enteredPassword,
+        displayName: recipientName || "수취인",
       });
 
       console.log("이체 성공", res.data);
@@ -75,10 +79,12 @@ export default function Scenario6({
 
       // 비밀번호 오류라면 다시 Scenario5로 되돌리기
       if (err.code === 'PASSWORD_INCORRECT') {
-          setTimeout(() => {
+        setTimeout(() => {
           onBackToPassword();
         }, 1200);
       }
+    } finally {
+      setLoading(false);
     }
   };
 

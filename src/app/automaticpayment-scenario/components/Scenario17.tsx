@@ -19,6 +19,7 @@ type Scenario17Props = {
   ownerName: string;
   amount: number;
   onConfirm: () => void;
+  advancePractice: (opts?: { onlyIds?: number[]; answer?: number }) => Promise<boolean>;
 };
 
 // 자동이체 등록이 완료되었음을 알리고 요약 정보를 보여주는 컴포넌트이다.
@@ -32,15 +33,21 @@ export default function Scenario17({
   ownerName,
   amount,
   onConfirm,
+  advancePractice,
 }: Scenario17Props) {
   const formattedAmount = amount > 0 ? `${amount.toLocaleString()}원` : "0원";
   const formattedPeriod = formatDateRange(scheduleSummary.startDate, scheduleSummary.endDate);
   const registerDate = formatDate(new Date());
 
+  const handleConfirmClick = async () => {
+    await advancePractice?.({ onlyIds: [1101] });
+    await onConfirm();
+  };
+
   return (
     <div className="flex h-full flex-col items-center text-center">
       <div className="mt-[10px] flex flex-col items-center gap-[20px]">
-        <Image src="/images/maincheck.png" alt="등록 완료" width={82} height={82} />
+        <Image src="/images/maincheck2.png" alt="등록 완료" width={66} height={66} />
         <div>
           <h1 className="text-[24px] font-semibold text-gray-900 tracking-[-0.5px]">
             자동이체를 등록했어요
@@ -59,18 +66,13 @@ export default function Scenario17({
         <InfoRow label="이체지정일" value={scheduleSummary.transferDay} highlight />
         <InfoRow label="이체주기" value={scheduleSummary.frequency} highlight />
         <InfoRow label="이체기간" value={formattedPeriod} />
-        <InfoRow label="내 통장표기" value={ownerName} />
-        <InfoRow label="받는 분 통장표기" value={inboundName} />
+        <InfoRow label="내 통장표기" value={inboundName} />
+        <InfoRow label="받는 분 통장표기" value={ownerName} />
         <InfoRow label="이체등록일" value={registerDate} />
       </section>
-
-      <div className="relative mt-[26px] w-full pb-[32px]">
-        <div className="absolute -top-[25px] left-1/2 z-10 -translate-x-1/2 animate-bounce pointer-events-none">
-              <span className="text-[30px]" aria-hidden="true">👇</span>
-            </div>
-        <Button onClick={onConfirm}>확인</Button>
+      <div className="mt-[26px] w-full pb-[32px]">
+        <Button onClick={() => void handleConfirmClick()}>확인</Button>
       </div>
-
     </div>
   );
 }

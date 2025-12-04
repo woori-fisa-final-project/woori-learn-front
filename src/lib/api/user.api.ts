@@ -7,7 +7,8 @@ export interface UserData {
   id: number;
   name: string;
   email?: string;
-  points: number;
+  points?: number;
+  point?: number;
 }
 
 interface ApiResponse<T> {

@@ -59,7 +59,6 @@ export function useAccountInfo(displayAccountNumber: string) {
       } else {
         setError("계좌 조회 실패");
       }
-
       return null;
     }
   }, [displayAccountNumber]);

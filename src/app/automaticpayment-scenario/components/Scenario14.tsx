@@ -1,5 +1,6 @@
 "use client";
 
+// 자동이체 일정 입력 단계에서 필요한 React 상태와 공통 컴포넌트를 불러온다.
 import { useEffect, useState } from "react";
 import Button from "@/components/common/Button";
 import { clampDayToMonth, formatYMD } from "@/utils/dateUtils";
@@ -19,9 +20,11 @@ const DURATION_OPTIONS: Array<{ label: string; months: number | null }> = [
 
 const TRANSFER_DAYS = ["1일", "5일", "10일", "15일", "20일", "25일", "말일"];
 
+// 자동이체의 시작일, 종료일, 지정일을 입력받는 단계 컴포넌트이다.
 export default function Scenario14({ onComplete }: Scenario14Props) {
-  const today = new Date().toISOString().slice(0, 10);
-  
+  const now = new Date();
+  const today = formatYMD(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  // 시작일과 종료일, 지정일, 기간 옵션 선택 상태를 관리한다.
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState("");
   const [transferDay, setTransferDay] = useState("1일");
@@ -48,13 +51,12 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
     target.setMonth(baseDate.getMonth() + months);
     const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
     target.setDate(Math.min(baseDate.getDate(), lastDay));
-    return target.toISOString().slice(0, 10);
+    return formatYMD(target.getFullYear(), target.getMonth() + 1, target.getDate());
   };
 
   useEffect(() => {
-    if (selectedDuration !== null) {
-      const computed = addMonths(startDate, selectedDuration);
-      setEndDate(computed);
+    if (selectedDuration !== null && startDate) {
+      setEndDate(addMonths(startDate, selectedDuration));
     }
   }, [selectedDuration, startDate]);
 
@@ -106,7 +108,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
             <label className="text-[14px] font-medium text-gray-700">
               이체주기 및 지정일
             </label>
-            
+
             <div className="flex flex-col gap-[12px]">
               <div className="relative w-full max-w-[350px]">
                 <div className="w-full rounded-[12px] border border-gray-200 bg-gray-50 px-[14px] py-[12px] text-[15px] text-gray-800">
@@ -114,19 +116,11 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 </div>
                 <span className="absolute right-[14px] top-1/2 -translate-y-1/2 text-[18px] text-gray-400">▾</span>
               </div>
-
               <div className="relative w-full max-w-[350px]">
-                
-                {tutorialStep === 0 && (
-                  <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                    <span className="text-[30px]" aria-hidden="true">👇</span>
-                  </div>
-                )}
-
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.stopPropagation(); 
+                    e.stopPropagation();
                     toggleDropdown();
                   }}
                   className="flex w-full items-center justify-between rounded-[12px] border border-gray-200 bg-white px-[14px] py-[12px] text-[15px] text-gray-800 focus:outline-none active:bg-gray-50"
@@ -138,14 +132,7 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 {isDropdownOpen && (
                   <ul className="absolute top-full z-20 mt-[4px] w-full overflow-hidden rounded-[12px] border border-gray-200 bg-white shadow-lg max-h-[200px] overflow-y-auto">
                     {TRANSFER_DAYS.map((day) => (
-                      <li key={day} className="relative border-b border-gray-100 last:border-none">
-                        
-                        {day === "5일" && tutorialStep === 1 && (
-                          <div className="absolute top-[8px] right-[40px] animate-pulse z-30 pointer-events-none">
-                            <span className="text-[24px]">👈</span>
-                          </div>
-                        )}
-
+                      <li key={day} className="border-b border-gray-100 last:border-none">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -162,37 +149,28 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
                 )}
               </div>
             </div>
-          </div>
+          </div >
 
           <div className="space-y-[16px]">
             <label className="text-[14px] font-medium text-gray-700">
               이체기간(월)
             </label>
-            
+
             <div className="grid grid-cols-2 gap-[8px]">
               {DURATION_OPTIONS.map((option) => {
                 const isActive = selectedDuration === option.months;
                 return (
-                  <div key={option.label} className="relative">
-                    
-                    {option.label === "12개월" && tutorialStep === 2 && (
-                      <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-                        <span className="text-[30px]">👇</span>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => handleSelectDuration(option.months)}
-                      className={`h-[40px] w-full rounded-[12px] border px-[12px] text-[14px] font-medium transition ${
-                        isActive
-                          ? "border-primary-500 bg-primary-50 text-primary-600"
-                          : "border-gray-200 bg-white text-gray-700 hover:border-primary-300"
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => handleSelectDuration(option.months)}
+                    className={`h-[40px] w-full rounded-[12px] border px-[12px] text-[14px] font-medium transition ${isActive
+                      ? "border-primary-500 bg-primary-50 text-primary-600"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-primary-300"
                       }`}
-                    >
-                      {option.label}
-                    </button>
-                  </div>
+                  >
+                    {option.label}
+                  </button>
                 );
               })}
             </div>
@@ -236,23 +214,14 @@ export default function Scenario14({ onComplete }: Scenario14Props) {
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </div >
+      </section >
 
       <div className="mt-auto flex flex-col gap-[12px] pb-[24px]">
-        <div className="relative">
-          
-          {tutorialStep === 3 && (
-            <div className="absolute -top-[40px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-              <span className="text-[30px]">👇</span>
-            </div>
-          )}
-
-          <Button onClick={handleSubmit} disabled={!startDate || !endDate || !transferDay}>
-            다음
-          </Button>
-        </div>
+        <Button onClick={handleSubmit} disabled={!startDate || !endDate || !transferDay}>
+          다음
+        </Button>
       </div>
-    </div>
+    </div >
   );
 }

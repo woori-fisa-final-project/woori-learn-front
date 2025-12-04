@@ -6,11 +6,11 @@ import { Transaction } from "@/types";
 export default function TransactionList({
   grouped,
   onSelect,
-  showFinger, 
+  showFinger,
 }: {
   grouped: Array<{ label: string; items: Transaction[] }>;
   onSelect: (t: Transaction) => void;
-  showFinger?: boolean; 
+  showFinger?: boolean;
 }) {
   return (
     <section className="mt-[28px]">
@@ -22,16 +22,15 @@ export default function TransactionList({
 
           <ul className="mt-[16px] space-y-[12px]">
             {group.items.map((tx, itemIndex) => {
-              
+
               // 받아온 showFinger를 사용하여 첫 번째 아이템인지 계산
               const isFirst = showFinger && groupIndex === 0 && itemIndex === 0;
 
               return (
-                <TransactionItem 
-                  key={tx.id} 
-                  item={tx} 
+                <TransactionItem
+                  key={tx.id}
+                  item={tx}
                   onSelect={onSelect}
-                  isFirst={isFirst} 
                 />
               );
             })}

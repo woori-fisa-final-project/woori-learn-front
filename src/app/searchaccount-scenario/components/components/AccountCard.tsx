@@ -2,18 +2,12 @@
 
 import type { AccountCard } from "@/types";
 
-export default function AccountCard({
-  item,
-  onTransfer,
-}: {
-  item: AccountCard;
-  onTransfer: (item: AccountCard) => void;
-}) {
-
-  const showFingerAnimation = item.title === "WON통장";
-
+export default function AccountCard(
+  { item, onTransfer, }: { item: AccountCard; onTransfer: (item: AccountCard) => void; }) {
   return (
-    <div className="rounded-[16px] bg-white p-[18px] shadow-sm">
+    <button
+      onClick={() => onTransfer(item)}
+      className="w-full rounded-[16px] bg-white p-[18px] text-left shadow-sm">
       <div className="flex items-center justify-between gap-[10px]">
         <div className="flex items-center gap-[10px]">
           <img src="/images/bank1.png" className="h-[28px] w-[28px]" alt="bank logo" />
@@ -28,9 +22,9 @@ export default function AccountCard({
           </div>
         </div>
 
-        <button className="flex h-[24px] w-[24px] items-center justify-center text-[18px] text-gray-400">
+        <div className="flex h-[24px] w-[24px] items-center justify-center text-[18px] text-gray-400">
           ···
-        </button>
+        </div>
       </div>
 
       <div className="mt-[16px] flex items-center justify-between">
@@ -42,21 +36,9 @@ export default function AccountCard({
         </span>
       </div>
 
-      <div className="relative mt-[14px] w-full">
-        
-        {showFingerAnimation && (
-          <div className="absolute -top-[35px] left-1/2 -translate-x-1/2 animate-bounce z-10 pointer-events-none">
-            <span className="text-[30px]" aria-hidden="true">👇</span>
-          </div>
-        )}
-
-        <button
-          onClick={() => onTransfer(item)}
-          className="w-full rounded-[12px] border border-[#D8E5FB] py-[10px] text-[14px] font-semibold text-[#2F6FD9]"
-        >
-          이체
-        </button>
+      <div className="mt-[14px] w-full rounded-[12px] border border-[#D8E5FB] py-[10px] text-center text-[14px] font-semibold text-[#2F6FD9]">
+        이체
       </div>
-    </div>
+    </button>
   );
 }

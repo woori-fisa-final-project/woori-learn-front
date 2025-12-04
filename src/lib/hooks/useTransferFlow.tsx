@@ -2,9 +2,9 @@
 
 import { create } from "zustand";
 
-// --- 상수 및 헬퍼 함수 ---
+export type LastErrorType = "none" | "account" | "amount" | "both";
 
-const DEV_FALLBACK_ACCOUNT = process.env.NEXT_PUBLIC_DEV_SOURCE_ACCOUNT ?? "";
+const DEV_FALLBACK_ACCOUNT = process.env.NEXT_PUBLIC_DEV_SOURCE_ACCOUNT ?? ""; // 개발 환경에서 사용할 출금 계좌 번호 기본값입니다.
 
 const RECIPIENT_NAME_MAP: Record<string, string> = {
   "110123456789": "김집주",
@@ -42,9 +42,8 @@ type TransferState = {
   amount: number;
   sourceAccountNumber: string;
   enteredPassword: string;
-  
-  transferResult: TransferResult | null; 
-
+  transferResult: TransferResult | null;
+  lastErrorType: LastErrorType;
   setSelectedBank: (bank: string | null) => void;
   setAccountNumber: (accountNumber: string) => void;
   updateAccountNumber: (accountNumber: string) => void;
@@ -52,9 +51,8 @@ type TransferState = {
   setAmount: (amount: number) => void;
   setSourceAccountNumber: (value: string) => void;
   setEnteredPassword: (password: string) => void;
-  
   setTransferResult: (result: TransferResult) => void;
-
+  setLastErrorType: (type: LastErrorType) => void;
   resetFlow: () => void;
 };
 
@@ -66,7 +64,8 @@ const DEFAULT_STATE = {
   amount: 0,
   sourceAccountNumber: DEV_FALLBACK_ACCOUNT,
   enteredPassword: "",
-  transferResult: null, // 초기값은 null
+  transferResult: null as TransferResult | null,
+  lastErrorType: "none" as LastErrorType,
 };
 
 // --- Zustand 스토어 생성 ---
@@ -76,23 +75,16 @@ export const useTransferFlow = create<TransferState>((set) => ({
 
   // Action 구현
   setSelectedBank: (bank) => set({ selectedBank: bank }),
-  
   setAccountNumber: (accountNumber) => set({ accountNumber }),
-  
   updateAccountNumber: (value) => {
     const formatted = formatAccountNumber(value);
     set({ accountNumber: formatted });
   },
-  
   setRecipientName: (name) => set({ recipientName: name }),
-  
   setAmount: (amount) => set({ amount }),
-  
   setSourceAccountNumber: (value) => set({ sourceAccountNumber: value }),
-  
   setEnteredPassword: (password) => set({ enteredPassword: password }),
-
   setTransferResult: (result) => set({ transferResult: result }),
-
+  setLastErrorType: (type) => set({ lastErrorType: type }),
   resetFlow: () => set({ ...DEFAULT_STATE }),
 }));
