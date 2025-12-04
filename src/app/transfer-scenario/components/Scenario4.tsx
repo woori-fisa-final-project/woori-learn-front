@@ -211,6 +211,7 @@ export default function Scenario4({ onNext, onBack }: Scenario4Props) {
           <button
             key={key}
             type="button"
+            data-testid={`amount-keypad-${key}`}
             onClick={() => handleDigit(key)}
             className="h-[58px] rounded-[16px] bg-white text-[25px] font-semibold text-gray-900"
           >
