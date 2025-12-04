@@ -1,5 +1,5 @@
 /**
- * 은행명과 이미지 경로 매핑
+ * 은행명 → 이미지 경로 매핑
  */
 export const BANK_IMAGES: Record<string, string> = {
   "우리은행": "/images/bank1.png",
@@ -17,7 +17,7 @@ export const BANK_IMAGES: Record<string, string> = {
 };
 
 /**
- * 은행 코드와 은행명 매핑
+ * 은행코드 → 은행명 매핑
  */
 export const BANK_CODE_MAP: Record<string, string> = {
   "001": "한국은행",
@@ -37,7 +37,7 @@ export const BANK_CODE_MAP: Record<string, string> = {
   "039": "경남은행",
   "045": "새마을금고",
   "048": "신협",
-  "050": "상호저축은행",
+  "050": "저축은행",
   "071": "우체국",
   "081": "하나은행",
   "088": "신한은행",
@@ -46,15 +46,15 @@ export const BANK_CODE_MAP: Record<string, string> = {
 };
 
 /**
- * 은행명 → 은행 코드 역매핑
+ * 은행명 → 은행코드 역매핑
  */
 export const BANK_NAME_MAP: Record<string, string> = Object.fromEntries(
   Object.entries(BANK_CODE_MAP).map(([code, name]) => [name, code])
 );
 
 /**
- * 은행 코드를 은행명으로 변환
- * @param code 은행 코드 (예: "004")
+ * 은행코드를 은행명으로 변환합니다.
+ * @param code 은행코드 (예: "004")
  * @returns 은행명 (예: "국민은행")
  */
 export function getBankName(code: string): string {
@@ -62,25 +62,18 @@ export function getBankName(code: string): string {
 }
 
 /**
- * 은행명을 은행 코드로 변환
+ * 은행명을 은행코드로 변환합니다.
  * @param name 은행명 (예: "국민은행")
- * @returns 은행 코드 (예: "004"), 찾지 못하면 국민은행 코드 "004" 반환
- *
- * NOTE: 기본값으로 "004"(국민은행)을 반환하는 것은 타행 자동이체 시나리오를 위한 설정입니다.
- * 사용자가 타행(국민은행)으로 자동이체를 등록하는 교육 시나리오에 맞춰져 있습니다.
- *
- * TODO: 프로덕션 환경에서는 다음 중 하나를 선택
- * 1. undefined 반환하여 호출자가 명시적으로 에러 처리
- * 2. Error throw하여 잘못된 은행명 입력 방지
- * 3. 기본값 유지하되 경고 로그 출력
+ * @returns 은행코드 (예: "004"), 찾지 못하면 기본코드 "004" 반환
  */
 export function getBankCode(name: string): string {
   const code = BANK_NAME_MAP[name];
 
-  // 개발 환경에서는 알 수 없는 은행명 경고
+  // 개발 환경에서는 미등록 은행명에 대해 경고 로그 출력
   if (!code && process.env.NODE_ENV === "development") {
-    console.warn(`[getBankCode] 알 수 없는 은행명: "${name}", 기본값 "004"(국민은행) 사용`);
+    console.warn(`[getBankCode] 미등록 은행명: "${name}", 기본값 "004"(국민은행) 사용`);
   }
 
-  return code || "004"; // 기본값: 국민은행 (타행 자동이체 시나리오)
+  return code || "004"; // 기본값: 국민은행(교육 시나리오 기본값)
 }
+
