@@ -1,65 +1,31 @@
-import Image from "next/image";
+"use client"; // 이 페이지가 클라이언트 전용 로직(useEffect 등)을 사용함을 명시합니다.
+import { useEffect } from "react"; // 컴포넌트 마운트 이후에 타이머를 설정하기 위해 useEffect를 불러옵니다.
+import { useRouter } from "next/navigation"; // 로그인 페이지로 이동시키기 위해 Next.js 라우터를 사용합니다.
+import Image from "next/image"; // Splash 화면에서 로딩 이미지를 최적화된 방식으로 보여주기 위해 Image 컴포넌트를 사용합니다.
+const loadingImage = "/images/loading.gif"; // public/images 폴더 안에 이미지 두기
 
-export default function Home() {
+export default function Splash() { // 애플리케이션 최초 진입 시 보여줄 스플래시 화면 컴포넌트입니다.
+  const router = useRouter(); // 로그인 페이지로 이동하기 위해 라우터 인스턴스를 생성합니다.
+
+  useEffect(() => { // 컴포넌트가 마운트되면 일정 시간이 지난 뒤 로그인 페이지로 이동시키는 효과를 실행합니다.
+    const timer = setTimeout(() => { // 2.5초 뒤에 실행될 타이머를 설정합니다.
+      router.push("/login"); // (auth) → 실제 URL은 /login
+    }, 2500);
+    return () => clearTimeout(timer); // 컴포넌트 언마운트 시 타이머를 정리하여 메모리 누수를 방지합니다.
+  }, [router]); // 라우터 객체가 변경될 경우에만 이 효과를 재실행합니다.
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <main className="bg-white min-h-screen flex flex-col items-center overflow-x-hidden"> {/* 스플래시 화면 전체 영역을 중앙 정렬된 흰 배경으로 구성합니다. */}
+      <div className="w-full max-w-[390px] mx-auto px-[20px] flex items-center justify-center min-h-screen"> {/* 모바일 디바이스 폭에 맞춰 로딩 이미지를 가운데 배치합니다. */}
+      <Image
+        src={loadingImage}
+        alt="로딩 중"
+        width={200}
+        height={200}
+        className="object-contain max-w-full"
+        unoptimized
+      />
     </div>
+    </main>
   );
 }

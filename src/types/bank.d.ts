@@ -1,29 +1,29 @@
 export interface BankUser {
   id: number;
-  name_kr: string;
-  name_en?: string;
+  nameKr: string;
+  nameEn?: string;
   email?: string;
-  phone_number: string;
+  phoneNumber: string;
   birth: string;
-  auth_token?: string;
-  created_at: string;
+  authToken?: string;
+  createdAt: string;
 }
 
 export interface BankAccount {
   id: number;
-  user_id: number;
-  account_number: string;
+  userId: number;
+  accountNumber: string;
   password: string;
   balance: number;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface BankTransactionHistory {
   id: number;
-  account_id: number;
-  transaction_date: string;
-  counterparty_name: string;
-  display_name?: string;
+  accountId: number;
+  transactionDate: string;
+  counterpartyName: string;
+  displayName?: string;
   amount: number;
   description?: string;
 }
@@ -32,8 +32,8 @@ export type BankAccountStatus = "OPEN" | "CLOSED" | "DORMANT";
 
 export interface BankAccountHistory {
   id: number;
-  user_id: number;
-  account_id: number;
+  userId: number;
+  accountId: number;
   status: BankAccountStatus;
-  event_time: string;
+  eventTime: string;
 }

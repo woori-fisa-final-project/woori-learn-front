@@ -1,16 +1,12 @@
-export interface ScenarioProgress {
-  id: number;
-  progress_rate?: number;
-  started_at: string;
-  updated_at?: string;
-  user_id: number;
-  scenario_id: number;
-  step_id?: number;
+// API 응답 데이터에 대한 타입 정의
+export interface CompletedScenario {
+  scenarioId: number;
+  title: string;
+  completedAt: string;
 }
 
-export interface ScenarioCompleted {
-  id: number;
-  completed_at: string;
-  user_id: number;
-  scenario_id: number;
+export interface ScenarioProgress {
+  scenarioId: number;
+  title: string;
+  progressRate: number;
 }

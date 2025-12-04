@@ -1,0 +1,42 @@
+import axiosInstance from "@/utils/axiosInstance";
+
+export interface PointExchangeResponse {
+  currentBalance?: number;
+  [key: string]: unknown;
+}
+
+export interface PointExchangeRequestDto {
+  exchangeAmount: number;
+  accountNum: string;
+  bankCode: string;
+}
+
+export async function depositPoint(dto: { amount: number; reason?: string }) {
+  const res = await axiosInstance.post("/api/points/deposit", dto);
+  return res.data.data; // BaseResponse.data만 반환
+}
+
+export async function requestPointExchange(
+  dto: PointExchangeRequestDto
+): Promise<PointExchangeResponse> {
+  const res = await axiosInstance.post("/api/points/exchange", dto);
+  return res.data.data; // BaseResponse.data만 반환
+}
+
+export interface PointExchangeHistoryQuery {
+  period?: "ALL" | "WEEK" | "MONTH" | "THREE_MONTHS";
+  sort?: "DESC" | "ASC";
+  status?:
+    | "ALL"
+    | "DEPOSIT"
+    | "WITHDRAW_APPLY"
+    | "WITHDRAW_SUCCESS"
+    | "WITHDRAW_FAILED";
+  page?: number;
+  size?: number;
+}
+
+export async function getPointHistory(query: PointExchangeHistoryQuery = {}) {
+  const res = await axiosInstance.get("/api/points/history", { params: query });
+  return res.data.data; // Page 객체 반환 (content, totalElements 포함)
+}

@@ -1,17 +1,47 @@
 export interface Account {
   id: number;
-  user_id: number;
-  account_number: string;
-  bank_code: string;
-  account_name: string;
-  created_at: string;
+  userId: number;
+  accountNumber: string;
+  bankCode: string;
+  accountName: string;
+  createdAt: string;
 }
 
 export interface EducationalAccount {
   id: number;
-  account_number: string;
+  accountNumber: string;
   balance: number;
-  account_password: string;
-  account_name: string;
-  user_id: number;
+  accountPassword: string;
+  accountName: string;
+  bankName?: string; // API가 간헐적으로 생략할 수 있으므로 선택적 필드로 변경
+  userId: number;
+  accountType: "CHECKING" | "SAVINGS" | "DEPOSIT"; // 계좌 유형: 입출금(CHECKING), 예적금(SAVINGS), 적금(DEPOSIT - 현재 미사용)
+}
+
+export interface AccountResponse {
+  id: number;
+  accountName: string;
+  accountNumber: string;
+  balance: number;
+  accountType: "CHECKING" | "SAVINGS" | "DEPOSIT"; // 계좌 유형: 입출금(CHECKING), 예적금(SAVINGS), 적금(DEPOSIT - 현재 미사용)
+}
+
+export interface AccountListApiResponse {
+  code: number;
+  message: string;
+  data: AccountResponse[];
+}
+
+export interface AccountCard {
+  id: number;
+  title: string;
+  bank: string;
+  accountNumber: string;
+  accountName?: string;
+  badge: string;
+  balance: string;
+  rawBalance: number;
+  transferAvailable: boolean;
+  disabledMessage?: string;
+  type: "deposit" | "savings";
 }
